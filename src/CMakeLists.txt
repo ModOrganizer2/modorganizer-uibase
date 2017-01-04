@@ -131,7 +131,7 @@ IF (NOT "${OPTIMIZE_LINK_FLAGS}" STREQUAL "")
   SET_TARGET_PROPERTIES(${PROJ_NAME} PROPERTIES LINK_FLAGS_RELWITHDEBINFO ${OPTIMIZE_LINK_FLAGS})
 ENDIF()
 
-QT5_USE_MODULES(uibase Widgets Declarative)
+QT5_USE_MODULES(uibase Widgets Script Qml QuickWidgets)
 
 ###############
 ## Installation

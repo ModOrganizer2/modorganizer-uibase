@@ -117,7 +117,7 @@ QString VersionInfo::canonicalString() const
     result = QString("n%1.%2.%3.%4").arg(m_Major).arg(m_Minor).arg(m_SubMinor).arg(m_SubSubMinor);
   } else if (m_Scheme == SCHEME_DATE) {
     // year.month.day was stored in the version fields
-    result = QString("d%1.%2.%3.%4").arg(m_Major).arg(m_Minor).arg(m_SubMinor)).arg(m_SubSubMinor);
+    result = QString("d%1.%2.%3.%4").arg(m_Major).arg(m_Minor).arg(m_SubMinor).arg(m_SubSubMinor);
   }
   switch (m_ReleaseType) {
     case RELEASE_PREALPHA: {

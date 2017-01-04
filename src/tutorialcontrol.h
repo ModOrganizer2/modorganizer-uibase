@@ -25,7 +25,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 
 #include "dllimport.h"
 #include <QWidget>
-#include <QDeclarativeView>
+#include <QQuickWidget>
 #include <QScriptEngine>
 #include <utility>
 
@@ -69,7 +69,7 @@ private:
 
   QWidget *m_TargetControl;
   QString m_Name;
-  QDeclarativeView *m_TutorialView;
+  QQuickWidget *m_TutorialView;
 
   TutorialManager &m_Manager;
 
