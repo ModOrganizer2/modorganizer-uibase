@@ -86,6 +86,11 @@ public:
    * @return the (absolute) path to the overwrite directory
    */
   virtual QString overwritePath() const = 0;
+  
+  /**
+   * @return the (absolute) path to the base directory
+   */
+   virtual QString basePath() const =0;
 
   /**
    * @return the running version of Mod Organizer
