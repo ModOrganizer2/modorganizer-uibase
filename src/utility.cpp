@@ -375,7 +375,7 @@ bool fixDirectoryName(QString &name)
 
   temp = temp.simplified();
 
-  if (temp.length() > 1) {
+  if (temp.length() >= 1) {
     name = temp;
     return true;
   } else {
