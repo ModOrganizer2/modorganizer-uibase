@@ -58,7 +58,7 @@ bool InstallationTester::isTopLevelDirectoryBain(const FileNameString &dirName)
 
 bool InstallationTester::isTopLevelSuffix(const FileNameString &fileName)
 {
-  static std::set<FileNameString> tlSuffixes = { "esp", "esm", "bsa", "ba2" };
+  static std::set<FileNameString> tlSuffixes = { "esp", "esm", "esl", "bsa", "ba2" };
   return tlSuffixes.count(QFileInfo(fileName.toQString()).suffix()) != 0;
 }
 

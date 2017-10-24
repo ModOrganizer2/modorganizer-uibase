@@ -118,6 +118,9 @@ void TutorialControl::startTutorial(const QString &tutorial)
   if (m_TutorialView == nullptr) {
     m_TutorialView = new QQuickWidget(m_TargetControl);
     m_TutorialView->setResizeMode(QQuickWidget::SizeRootObjectToView);
+    m_TutorialView->setAttribute(Qt::WA_TranslucentBackground);
+    m_TutorialView->setAttribute(Qt::WA_AlwaysStackOnTop);
+    m_TutorialView->setClearColor(Qt::transparent);
     m_TutorialView->setStyleSheet("background: transparent");
     m_TutorialView->setObjectName("tutorialView");
     m_TutorialView->rootContext()->setContextProperty("manager", &m_Manager);

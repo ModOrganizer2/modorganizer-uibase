@@ -226,7 +226,7 @@ public:
   virtual MOBase::IDownloadManager *downloadManager() const = 0;
 
   /**
-   * @return interface to the list of plugins (esps and esms)
+   * @return interface to the list of plugins (esps, esms, and esls)
    */
   virtual MOBase::IPluginList *pluginList() const = 0;
 
