@@ -178,6 +178,11 @@ public:
    */
   virtual QStringList DLCPlugins() const = 0;
 
+  /**
+   * @brief Get the current list of active Creation Club plugins
+   */
+  virtual QStringList CCPlugins() const = 0;
+
   /*
    * @brief determine the load order mechanism used by this game.
    *
