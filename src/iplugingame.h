@@ -76,6 +76,11 @@ public:
   virtual QString savegameExtension() const = 0;
 
   /**
+   * @return file extension of script extender save game files for this game
+   */
+  virtual QString savegameSEExtension() const = 0;
+
+  /**
    * @return true if this game has been discovered as installed, false otherwise
    */
   virtual bool isInstalled() const = 0;
