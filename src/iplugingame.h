@@ -215,6 +215,11 @@ public:
    */
   virtual QString gameVersion() const = 0;
 
+  /**
+   * @brief Get the name of the game launcher
+   */
+  virtual QString getLauncherName() const = 0;
+
 protected:
 
   virtual std::map<std::type_index, boost::any> featureList() const = 0;
