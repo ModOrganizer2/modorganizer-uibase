@@ -64,7 +64,7 @@ public:
   /**
    * test if the specified file qualifies as a top-level file. A top-level file is one
    * that will be used by the game if it's directly inside the "data" directory.
-   * These are ".esp", ".esm" and ".bsa"
+   * These are ".esp", ".esm", ".esl" and ".bsa"
    *
    * @param fileName name of the file to test. It doesn't matter if this is an absolute file name or relative since only the extension is interpreted
    * @return bool

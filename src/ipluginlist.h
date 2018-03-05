@@ -47,11 +47,23 @@ public:
   virtual ~IPluginList() {}
 
   /**
+   * @return list of plugin names
+   */
+  virtual QStringList pluginNames() const = 0;
+
+  /**
    * @brief retrieve the state of a plugin
    * @param name filename of the plugin (without path but with file extension)
    * @return one of the possible plugin states: missing, inactive or active
    */
   virtual PluginStates state(const QString &name) const = 0;
+
+  /**
+   * @brief set the state of a plugin
+   * @param name filename of the plugin (without path but with file extensions)
+   * @param state new state of the plugin. should be active or inactive
+   */
+  virtual void setState(const QString &name, PluginStates state) = 0;
 
   /**
    * @brief retrieve the priority of a plugin
@@ -69,10 +81,20 @@ public:
   virtual int loadOrder(const QString &name) const = 0;
 
   /**
-   * @brief determine if a plugin is a master file
+   * @brief sets the load order of the plugin list.
+   * @param the new load order, specified by the list of plugin names, sorted.
+   * @note plugins not included in the list will be placed at highest priority
+   *       in the order they were before
+   */
+  virtual void setLoadOrder(const QStringList &pluginList) = 0;
+
+  /**
+   * @brief determine if a plugin is a master file (basically a library, referenced by other plugins)
    * @param name filename of the plugin (without path but with file extension)
    * @return true if the file is a master, false if it isn't OR if the file doesn't exist.
-   * @note usually a master file will have a .esm file extension but technically an esp can be flagged as master and an esm might not be
+   * @note in gamebryo games, a master file will usually have a .esm file
+   * extension but technically an esp can be flagged as master and an esm might
+   * not be
    */
   virtual bool isMaster(const QString &name) const = 0;
 

@@ -345,11 +345,7 @@ QString ToQString(const std::string &source)
 
 QString ToQString(const std::wstring &source)
 {
-#if QT_VERSION >= QT_VERSION_CHECK(5,0,0)
   return QString::fromWCharArray(source.c_str());
-#else
-  return QString::fromUtf16(source.c_str());
-#endif
 }
 
 QString ToString(const SYSTEMTIME &time)
@@ -379,7 +375,7 @@ bool fixDirectoryName(QString &name)
 
   temp = temp.simplified();
 
-  if (temp.length() > 1) {
+  if (temp.length() >= 1) {
     name = temp;
     return true;
   } else {

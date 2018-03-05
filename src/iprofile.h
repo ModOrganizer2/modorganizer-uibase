@@ -16,6 +16,7 @@ public:
   virtual QString name() const = 0;
   virtual QString absolutePath() const = 0;
   virtual bool localSavesEnabled() const = 0;
+  virtual bool localSettingsEnabled() const = 0;
 
 };
 

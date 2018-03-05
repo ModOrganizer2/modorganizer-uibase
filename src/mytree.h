@@ -109,14 +109,19 @@ public:
    * @brief add a new leaf to this node
    *
    * @param leaf the leaf data to attach
-   * @param overwrite if true, the new leaf will overwrite an existing one that compares as "equal"
+   * @param overwrite if true, the new leaf will overwrite an existing one that
+   *compares as "equal"
    * @return true if the leaf was added, false if it already exists
    **/
-  bool addLeaf(const LeafT &leaf, bool overwrite = true, Overwrites *overwrites = nullptr) {
+  bool addLeaf(const LeafT &leaf, bool overwrite = true,
+               Overwrites *overwrites = nullptr)
+  {
     auto res = m_Leafs.insert(leaf);
     if (!res.second && overwrite) {
       if (overwrites != nullptr) {
-        overwrites->push_back(std::make_pair(res.first->getIndex(), leaf.getIndex()));
+        overwrites->push_back(
+            std::make_pair(static_cast<int>(res.first->getIndex()),
+                           static_cast<int>(leaf.getIndex())));
       }
       m_Leafs.erase(res.first);
       res = m_Leafs.insert(leaf);

@@ -46,6 +46,6 @@ public:
 
 } // namespace MOBase
 
-Q_DECLARE_INTERFACE(MOBase::IPluginFileMapper, "com.tannin.ModOrganizer.PluginFileMapper/1.0")
+Q_DECLARE_INTERFACE(MOBase::IPluginFileMapper, "com.tannin.ModOrganizer.PluginFileMapper/2.0")
 
 #endif // IPLUGINDIAGNOSE_H

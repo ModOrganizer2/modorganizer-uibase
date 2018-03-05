@@ -86,6 +86,11 @@ public:
    * @return the (absolute) path to the overwrite directory
    */
   virtual QString overwritePath() const = 0;
+  
+  /**
+   * @return the (absolute) path to the base directory
+   */
+   virtual QString basePath() const =0;
 
   /**
    * @return the running version of Mod Organizer
@@ -221,7 +226,7 @@ public:
   virtual MOBase::IDownloadManager *downloadManager() const = 0;
 
   /**
-   * @return interface to the list of plugins (esps and esms)
+   * @return interface to the list of plugins (esps, esms, and esls)
    */
   virtual MOBase::IPluginList *pluginList() const = 0;
 

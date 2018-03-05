@@ -19,8 +19,9 @@ along with Mod Organizer.  If not, see <http://www.gnu.org/licenses/>.
 
 #include "tutorialcontrol.h"
 #include <QCoreApplication>
-#include <QDeclarativeEngine>
-#include <QDeclarativeContext>
+#include <QQmlEngine>
+#include <QQmlContext>
+#include <QQuickItem>
 #include <QDebug>
 #include <QFile>
 #include <QDir>
@@ -115,8 +116,11 @@ static QString canonicalPath(const QString &path)
 void TutorialControl::startTutorial(const QString &tutorial)
 {
   if (m_TutorialView == nullptr) {
-    m_TutorialView = new QDeclarativeView(m_TargetControl);
-    m_TutorialView->setResizeMode(QDeclarativeView::SizeRootObjectToView);
+    m_TutorialView = new QQuickWidget(m_TargetControl);
+    m_TutorialView->setResizeMode(QQuickWidget::SizeRootObjectToView);
+    m_TutorialView->setAttribute(Qt::WA_TranslucentBackground);
+    m_TutorialView->setAttribute(Qt::WA_AlwaysStackOnTop);
+    m_TutorialView->setClearColor(Qt::transparent);
     m_TutorialView->setStyleSheet("background: transparent");
     m_TutorialView->setObjectName("tutorialView");
     m_TutorialView->rootContext()->setContextProperty("manager", &m_Manager);

@@ -82,6 +82,6 @@ public:
 
 } // namespace MOBase
 
-Q_DECLARE_INTERFACE(MOBase::IPlugin, "com.tannin.ModOrganizer.Plugin/1.0")
+Q_DECLARE_INTERFACE(MOBase::IPlugin, "com.tannin.ModOrganizer.Plugin/2.0")
 
 #endif // IPLUGIN_H

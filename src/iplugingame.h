@@ -76,6 +76,11 @@ public:
   virtual QString savegameExtension() const = 0;
 
   /**
+   * @return file extension of script extender save game files for this game
+   */
+  virtual QString savegameSEExtension() const = 0;
+
+  /**
    * @return true if this game has been discovered as installed, false otherwise
    */
   virtual bool isInstalled() const = 0;
@@ -157,6 +162,14 @@ public:
    * nexus mod pages as far as I can see.
    */
   virtual QString gameShortName() const = 0;
+  
+   /**
+   * @brief Get the 'short' name of the game
+   *
+   * the short name of the game is used for - save ames, registry entries and
+   * nexus mod pages as far as I can see.
+   */
+  virtual QString gameNexusName() const = 0;
 
   /**
    * @brief Get the list of .ini files this game uses
@@ -169,6 +182,11 @@ public:
    * @brief Get a list of esp/esm files that are part of known dlcs
    */
   virtual QStringList DLCPlugins() const = 0;
+
+  /**
+   * @brief Get the current list of active Creation Club plugins
+   */
+  virtual QStringList CCPlugins() const = 0;
 
   /*
    * @brief determine the load order mechanism used by this game.
@@ -197,6 +215,11 @@ public:
    */
   virtual QString gameVersion() const = 0;
 
+  /**
+   * @brief Get the name of the game launcher
+   */
+  virtual QString getLauncherName() const = 0;
+
 protected:
 
   virtual std::map<std::type_index, boost::any> featureList() const = 0;
@@ -207,7 +230,7 @@ Q_DECLARE_OPERATORS_FOR_FLAGS(IPluginGame::ProfileSettings)
 
 } // namespace MOBase
 
-Q_DECLARE_INTERFACE(MOBase::IPluginGame, "com.tannin.ModOrganizer.PluginGame/1.0")
+Q_DECLARE_INTERFACE(MOBase::IPluginGame, "com.tannin.ModOrganizer.PluginGame/2.0")
 Q_DECLARE_METATYPE(MOBase::IPluginGame const *)
 
 #endif // IPLUGINGAME_H

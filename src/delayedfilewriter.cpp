@@ -32,8 +32,8 @@ void DelayedFileWriterBase::cancel()
 void DelayedFileWriterBase::writeImmediately(bool ifOnTimer)
 {
   if (!ifOnTimer || m_Timer.isActive()) {
-    doWrite();
     m_Timer.stop();
+    doWrite();
   }
 }
 

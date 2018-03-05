@@ -2,6 +2,7 @@
 #include <QApplication>
 #include <QWidget>
 #include <QMainWindow>
+#include "comdef.h"
 
 namespace MOBase {
 
@@ -80,15 +81,17 @@ void TaskProgressManager::showProgress()
 bool TaskProgressManager::tryCreateTaskbar()
 {
   // try to find our main window
-  foreach (QWidget *widget, QApplication::topLevelWidgets()) {
+  for (QWidget *widget : QApplication::topLevelWidgets()) {
     QMainWindow *mainWin = qobject_cast<QMainWindow*>(widget);
     if (mainWin != nullptr) {
       m_WinId = reinterpret_cast<HWND>(mainWin->winId());
     }
   }
 
+  HRESULT result;
   if (m_WinId != nullptr) {
-    HRESULT result = CoCreateInstance(CLSID_TaskbarList, 0, CLSCTX_INPROC_SERVER, IID_PPV_ARGS(&m_Taskbar));
+    result = CoCreateInstance(CLSID_TaskbarList, 0, CLSCTX_INPROC_SERVER,
+                              IID_PPV_ARGS(&m_Taskbar));
     if (result == S_OK) {
       return true;
     }
@@ -100,7 +103,10 @@ bool TaskProgressManager::tryCreateTaskbar()
 
   if (m_CreateTries-- > 0) {
     QTimer::singleShot(1000, this, SLOT(tryCreateTaskbar()));
-    qWarning("failed to create taskbar connection (this is to be expected on Windows XP)");
+  } else {
+    _com_error resString(result);
+    qWarning("failed to create taskbar connection (this is to be expected on "
+             "Windows XP): %s", resString.ErrorMessage());
   }
   return false;
 }
