@@ -40,6 +40,11 @@ public:
    * Note: This must return the actual list, not the potential list.
    */
   virtual QStringList allFiles() const = 0;
+
+  /**
+  * @brief See if the save file has an associated script extender save
+  */
+  virtual bool hasScriptExtenderFile() const = 0;
 };
 
 }
