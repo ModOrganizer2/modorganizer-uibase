@@ -28,6 +28,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 #include <QFileInfo>
 #include <QMessageBox>
 #include <QShortcutEvent>
+#include <QAction>
 #include "utility.h"
 #include "report.h"
 #include "finddialog.h"
