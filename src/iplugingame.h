@@ -162,6 +162,18 @@ public:
    * nexus mod pages as far as I can see.
    */
   virtual QString gameShortName() const = 0;
+
+  /**
+   * @brief Get any valid 'short' name for the game
+   *
+   * this is used to determine if a Nexus download is valid for the current game
+   * not all game variants have their own nexus pages and others can handle downloads
+   * from other nexus game pages and should be allowed
+   *
+   * the short name should be considered the primary handler for a directly supported game
+   * for puroses of auto-launching an instance
+   */
+  virtual QStringList validShortNames() const = 0;
   
    /**
    * @brief Get the 'short' name of the game

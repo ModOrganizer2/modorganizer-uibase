@@ -23,7 +23,7 @@ public:
    * @param modID id of the mod caller is interested in
    * @param userData user data to be returned with the result
    **/
-  virtual void requestDescription(int modID, QVariant userData) = 0;
+  virtual void requestDescription(QString gameName, int modID, QVariant userData) = 0;
 
   /**
    * @brief request a list of the files belonging to a mod
@@ -31,7 +31,7 @@ public:
    * @param modID id of the mod caller is interested in
    * @param userData user data to be returned with the result
    **/
-  virtual void requestFiles(int modID, QVariant userData) = 0;
+  virtual void requestFiles(QString gameName, int modID, QVariant userData) = 0;
 
   /**
    * @brief request info about a single file of a mod
@@ -40,7 +40,7 @@ public:
    * @param fileID id of the file the caller is interested in
    * @param userData user data to be returned with the result
    **/
-  virtual void requestFileInfo(int modID, int fileID, QVariant userData) = 0;
+  virtual void requestFileInfo(QString game, int modID, int fileID, QVariant userData) = 0;
 
   /**
    * @brief request the download url of a file
@@ -49,14 +49,14 @@ public:
    * @param fileID id of the file the caller is interested in
    * @param userData user data to be returned with the result
    **/
-  virtual void requestDownloadURL(int modID, int fileID, QVariant userData) = 0;
+  virtual void requestDownloadURL(QString gameName, int modID, int fileID, QVariant userData) = 0;
 
   /**
    * @brief requestToggleEndorsement
    * @param modID id of the mod caller is interested in
    * @param userData user data to be returned with the result
    */
-  virtual void requestToggleEndorsement(int modID, bool endorse, QVariant userData) = 0;
+  virtual void requestToggleEndorsement(QString gameName, int modID, bool endorse, QVariant userData) = 0;
 
 private:
 
@@ -80,7 +80,7 @@ signals:
    *       your callback must match the signature of this signal
    * @note this interface is going to be changed at some point to replace resultData with a less "dynamic" data structure
    */
-  void descriptionAvailable(int modID, QVariant userData, QVariant resultData);
+  void descriptionAvailable(QString gameName, int modID, QVariant userData, QVariant resultData);
 
   /**
    * @brief sent when the list of files for a mod is reported by the repository
@@ -90,7 +90,7 @@ signals:
    * @note in the python interface use the onFilesAvailable call to register a callback for this signal. The signature of
    *       your callback must match the signature of this signal
    */
-  void filesAvailable(int modID, QVariant userData, const QList<ModRepositoryFileInfo> &resultData);
+  void filesAvailable(QString gameName, int modID, QVariant userData, const QList<ModRepositoryFileInfo> &resultData);
 
   /**
    * @brief sent when information about a file is reported by the repository
@@ -107,7 +107,7 @@ signals:
    *       and let the download manager figure things out
    * @note this interface is going to be changed at some point to replace resultData with a less "dynamic" data structure
    */
-  void fileInfoAvailable(int modID, int fileID, QVariant userData, QVariant resultData);
+  void fileInfoAvailable(QString gameName, int modID, int fileID, QVariant userData, QVariant resultData);
 
   /**
    * @brief sent when the list of download urls for a file is returned by the repository
@@ -119,7 +119,7 @@ signals:
    *       lets the download manager figure out the best server according to user preference and stuff
    * @note this interface is going to be changed at some point to replace resultData with a less "dynamic" data structure
    */
-  void downloadURLsAvailable(int modID, int fileID, QVariant userData, QVariant resultData);
+  void downloadURLsAvailable(QString gameName, int modID, int fileID, QVariant userData, QVariant resultData);
 
   /**
    * @brief sent when the endorsement state of a mod was changed (only sent as a result of our request)
@@ -130,7 +130,7 @@ signals:
    *       your callback must match the signature of this signal
    * @note this interface is going to be changed at some point to replace resultData with a boolean
    */
-  void endorsementToggled(int modID, QVariant userData, QVariant resultData);
+  void endorsementToggled(QString gameName, int modID, QVariant userData, QVariant resultData);
 
   /**
    * @brief sent when a request to nexus failed
@@ -141,7 +141,7 @@ signals:
    * @note in the python interface use the onDescriptionAvailable call to register a callback for this signal. The signature of
    *       your callback must match the signature of this signal
    */
-  void requestFailed(int modID, int fileID, QVariant userData, const QString &errorMessage);
+  void requestFailed(QString gameName, int modID, int fileID, QVariant userData, const QString &errorMessage);
 
 };
 

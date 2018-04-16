@@ -20,7 +20,7 @@ namespace MOBase {
   public:
 
     ModRepositoryFileInfo(const ModRepositoryFileInfo &reference);
-    ModRepositoryFileInfo(int modID = 0, int fileID = 0);
+    ModRepositoryFileInfo(QString gameName = "", int modID = 0, int fileID = 0);
     ModRepositoryFileInfo(const QString &data);
     QString toString() const;
 
@@ -31,6 +31,7 @@ namespace MOBase {
     VersionInfo newestVersion;
     int categoryID;
     QString modName;
+    QString gameName;
     int modID;
     int fileID;
     size_t fileSize;

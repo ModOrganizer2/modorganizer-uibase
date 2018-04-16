@@ -5,14 +5,14 @@
 MOBase::ModRepositoryFileInfo::ModRepositoryFileInfo(const ModRepositoryFileInfo &reference)
   : QObject(reference.parent()), name(reference.name), uri(reference.uri), description(reference.description),
     version(reference.version), categoryID(reference.categoryID), modName(reference.modName),
-    modID(reference.modID), fileID(reference.fileID), fileSize(reference.fileSize),
+    gameName(reference.gameName), modID(reference.modID), fileID(reference.fileID), fileSize(reference.fileSize),
     fileCategory(reference.fileCategory),
     repository(reference.repository), userData(reference.userData)
 {
 }
 
-MOBase::ModRepositoryFileInfo::ModRepositoryFileInfo(int modID, int fileID)
-  : name(), uri(), description(), version(), categoryID(0), modName(), modID(modID), fileID(fileID),
+MOBase::ModRepositoryFileInfo::ModRepositoryFileInfo(QString gameName, int modID, int fileID)
+  : name(), uri(), description(), version(), categoryID(0), modName(), gameName(gameName), modID(modID), fileID(fileID),
     fileSize(0), fileCategory(TYPE_UNKNOWN), repository(), userData()
 
 {
