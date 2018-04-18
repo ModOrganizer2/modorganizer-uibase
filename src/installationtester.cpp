@@ -38,7 +38,7 @@ bool InstallationTester::isTopLevelDirectory(const FileNameString &dirName)
     "sound", "strings", "textures", "trees", "video", "facegen", "materials",
     "skse", "obse", "nvse", "fose", "f4se", "distantlod", "asi",
     "SkyProc Patchers", "Tools", "MCM", "icons", "bookart", "distantland",
-    "mits", "splash"
+    "mits", "splash", "dllplugins"
   };
 
   return tlDirectoryNames.count(dirName) != 0;
@@ -52,7 +52,7 @@ bool InstallationTester::isTopLevelDirectoryBain(const FileNameString &dirName)
     "sound", "strings", "textures", "trees", "video", "facegen", "materials",
     "skse", "obse", "nvse", "fose", "f4se", "distantlod", "asi",
     "SkyProc Patchers", "Tools", "MCM", "icons", "bookart", "distantland",
-    "mits", "splash" };
+    "mits", "splash", "dllplugins" };
 
   return tlDirectoryNames.count(dirName) != 0;
 }
