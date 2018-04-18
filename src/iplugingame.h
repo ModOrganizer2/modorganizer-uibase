@@ -29,6 +29,13 @@ public:
     PluginsTxt
   };
 
+  enum class SortMechanism {
+    NONE,
+    MLOX,
+    BOSS,
+    LOOT
+  };
+
   enum ProfileSetting {
     MODS            = 0x01,
     CONFIGURATION   = 0x02,
@@ -206,6 +213,11 @@ public:
    * @note this may throw an exception if the mechanism can't be determined
    */
   virtual LoadOrderMechanism loadOrderMechanism() const = 0;
+
+  /**
+   * @brief determine the sorting mech
+   */
+  virtual SortMechanism sortMechanism() const = 0;
 
   /**
    * @brief Get the Nexus ID of Mod Organizer
