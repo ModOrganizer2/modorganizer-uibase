@@ -36,8 +36,9 @@ bool InstallationTester::isTopLevelDirectory(const FileNameString &dirName)
   static std::set<FileNameString> tlDirectoryNames = {
     "fonts", "interface", "menus", "meshes", "music", "scripts", "shaders",
     "sound", "strings", "textures", "trees", "video", "facegen", "materials",
-    "skse", "obse", "nvse", "fose", "f4se",
-    "distantlod", "asi", "SkyProc Patchers", "Tools"
+    "skse", "obse", "nvse", "fose", "f4se", "distantlod", "asi",
+    "SkyProc Patchers", "Tools", "MCM", "icons", "bookart", "distantland",
+    "mits", "splash"
   };
 
   return tlDirectoryNames.count(dirName) != 0;
@@ -49,8 +50,9 @@ bool InstallationTester::isTopLevelDirectoryBain(const FileNameString &dirName)
   static std::set<FileNameString> tlDirectoryNames = {
     "fonts", "interface", "menus", "meshes", "music", "scripts", "shaders",
     "sound", "strings", "textures", "trees", "video", "facegen", "materials",
-    "skse", "obse", "nvse", "fose", "f4se",
-    "distantlod", "asi", "SkyProc Patchers", "Tools", "Docs", "INI Tweaks" };
+    "skse", "obse", "nvse", "fose", "f4se", "distantlod", "asi",
+    "SkyProc Patchers", "Tools", "MCM", "icons", "bookart", "distantland",
+    "mits", "splash" };
 
   return tlDirectoryNames.count(dirName) != 0;
 }
