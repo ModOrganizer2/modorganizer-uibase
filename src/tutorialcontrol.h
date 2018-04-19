@@ -26,7 +26,6 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 #include "dllimport.h"
 #include <QWidget>
 #include <QQuickWidget>
-#include <QScriptEngine>
 #include <utility>
 
 namespace MOBase {
