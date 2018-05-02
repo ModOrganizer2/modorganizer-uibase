@@ -42,7 +42,7 @@ public:
    * @param pluginName name of the proxied plugin to instantiate
    * @return plugin object
    */
-  virtual QObject *instantiate(const QString &pluginName) = 0;
+  virtual QList<QObject*> instantiate(const QString &pluginName) = 0;
 
   /**
    * @brief sets the widget that the tool should use as the parent whenever
