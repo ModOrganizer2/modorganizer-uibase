@@ -171,6 +171,14 @@ public:
   virtual QString gameShortName() const = 0;
 
   /**
+   * @brief Get any primary alternative 'short' name for the game
+   *
+   * this is used to determine if a Nexus (or other) download source should be considered
+   * a 'primary' source for the game so that it isn't flagged as an alternative source
+   */
+  virtual QStringList primarySources() const = 0;
+
+  /**
    * @brief Get any valid 'short' name for the game
    *
    * this is used to determine if a Nexus download is valid for the current game
