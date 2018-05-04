@@ -1,9 +1,5 @@
-build
-vsbuild
 edit
 CMakeLists.txt.user
-stderr.log
-stdout.log
-vs_stderr.log
-vs_stdout.log
-msbuild.log
+/msbuild.log
+/*std*.log
+/*build
