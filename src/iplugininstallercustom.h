@@ -65,7 +65,7 @@ public:
    * @param nexusID id of the mod or -1 if unknown. The plugin is responsible for setting the mod id for the created mod
    * @return result of the installation process
    */
-  virtual EInstallResult install(GuessedValue<QString> &modName, const QString &archiveName,
+  virtual EInstallResult install(GuessedValue<QString> &modName, QString gameName, const QString &archiveName,
                                  const QString &version, int nexusID) = 0;
 
 };
