@@ -5,14 +5,14 @@
 MOBase::ModRepositoryFileInfo::ModRepositoryFileInfo(const ModRepositoryFileInfo &reference)
   : QObject(reference.parent()), name(reference.name), uri(reference.uri), description(reference.description),
     version(reference.version), categoryID(reference.categoryID), modName(reference.modName),
-    modID(reference.modID), fileID(reference.fileID), fileSize(reference.fileSize),
+    gameName(reference.gameName), modID(reference.modID), fileID(reference.fileID), fileSize(reference.fileSize),
     fileCategory(reference.fileCategory),
     repository(reference.repository), userData(reference.userData)
 {
 }
 
-MOBase::ModRepositoryFileInfo::ModRepositoryFileInfo(int modID, int fileID)
-  : name(), uri(), description(), version(), categoryID(0), modName(), modID(modID), fileID(fileID),
+MOBase::ModRepositoryFileInfo::ModRepositoryFileInfo(QString gameName, int modID, int fileID)
+  : name(), uri(), description(), version(), categoryID(0), modName(), gameName(gameName), modID(modID), fileID(fileID),
     fileSize(0), fileCategory(TYPE_UNKNOWN), repository(), userData()
 
 {
@@ -20,35 +20,40 @@ MOBase::ModRepositoryFileInfo::ModRepositoryFileInfo(int modID, int fileID)
 }
 
 
-MOBase::ModRepositoryFileInfo::ModRepositoryFileInfo(const QString &data)
+MOBase::ModRepositoryFileInfo MOBase::ModRepositoryFileInfo::createFromJson(const QString &data)
 {
   QVariantList result = QtJson::parse(data).toList();
 
-  while (result.length() < 14) {
+  while (result.length() < 15) {
     result.append(QVariant());
   }
-  fileID      = result.at(0).toInt();
-  name        = result.at(1).toString();
-  uri         = result.at(2).toString();
-  version.parse(result.at(3).toString());
-  description = result.at(4).toString();
-  categoryID  = result.at(5).toInt();
-  fileSize    = result.at(6).toInt();
-  modID       = result.at(7).toInt();
-  modName     = result.at(8).toString();
 
-  newestVersion.parse(result.at(9).toString());
-  fileName     = result.at(10).toString();
-  fileCategory = result.at(11).toInt();
-  repository   = result.at(12).toString();
+  ModRepositoryFileInfo newInfo;
 
-  userData = result.at(13).toMap();
+  newInfo.gameName     = result.at(0).toString();
+  newInfo.fileID       = result.at(1).toInt();
+  newInfo.name         = result.at(2).toString();
+  newInfo.uri          = result.at(3).toString();
+  newInfo.version.parse(result.at(4).toString());
+  newInfo.description  = result.at(5).toString();
+  newInfo.categoryID   = result.at(6).toInt();
+  newInfo.fileSize     = result.at(7).toInt();
+  newInfo.modID        = result.at(8).toInt();
+  newInfo.modName      = result.at(9).toString();
+  newInfo.newestVersion.parse(result.at(10).toString());
+  newInfo.fileName     = result.at(11).toString();
+  newInfo.fileCategory = result.at(12).toInt();
+  newInfo.repository   = result.at(13).toString();
+  newInfo.userData     = result.at(14).toMap();
+
+  return newInfo;
 }
 
 
 QString MOBase::ModRepositoryFileInfo::toString() const
 {
-  return QString("[ %1,\"%2\",\"%3\",\"%4\",\"%5\",%6,%7,%8,\"%9\",\"%10\",\"%11\",%12,\"%13\", %14 ]")
+  return QString("[ \"%1\",%2,\"%3\",\"%4\",\"%5\",\"%6\",%7,%8,%9,\"%10\",\"%11\",\"%12\",%13,\"%14\",%15 ]")
+            .arg(gameName)
             .arg(fileID)
             .arg(name)
             .arg(uri)

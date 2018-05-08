@@ -29,6 +29,13 @@ public:
     PluginsTxt
   };
 
+  enum class SortMechanism {
+    NONE,
+    MLOX,
+    BOSS,
+    LOOT
+  };
+
   enum ProfileSetting {
     MODS            = 0x01,
     CONFIGURATION   = 0x02,
@@ -162,6 +169,26 @@ public:
    * nexus mod pages as far as I can see.
    */
   virtual QString gameShortName() const = 0;
+
+  /**
+   * @brief Get any primary alternative 'short' name for the game
+   *
+   * this is used to determine if a Nexus (or other) download source should be considered
+   * a 'primary' source for the game so that it isn't flagged as an alternative source
+   */
+  virtual QStringList primarySources() const = 0;
+
+  /**
+   * @brief Get any valid 'short' name for the game
+   *
+   * this is used to determine if a Nexus download is valid for the current game
+   * not all game variants have their own nexus pages and others can handle downloads
+   * from other nexus game pages and should be allowed
+   *
+   * the short name should be considered the primary handler for a directly supported game
+   * for puroses of auto-launching an instance
+   */
+  virtual QStringList validShortNames() const = 0;
   
    /**
    * @brief Get the 'short' name of the game
@@ -194,6 +221,11 @@ public:
    * @note this may throw an exception if the mechanism can't be determined
    */
   virtual LoadOrderMechanism loadOrderMechanism() const = 0;
+
+  /**
+   * @brief determine the sorting mech
+   */
+  virtual SortMechanism sortMechanism() const = 0;
 
   /**
    * @brief Get the Nexus ID of Mod Organizer

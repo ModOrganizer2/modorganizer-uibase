@@ -114,6 +114,13 @@ public:
   virtual IModInterface *createMod(GuessedValue<QString> &name) = 0;
 
   /**
+   * @brief get the game plugin matching the specified game
+   * @param gameName name of the game short name
+   * @return a game plugin, or nullptr if there is no match
+   */
+  virtual IPluginGame *getGame(const QString &gameName) const = 0;
+
+  /**
    * @brief remove a mod (from disc and from the ui)
    * @param mod the mod to remove
    * @return true on success, false on error
