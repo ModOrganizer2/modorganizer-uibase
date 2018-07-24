@@ -42,7 +42,7 @@ public:
    */
   virtual QString downloadPath(int id) = 0;
 
-signals:
+Q_SIGNALS:
 
   /**
    * @brief emitted when the download has finished completely (including retrieval of meta information)
