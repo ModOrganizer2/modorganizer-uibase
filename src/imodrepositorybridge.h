@@ -56,7 +56,7 @@ public:
    * @param modID id of the mod caller is interested in
    * @param userData user data to be returned with the result
    */
-  virtual void requestToggleEndorsement(QString gameName, int modID, bool endorse, QVariant userData) = 0;
+  virtual void requestToggleEndorsement(QString gameName, int modID, QString modVersion, bool endorse, QVariant userData) = 0;
 
 private:
 
