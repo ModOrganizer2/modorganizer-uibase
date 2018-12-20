@@ -57,7 +57,7 @@ public:
    */
   virtual void setParentWidget(QWidget *widget) { m_ParentWidget = widget; }
 
-public slots:
+public Q_SLOTS:
 
   /**
    * @brief called when the user clicks to start the tool.

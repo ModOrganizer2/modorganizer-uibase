@@ -44,6 +44,7 @@ QuestionBoxMemory::QuestionBoxMemory(QWidget *parent, const QString &title, cons
 {
   ui->setupUi(this);
 
+  this->setWindowFlag(Qt::WindowType::WindowContextHelpButtonHint, false);
   this->setWindowTitle(title);
 
   QIcon icon = QApplication::style()->standardIcon(QStyle::SP_MessageBoxQuestion);

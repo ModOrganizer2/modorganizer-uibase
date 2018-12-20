@@ -69,7 +69,7 @@ public:
    * @param archiveFile path to the archive to install
    * @return the installation result
    */
-  virtual IPluginInstaller::EInstallResult installArchive(MOBase::GuessedValue<QString> &modName, const QString &archiveFile) = 0;
+  virtual IPluginInstaller::EInstallResult installArchive(MOBase::GuessedValue<QString> &modName, const QString &archiveFile, const int &modID = 0) = 0;
 
   /**
    * @brief set the url associated with a mod

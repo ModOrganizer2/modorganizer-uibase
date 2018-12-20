@@ -62,7 +62,7 @@ private:
 
   Q_DISABLE_COPY(IModRepositoryBridge)
 
-signals:
+Q_SIGNALS:
 
   /**
    * @brief sent when the description for a mod is reported by the repository

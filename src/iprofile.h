@@ -17,7 +17,7 @@ public:
   virtual QString absolutePath() const = 0;
   virtual bool localSavesEnabled() const = 0;
   virtual bool localSettingsEnabled() const = 0;
-
+  virtual bool invalidationActive(bool *supported) const = 0;
 };
 
 } // namespace MOBase
