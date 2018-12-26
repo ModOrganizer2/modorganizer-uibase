@@ -18,6 +18,8 @@ along with Mod Organizer.  If not, see <http://www.gnu.org/licenses/>.
 #include "registry.h"
 
 #include <QString>
+#include <QMessageBox>
+#include <QApplication>
 
 namespace MOBase {
 
@@ -29,14 +31,20 @@ bool WriteRegistryValue(LPCWSTR appName, LPCWSTR keyName, LPCWSTR value, LPCWSTR
     switch(::GetLastError()) {
       case ERROR_ACCESS_DENIED:
       {
-        DWORD attrs = GetFileAttributes(fileName);
+        DWORD attrs = ::GetFileAttributes(fileName);
         if ((attrs != INVALID_FILE_ATTRIBUTES) && (attrs & FILE_ATTRIBUTE_READONLY)) {
-          qWarning(QString("%1 is read-only.  Attempting to fix that...").arg(fileName).toLocal8Bit());
-          attrs &= ~(FILE_ATTRIBUTE_READONLY);
-          if (SetFileAttributes(fileName, attrs)) {
-            if (WritePrivateProfileString(appName, keyName, value, fileName)) {
-              success = true;
+          if (QMessageBox::question(QApplication::activeModalWidget(),QApplication::tr("INI file is read-only"),
+                QApplication::tr("Mod Organizer is attempting to write to \"%1\" which is currently set to read-only. "
+                "Clear the read-only flag to allow the write?").arg(fileName)) == QMessageBox::Yes) {
+            qWarning(QString("%1 is read-only.  Attempting to clear read-only flag.").arg(fileName).toLocal8Bit());
+            attrs &= ~(FILE_ATTRIBUTE_READONLY);
+            if (::SetFileAttributes(fileName, attrs)) {
+              if (::WritePrivateProfileString(appName, keyName, value, fileName)) {
+                success = true;
+              }
             }
+          } else {
+            qWarning(QString("%1 is read-only.  User denied clearing the read-only flag.").arg(fileName).toLocal8Bit());
           }
         }
       } break;
