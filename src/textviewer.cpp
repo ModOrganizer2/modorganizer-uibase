@@ -125,10 +125,27 @@ void TextViewer::setDescription(const QString &description)
 
 void TextViewer::saveFile(const QTextEdit *editor)
 {
+  bool write = true;
   QFile file(editor->documentTitle());
   if (!file.open(QIODevice::WriteOnly | QIODevice::Truncate)) {
-    reportError(tr("failed to write to %1").arg(editor->documentTitle()));
-  } else {
+    write = false;
+    if (QMessageBox::question(QApplication::activeModalWidget(),QApplication::tr("File is read-only"),
+          QApplication::tr("Mod Organizer is attempting to write to \"%1\" which is currently set to read-only. "
+          "Clear the read-only flag to allow the write?").arg(file.fileName())) == QMessageBox::Yes) {
+      qWarning(QString("%1 is read-only.  Attempting to clear read-only flag.").arg(file.fileName()).toLocal8Bit());
+      file.setPermissions(file.permissions() | QFile::WriteUser);
+    } else {
+      qWarning(QString("%1 is read-only.  User denied clearing the read-only flag.").arg(file.fileName()).toLocal8Bit());
+    }
+
+    if (!file.open(QIODevice::WriteOnly | QIODevice::Truncate)) {
+      reportError(tr("failed to write to %1").arg(editor->documentTitle()));
+    } else {
+      write = true;
+    }
+  }
+
+  if (write) {
     file.write(editor->toPlainText().toUtf8().replace('\n', "\r\n"));
     file.close();
   }
