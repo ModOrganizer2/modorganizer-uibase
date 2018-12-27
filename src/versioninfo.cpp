@@ -358,6 +358,17 @@ QDLLEXPORT bool operator<(const VersionInfo &LHS, const VersionInfo &RHS)
   // subminor, release-type and rest are treated the same for all versioning schemes, but
   // on parsing they may still differ, i.e. a b-suffix is only interpreted to mean "beta" in the regular scheme
   if (LHS.m_ReleaseType != RHS.m_ReleaseType) return LHS.m_ReleaseType < RHS.m_ReleaseType;
+
+  // if the rest contains only integers, compare them numerically
+  bool LHS_ok, RHS_ok;
+  int LHS_int, RHS_int;
+  LHS_int = LHS.m_Rest.toInt(&LHS_ok);
+  RHS_int = RHS.m_Rest.toInt(&RHS_ok);
+  if (LHS_ok && RHS_ok) {
+    return LHS_int < RHS_int;
+  }
+
+  // give up and compare lexically
   return LHS.m_Rest < RHS.m_Rest;
 }
 
