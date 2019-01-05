@@ -460,7 +460,7 @@ void removeOldFiles(const QString &path, const QString &pattern, int numToKeep, 
     }
 
     if (!shellDelete(deleteFiles)) {
-      qWarning("failed to remove log files: %s", qPrintable(windowsErrorString(::GetLastError())));
+      qWarning("failed to remove log files: %s", qUtf8Printable(windowsErrorString(::GetLastError())));
     }
   }
 }
