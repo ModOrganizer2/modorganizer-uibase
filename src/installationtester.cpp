@@ -38,7 +38,7 @@ bool InstallationTester::isTopLevelDirectory(const FileNameString &dirName)
     "sound", "strings", "textures", "trees", "video", "facegen", "materials",
     "skse", "obse", "mwse", "nvse", "fose", "f4se", "distantlod", "asi",
     "SkyProc Patchers", "Tools", "MCM", "icons", "bookart", "distantland",
-    "mits", "splash", "dllplugins", "CalienteTools"
+    "mits", "splash", "dllplugins", "CalienteTools", "NetScriptFramework"
   };
 
   return tlDirectoryNames.count(dirName) != 0;
