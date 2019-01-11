@@ -131,6 +131,11 @@ public:
   virtual QList<ExecutableInfo> executables() const = 0;
 
   /**
+   * @brief Get the default list of libraries that can be force loaded with executables
+   */
+  virtual QList<ExecutableForcedLoadSetting> executableForcedLoads() const = 0;
+
+  /**
    * @return steam app id for this game. Should be empty for games not available on steam
    * @note if a game is available in multiple versions those might have different app ids.
    *       the plugin should try to return the right one
@@ -189,7 +194,7 @@ public:
    * for puroses of auto-launching an instance
    */
   virtual QStringList validShortNames() const = 0;
-  
+
    /**
    * @brief Get the 'short' name of the game
    *
