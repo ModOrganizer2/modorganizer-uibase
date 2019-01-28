@@ -4,6 +4,7 @@
 
 #include <QObject>
 #include <QVariant>
+#include <QNetworkReply>
 #include "modrepositoryfileinfo.h"
 
 
@@ -141,7 +142,7 @@ Q_SIGNALS:
    * @note in the python interface use the onDescriptionAvailable call to register a callback for this signal. The signature of
    *       your callback must match the signature of this signal
    */
-  void requestFailed(QString gameName, int modID, int fileID, QVariant userData, const QString &errorMessage);
+  void requestFailed(QString gameName, int modID, int fileID, QVariant userData, QNetworkReply::NetworkError error, const QString &errorMessage);
 
 };
 
