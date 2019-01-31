@@ -123,8 +123,12 @@ public:
 
   /**
    * @return a version string for display to the user. This may loose information as it doesn't contain information about the versioning scheme
+   * 
+   * @param forcedVersionSegments the number of version segments to display even if the version is 0.  1 is major, 2 is major and minor, etc.
+   *        The only implemented ranges are (-inf,2] for major/minor, [3] for major/minor/subminor, and [4,inf) for major/minor/subminor/subsubminor.
+   *        This only versions with a regular scheme.
    */
-  QString displayString() const;
+  QString displayString(int forcedVersionSegments = 2) const;
 
   /**
    * @return true if this version is valid, false if it wasn't initialised or

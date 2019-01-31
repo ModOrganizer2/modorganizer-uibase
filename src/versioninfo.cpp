@@ -144,7 +144,7 @@ QString VersionInfo::canonicalString() const
   return result;
 }
 
-QString VersionInfo::displayString() const
+QString VersionInfo::displayString(int forcedVersionSegments) const
 {
   if (!isValid()) {
     return QString();
@@ -152,9 +152,9 @@ QString VersionInfo::displayString() const
 
   QString result;
   if (m_Scheme == SCHEME_REGULAR) {
-    if (m_SubSubMinor != 0) {
+    if (forcedVersionSegments >= 4 || m_SubSubMinor != 0) {
       result = QString("%1.%2.%3.%4").arg(m_Major).arg(m_Minor).arg(m_SubMinor).arg(m_SubSubMinor);
-    } else if (m_SubMinor != 0) {
+    } else if (forcedVersionSegments == 3 || m_SubMinor != 0) {
       result = QString("%1.%2.%3").arg(m_Major).arg(m_Minor).arg(m_SubMinor);
     } else {
       result = QString("%1.%2").arg(m_Major).arg(m_Minor);
