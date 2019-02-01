@@ -24,7 +24,7 @@ along with Mod Organizer.  If not, see <http://www.gnu.org/licenses/>.
 
 NXMUrl::NXMUrl(const QString &url)
 {
-	QRegularExpression exp("nxm://([a-z0-9]+)/mods/(\\d+)/files/(\\d+)\\?key\\=([a-z0-9]+)\\&expires\\=(\\d+)", QRegularExpression::CaseInsensitiveOption);
+	QRegularExpression exp("nxm://([a-z0-9]+)/mods/(\\d+)/files/(\\d+)\\?key\\=([^&]+)\\&expires\\=(\\d+)", QRegularExpression::CaseInsensitiveOption);
 	auto match = exp.match(url, 0, QRegularExpression::PartialPreferFirstMatch);
 	//QString pattern = QRegularExpression::escape("key=") + "([a-z0-9]+)" + QRegularExpression::escape("&expires=") + "(\\d+)";
 	//QRegularExpression exp2(pattern, QRegularExpression::CaseInsensitiveOption);
