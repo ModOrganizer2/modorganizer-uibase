@@ -32,8 +32,10 @@ namespace MOBase {
     int categoryID;
     QString modName;
     QString gameName;
-    int modID;
+	QString nexusKey;
+	int modID;
     int fileID;
+	int nexusExpires;
     size_t fileSize;
     QString fileName;
     int fileCategory;
