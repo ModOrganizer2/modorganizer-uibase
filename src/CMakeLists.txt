@@ -40,6 +40,7 @@ SET(uibase_SRCS
     filenamestring.cpp
     safewritefile.cpp
     registry.cpp
+    steamutility.cpp
   )
 
 SET(uibase_HDRS
@@ -91,6 +92,7 @@ SET(uibase_HDRS
     filemapping.h
     safewritefile.h
     registry.h
+    steamutility.h
   )
 
 SET(UIS

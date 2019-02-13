@@ -48,7 +48,8 @@ SOURCES += \
     executableinfo.cpp \
     delayedfilewriter.cpp \
     filenamestring.cpp \
-    registry.cpp
+    registry.cpp \
+    steamutility.cpp
 
 HEADERS +=\
     utility.h \
@@ -99,7 +100,8 @@ HEADERS +=\
     isavegameinfowidget.h \
     filemapping.h \
     ipluginfilemapper.h \
-    registry.h
+    registry.h \
+    steamutility.h
 
 FORMS += \
     textviewer.ui \
