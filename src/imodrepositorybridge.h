@@ -123,6 +123,15 @@ Q_SIGNALS:
   void downloadURLsAvailable(QString gameName, int modID, int fileID, QVariant userData, QVariant resultData);
 
   /**
+   * @brief sent when the endorsement data is returned from the API
+   * @param userData the data that was included in the request
+   * @param resultData new endorsement state as a boolean (wrapped in a qvariant)
+   * @note in the python interface use the onEndorsementsAvailable call to register a callback for this signal. The signature of
+   *       your callback must match the signature of this signal
+   */
+  void endorsementsAvailable(QVariant userData, QVariant resultData);
+
+  /**
    * @brief sent when the endorsement state of a mod was changed (only sent as a result of our request)
    * @param modID id of the mod for which the request was made
    * @param userData the data that was included in the request
