@@ -47,9 +47,9 @@ public:
    * @param parent the parent widget of the dialog
    */
   explicit TutorableDialog(const QString &name, QWidget *parent = 0);
-  
+
 signals:
-  
+
 public slots:
 
 protected:

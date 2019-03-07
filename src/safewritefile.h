@@ -54,8 +54,3 @@ private:
 }
 
 #endif // SAFEWRITEFILE_H
-
-
-
-
-

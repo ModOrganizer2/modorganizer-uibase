@@ -44,7 +44,7 @@ namespace MOBase {
 class QDLLEXPORT QuestionBoxMemory : public QDialog
 {
   Q_OBJECT
-  
+
 public:
 
   virtual ~QuestionBoxMemory();

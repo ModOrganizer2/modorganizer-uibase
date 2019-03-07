@@ -35,7 +35,7 @@ QDLLEXPORT QString findSteam();
  * @brief Gets the installation path to a Steam game
  *
  * @param appName The Steam application name, i.e., the expected steamapps folder name
- * @param validFile If the given file exists in the found installation path, the game is 
+ * @param validFile If the given file exists in the found installation path, the game is
           consider to be valid.  May be blank.
  **/
 QDLLEXPORT QString findSteamGame(const QString &appName, const QString &validFile);

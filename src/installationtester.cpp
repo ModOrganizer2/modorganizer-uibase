@@ -53,7 +53,7 @@ bool InstallationTester::isTopLevelDirectoryBain(const FileNameString &dirName)
     "sound", "strings", "textures", "trees", "video", "facegen", "materials",
     "skse", "obse", "mwse", "nvse", "fose", "f4se", "distantlod", "asi",
     "SkyProc Patchers", "Tools", "MCM", "icons", "bookart", "distantland",
-    "mits", "splash", "dllplugins", "Docs", "INITweaks", "CalienteTools", 
+    "mits", "splash", "dllplugins", "Docs", "INITweaks", "CalienteTools",
     "NetScriptFramework", "shadersfx"
   };
 

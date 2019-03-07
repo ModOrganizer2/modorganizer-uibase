@@ -52,4 +52,3 @@ public:
 Q_DECLARE_METATYPE(MOBase::ISaveGame const *)
 
 #endif // SAVEGAMEINFO_H
-
