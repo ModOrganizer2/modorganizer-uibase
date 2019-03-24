@@ -52,8 +52,7 @@ public:
 
   /**
    * @return a list of keys of active problems
-   * @note a plugin must be able to report problems even if it isn't active (i.e. it may want to
-   *       report WHY it's inactive)
+   * @note this is not expected to be called if isActive returns false
    */
   virtual std::vector<unsigned int> activeProblems() const = 0;
 
@@ -61,7 +60,7 @@ public:
    * @brief retrieve a short description for the specified problem for the overview page. HTML syntax is supported.
    * @param key the identifier of the problem as reported by activeProblems()
    * @return a (short) description text
-   * @throw should shrow an exception if the key is not valid
+   * @throw should throw an exception if the key is not valid
    */
   virtual QString shortDescription(unsigned int key) const = 0;
 
@@ -69,21 +68,21 @@ public:
    * @brief retrieve the full description for the specified problem. HTML syntax is supported.
    * @param key the identifier of the problem as reported by activeProblems()
    * @return a (long) description text
-   * @throw should shrow an exception if the key is not valid
+   * @throw should throw an exception if the key is not valid
    */
   virtual QString fullDescription(unsigned int key) const = 0;
 
   /**
    * @param key the identifier of the problem as reported by activeProblems()
    * @return true if this plugin provides a guide to fix the issue
-   * @throw should shrow an exception if the key is not valid
+   * @throw should throw an exception if the key is not valid
    */
   virtual bool hasGuidedFix(unsigned int key) const = 0;
 
   /**
    * @brief start the guided fix for the specified problem
    * @param key the identifier of the problem as reported by activeProblems()
-   * @throw should shrow an exception if the key is not valid or if there is no guided fix for the issue
+   * @throw should throw an exception if the key is not valid or if there is no guided fix for the issue
    */
   virtual void startGuidedFix(unsigned int key) const = 0;
 
