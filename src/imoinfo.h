@@ -260,12 +260,15 @@ public:
    * @param cwd working directory for the executable. If this is empty the path to the executable is used unless executable referred to a configured
    *        MO executable. In that case the configured cwd is used
    * @param profile profile to use. If this is empty (the default) the current profile is used
+   * @param forcedCustomOverwrite the mod to set as the custom overwrite, regardless of what the profile has configured
+   * @param ignoreCustomOverwrite set to true to ignore the profile's configured custom overwrite
    * @return a handle or INVALID_HANDLE_VALUE if the application failed to start.
    * @note the returned handle is usually a job handle but under some situations MO may not be able to create a job and then the handle is a process handle.
    *       Use waitForApplication to wait for completion on this handle, it works for both process and job. If you want to write waiting code yourself, be aware
    *       that you can't WaitForSingleObject on a job object. There is no single windows api call that works for both
    */
-  virtual HANDLE startApplication(const QString &executable, const QStringList &args = QStringList(), const QString &cwd = "", const QString &profile = "") = 0;
+  virtual HANDLE startApplication(const QString &executable, const QStringList &args = QStringList(), const QString &cwd = "",
+                                  const QString &profile = "", const QString &forcedCustomOverwrite = "", bool ignoreCustomOverwrite = false) = 0;
 
   /**
    * @brief wait for completion of an application
