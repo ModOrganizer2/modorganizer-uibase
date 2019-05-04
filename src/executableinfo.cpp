@@ -2,6 +2,47 @@
 
 using namespace MOBase;
 
+ExecutableForcedLoadSetting::ExecutableForcedLoadSetting(
+                              const QString &process,
+                              const QString &library)
+  : m_Process(process)
+  , m_Library(library)
+  , m_Forced(false)
+  , m_Enabled(false)
+{
+}
+
+ExecutableForcedLoadSetting &ExecutableForcedLoadSetting::withEnabled(bool enabled)
+{
+  m_Enabled = enabled;
+  return *this;
+}
+
+ExecutableForcedLoadSetting &ExecutableForcedLoadSetting::withForced(bool forced)
+{
+  m_Forced = forced;
+  return *this;
+}
+
+bool ExecutableForcedLoadSetting::enabled() const
+{
+  return m_Enabled;
+}
+
+bool ExecutableForcedLoadSetting::forced() const
+{
+  return m_Forced;
+}
+
+QString ExecutableForcedLoadSetting::library() const
+{
+  return m_Library;
+}
+
+QString ExecutableForcedLoadSetting::process() const
+{
+  return m_Process;
+}
 
 MOBase::ExecutableInfo::ExecutableInfo(const QString &title, const QFileInfo &binary)
   : m_Title(title)

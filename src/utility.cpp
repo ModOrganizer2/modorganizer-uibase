@@ -340,12 +340,14 @@ std::string ToString(const QString &source, bool utf8)
 
 QString ToQString(const std::string &source)
 {
-  return QString::fromUtf8(source.c_str());
+  //return QString::fromUtf8(source.c_str());
+  return QString::fromStdString(source);
 }
 
 QString ToQString(const std::wstring &source)
 {
-  return QString::fromWCharArray(source.c_str());
+  //return QString::fromWCharArray(source.c_str());
+  return QString::fromStdWString(source);
 }
 
 QString ToString(const SYSTEMTIME &time)
@@ -458,7 +460,7 @@ void removeOldFiles(const QString &path, const QString &pattern, int numToKeep, 
     }
 
     if (!shellDelete(deleteFiles)) {
-      qWarning("failed to remove log files: %s", qPrintable(windowsErrorString(::GetLastError())));
+      qWarning("failed to remove log files: %s", qUtf8Printable(windowsErrorString(::GetLastError())));
     }
   }
 }

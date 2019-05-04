@@ -19,17 +19,22 @@ along with Mod Organizer.  If not, see <http://www.gnu.org/licenses/>.
 
 #include "nxmurl.h"
 #include "utility.h"
-#include <QRegExp>
+#include <QRegularExpression>
 #include <QStringList>
 
 NXMUrl::NXMUrl(const QString &url)
 {
-  QRegExp exp("nxm://([a-z0-9]+)/mods/(\\d+)/files/(\\d+)", Qt::CaseInsensitive);
-  exp.indexIn(url);
-  if (exp.captureCount() != 3) {
+  QRegularExpression exp("nxm://([a-z0-9]+)/mods/(\\d+)/files/(\\d+)\\?key\\=([^&]+)\\&expires\\=(\\d+)", QRegularExpression::CaseInsensitiveOption);
+  auto match = exp.match(url, 0, QRegularExpression::PartialPreferFirstMatch);
+  //QString pattern = QRegularExpression::escape("key=") + "([a-z0-9]+)" + QRegularExpression::escape("&expires=") + "(\\d+)";
+  //QRegularExpression exp2(pattern, QRegularExpression::CaseInsensitiveOption);
+  //auto match2 = exp2.match(url, 0, QRegularExpression::PartialPreferFirstMatch);
+  if (exp.captureCount() < 3) {
     throw MOBase::MyException(tr("invalid nxm-link: %1").arg(url));
   }
-  m_Game = exp.cap(1);
-  m_ModId = exp.cap(2).toInt();
-  m_FileId = exp.cap(3).toInt();
+  m_Game = match.captured(1);
+  m_ModId = match.captured(2).toInt();
+  m_FileId = match.captured(3).toInt();
+  m_Key = match.captured(4);
+  m_Expires = match.captured(5).toInt();
 }

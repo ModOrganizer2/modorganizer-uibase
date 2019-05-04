@@ -204,7 +204,7 @@ QRect TutorialControl::getRect(const QString &widgetName)
       res.moveTopLeft(pos);
       return res;
     } else {
-      qCritical("%s not found", widgetName.toUtf8().constData());
+      qCritical("%s not found", qUtf8Printable(widgetName));
       return QRect();
     }
   } else {
@@ -273,7 +273,7 @@ bool TutorialControl::waitForAction(const QString &actionName)
     QAction *action = m_TargetControl->findChild<QAction*>(actionName);
     if (action == nullptr) {
       qCritical("no action \"%s\" in control \"%s\"",
-                actionName.toUtf8().constData(), m_Name.toUtf8().constData());
+                qUtf8Printable(actionName), qUtf8Printable(m_Name));
       return false;
     }
     if (action->isEnabled()) {
@@ -294,7 +294,7 @@ bool TutorialControl::waitForButton(const QString &buttonName)
     QAbstractButton *button = m_TargetControl->findChild<QAbstractButton*>(buttonName);
     if (button == nullptr) {
       qCritical("no button \"%s\" in control \"%s\"",
-                buttonName.toUtf8().constData(), m_Name.toUtf8().constData());
+                qUtf8Printable(buttonName), qUtf8Printable(m_Name));
       return false;
     }
     if (button->isEnabled()) {
@@ -316,7 +316,7 @@ bool TutorialControl::waitForTabOpen(const QString &tabControlName, int tab)
     QTabWidget *tabWidget = m_TargetControl->findChild<QTabWidget*>(tabControlName);
     if (tabWidget == nullptr) {
       qCritical("no tab widget \"%s\" in control \"%s\"",
-                tabControlName.toUtf8().constData(), m_Name.toUtf8().constData());
+                qUtf8Printable(tabControlName), qUtf8Printable(m_Name));
       return false;
     }
     if (tabWidget->isEnabled() && (tabWidget->currentIndex() != tab)) {

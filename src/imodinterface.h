@@ -102,6 +102,13 @@ public:
   virtual QStringList categories() = 0;
 
   /**
+  * @brief set/change the source game of this mod
+  *
+  * @param gameName the source game shortName
+  */
+  virtual void setGameName(const QString &gameName) = 0;
+
+  /**
    * @brief set the name of this mod
    *
    * set the name of this mod. This will also update the name of the

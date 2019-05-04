@@ -39,6 +39,8 @@ SET(uibase_SRCS
     delayedfilewriter.cpp
     filenamestring.cpp
     safewritefile.cpp
+    registry.cpp
+    steamutility.cpp
   )
 
 SET(uibase_HDRS
@@ -89,6 +91,8 @@ SET(uibase_HDRS
     filenamestring.h
     filemapping.h
     safewritefile.h
+    registry.h
+    steamutility.h
   )
 
 SET(UIS

@@ -47,7 +47,9 @@ SOURCES += \
     sortabletreewidget.cpp \
     executableinfo.cpp \
     delayedfilewriter.cpp \
-    filenamestring.cpp
+    filenamestring.cpp \
+    registry.cpp \
+    steamutility.cpp
 
 HEADERS +=\
     utility.h \
@@ -97,7 +99,9 @@ HEADERS +=\
     isavegame.h \
     isavegameinfowidget.h \
     filemapping.h \
-    ipluginfilemapper.h
+    ipluginfilemapper.h \
+    registry.h \
+    steamutility.h
 
 FORMS += \
     textviewer.ui \

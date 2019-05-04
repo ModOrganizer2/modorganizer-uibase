@@ -4,6 +4,7 @@
 
 #include <QObject>
 #include <QVariant>
+#include <QNetworkReply>
 #include "modrepositoryfileinfo.h"
 
 
@@ -56,7 +57,7 @@ public:
    * @param modID id of the mod caller is interested in
    * @param userData user data to be returned with the result
    */
-  virtual void requestToggleEndorsement(QString gameName, int modID, bool endorse, QVariant userData) = 0;
+  virtual void requestToggleEndorsement(QString gameName, int modID, QString modVersion, bool endorse, QVariant userData) = 0;
 
 private:
 
@@ -122,6 +123,15 @@ Q_SIGNALS:
   void downloadURLsAvailable(QString gameName, int modID, int fileID, QVariant userData, QVariant resultData);
 
   /**
+   * @brief sent when the endorsement data is returned from the API
+   * @param userData the data that was included in the request
+   * @param resultData new endorsement state as a boolean (wrapped in a qvariant)
+   * @note in the python interface use the onEndorsementsAvailable call to register a callback for this signal. The signature of
+   *       your callback must match the signature of this signal
+   */
+  void endorsementsAvailable(QVariant userData, QVariant resultData);
+
+  /**
    * @brief sent when the endorsement state of a mod was changed (only sent as a result of our request)
    * @param modID id of the mod for which the request was made
    * @param userData the data that was included in the request
@@ -133,6 +143,25 @@ Q_SIGNALS:
   void endorsementToggled(QString gameName, int modID, QVariant userData, QVariant resultData);
 
   /**
+  * @brief sent when the tracked mod data is returned from the API
+  * @param userData the data that was included in the request
+  * @param resultData new tracked state as a list of maps (keys: domain_name, mod_id)
+  * @note in the python interface use the ontrackedModsAvailable call to register a callback for this signal. The signature of
+  *       your callback must match the signature of this signal
+  */
+  void trackedModsAvailable(QVariant userData, QVariant resultData);
+
+  /**
+   * @brief sent when the tracking state of a mod was changed (only sent as a result of our request)
+   * @param modID id of the mod for which the request was made
+   * @param userData the data that was included in the request
+   * @param tracked new tracking state
+   * @note in the python interface use the onTrackingToggled call to register a callback for this signal. The signature of
+   *       your callback must match the signature of this signal
+   */
+  void trackingToggled(QString gameName, int modID, QVariant userData, bool tracked);
+
+  /**
    * @brief sent when a request to nexus failed
    * @param modID id of the mod for which the request was made
    * @param fileID id of the file for which the request was made (ignore if the request was for the mod in general)
@@ -141,7 +170,7 @@ Q_SIGNALS:
    * @note in the python interface use the onDescriptionAvailable call to register a callback for this signal. The signature of
    *       your callback must match the signature of this signal
    */
-  void requestFailed(QString gameName, int modID, int fileID, QVariant userData, const QString &errorMessage);
+  void requestFailed(QString gameName, int modID, int fileID, QVariant userData, QNetworkReply::NetworkError error, const QString &errorMessage);
 
 };
 

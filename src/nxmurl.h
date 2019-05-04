@@ -48,6 +48,11 @@ public:
   QString game() const { return m_Game; }
 
   /**
+   * @return the NMX request key
+   */
+  QString key() const { return m_Key; }
+
+  /**
    * @brief retrieve the mod id encoded into the url
    *
    * @return mod id
@@ -61,11 +66,18 @@ public:
    **/
   int fileId() const { return m_FileId; }
 
+  /**
+   * @return the expires timestamp
+   */
+  int expires() const { return m_Expires; }
+
 private:
 
   QString m_Game;
+  QString m_Key;
   int m_ModId;
   int m_FileId;
+  int m_Expires;
 };
 
 #endif // NXMURL_H

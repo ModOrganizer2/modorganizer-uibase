@@ -142,4 +142,3 @@ QDialogButtonBox::StandardButton QuestionBoxMemory::queryImpl(QWidget *parent, c
 }
 
 }
-

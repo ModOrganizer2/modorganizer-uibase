@@ -1,6 +1,4 @@
 /*
-Copyright (C) 2014 Sebastian Herbord. All rights reserved.
-
 This file is part of Mod Organizer.
 
 Mod Organizer is free software: you can redistribute it and/or modify
@@ -17,40 +15,16 @@ You should have received a copy of the GNU General Public License
 along with Mod Organizer.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+#ifndef REGISTRY_H
+#define REGISTRY_H
 
-#ifndef SAFEWRITEFILE_H
-#define SAFEWRITEFILE_H
-
-
-#include <utility.h>
-#include <dllimport.h>
-#include <QTemporaryFile>
-#include <QString>
+#include "dllimport.h"
+#include <Windows.h>
 
 namespace MOBase {
 
-/**
- * @brief a wrapper for QFile that ensures the file is only actually (over-)written if writing was successful
- */
-class QDLLEXPORT SafeWriteFile {
-public:
-  SafeWriteFile(const QString &fileName);
+QDLLEXPORT bool WriteRegistryValue(LPCWSTR appName, LPCWSTR keyName, LPCWSTR value, LPCWSTR fileName);
 
-  QFile *operator->();
+} // namespace MOBase
 
-  void commit();
-
-  bool commitIfDifferent(QByteArray &hash);
-
-private:
-
-  QByteArray hash();
-
-private:
-  QString m_FileName;
-  QTemporaryFile m_TempFile;
-};
-
-}
-
-#endif // SAFEWRITEFILE_H
+#endif // REGISTRY_H

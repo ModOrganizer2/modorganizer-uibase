@@ -10,6 +10,27 @@
 
 namespace MOBase {
 
+class QDLLEXPORT ExecutableForcedLoadSetting
+{
+public:
+  ExecutableForcedLoadSetting(const QString &process, const QString &library);
+
+  ExecutableForcedLoadSetting &withForced(bool forced=true);
+
+  ExecutableForcedLoadSetting &withEnabled(bool enabled=true);
+
+  bool enabled() const;
+  bool forced() const;
+  QString library() const;
+  QString process() const;
+
+private:
+  bool m_Enabled;
+  QString m_Process;
+  QString m_Library;
+  bool m_Forced;
+};
+
 class QDLLEXPORT ExecutableInfo
 {
 public:
