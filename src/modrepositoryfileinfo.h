@@ -36,6 +36,7 @@ namespace MOBase {
     int modID;
     int fileID;
     int nexusExpires;
+	int nexusDownloadUser;
     size_t fileSize;
     QString fileName;
     int fileCategory;
