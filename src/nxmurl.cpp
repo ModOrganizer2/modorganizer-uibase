@@ -29,7 +29,7 @@ NXMUrl::NXMUrl(const QString &url)
   QUrl nxm(url);
   QUrlQuery query(nxm);
   QRegularExpression exp("nxm://[a-z0-9]+/mods/(\\d+)/files/(\\d+)", QRegularExpression::CaseInsensitiveOption);
-  auto match = exp.match(url, 0, QRegularExpression::PartialPreferFirstMatch);
+  auto match = exp.match(url);
   if (!match.hasMatch()) {
     throw MOBase::MyException(tr("invalid nxm-link: %1").arg(url));
   }
