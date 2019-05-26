@@ -154,14 +154,47 @@ QDLLEXPORT bool shellDeleteQuiet(const QString &fileName, QWidget *dialog = null
 
 namespace shell
 {
+  /** @brief starts explorer using the given directory and/or file
+   *  @param info if this is a directory, opens it in explorer; if this is a file,
+   *         opens the directory and selects it
+   *  @return false if something went wrong
+   **/
   QDLLEXPORT bool ExploreFile(const QFileInfo& info);
+
+  /** @brief starts explorer using the given directory and/or file
+   *  @param path if this is a directory, opens it in explorer; if this is a file,
+   *         opens the directory and selects it
+   *  @return false if something went wrong
+   **/
   QDLLEXPORT bool ExploreFile(const QString& path);
+
+  /** @brief starts explorer using the given directory
+   *  @param dir opens this directory
+   *  @return false if something went wrong
+   **/
   QDLLEXPORT bool ExploreFile(const QDir& dir);
 
+
+  /** @brief asks the shell to open the given file
+   *  @param path file to open
+   *  @return false if something went wrong
+   **/
   QDLLEXPORT bool OpenFile(const QString& path);
+
+
+  /** @brief asks the shell to open the given link
+   *  @param url link to open
+   *  @return false if something went wrong
+   **/
   QDLLEXPORT bool OpenLink(const QUrl& url);
 
-  QDLLEXPORT bool Execute(const QString& program, const QString& params);
+
+  /** @brief asks the shell to execute the given program
+   *  @param program the path to the executable
+   *  @param params optional parameters to pass
+   *  @return false if something went wrong
+   **/
+  QDLLEXPORT bool Execute(const QString& program, const QString& params={});
 }
 
 /**
