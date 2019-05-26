@@ -29,6 +29,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 #include <QTextStream>
 #include <QDir>
 #include <QIcon>
+#include <QUrl>
 #ifndef WIN32_MEAN_AND_LEAN
 #define WIN32_MEAN_AND_LEAN
 #endif
@@ -149,6 +150,19 @@ QDLLEXPORT bool shellDelete(const QStringList &fileNames, bool recycle = false, 
  * @note this is a workaround for win 8 and newer where shell operations caused the windows to loose focus even if no dialog is shown
  **/
 QDLLEXPORT bool shellDeleteQuiet(const QString &fileName, QWidget *dialog = nullptr);
+
+
+namespace shell
+{
+  QDLLEXPORT bool ExploreFile(const QFileInfo& info);
+  QDLLEXPORT bool ExploreFile(const QString& path);
+  QDLLEXPORT bool ExploreFile(const QDir& dir);
+
+  QDLLEXPORT bool OpenFile(const QString& path);
+  QDLLEXPORT bool OpenLink(const QUrl& url);
+
+  QDLLEXPORT bool Execute(const QString& program, const QString& params);
+}
 
 /**
  * @brief construct a string containing the elements of a vector concatenated
