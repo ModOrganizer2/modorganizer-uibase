@@ -22,7 +22,9 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 #include "utility.h"
 #include "report.h"
 #include <memory>
+#include <sstream>
 #include <boost/scoped_array.hpp>
+#include <boost/algorithm/string/trim.hpp>
 #include <QDir>
 #include <QBuffer>
 #include <QDesktopWidget>
@@ -328,7 +330,7 @@ void LogShellFailure(
 {
   const auto code = static_cast<int>(reinterpret_cast<std::size_t>(h));
 
-  QString s = "failed to invoke";
+  QString s;
 
   if (operation) {
     s += " " + QString::fromWCharArray(operation);
@@ -342,9 +344,9 @@ void LogShellFailure(
     s += " " + QString::fromWCharArray(params);
   }
 
-  qCritical(
-    "failed to invoke %s: %s (error %d)",
-    s, ShellExecuteError(code), code);
+  qCritical().nospace().noquote()
+    << "failed to invoke '" << s << "': "
+    << ShellExecuteError(code) << " (error " << code << ")";
 }
 
 bool ShellExecuteWrapper(
@@ -641,6 +643,45 @@ QIcon iconForExecutable(const QString &filePath)
   } else {
     return QIcon(":/MO/gui/executable");
   }
+}
+
+
+std::wstring formatSystemMessage(DWORD id)
+{
+  wchar_t* message = nullptr;
+
+  const auto ret = FormatMessageW(
+    FORMAT_MESSAGE_ALLOCATE_BUFFER |
+    FORMAT_MESSAGE_FROM_SYSTEM |
+    FORMAT_MESSAGE_IGNORE_INSERTS,
+    NULL,
+    id,
+    MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),
+    reinterpret_cast<LPWSTR>(&message),
+    0, NULL);
+
+  std::wstring s;
+
+  std::wostringstream oss;
+  oss << L"0x" << std::hex << id;
+
+  if (ret == 0 || !message) {
+    s = oss.str();
+  } else {
+    s = message;
+    boost::trim(s);
+
+    s += L" (" + oss.str() + L")";
+  }
+
+  LocalFree(message);
+
+  return s;
+}
+
+QDLLEXPORT QString formatSystemMessageQ(DWORD id)
+{
+  return QString::fromStdWString(formatSystemMessage(id));
 }
 
 } // namespace MOBase
