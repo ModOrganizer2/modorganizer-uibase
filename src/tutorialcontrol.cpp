@@ -251,6 +251,9 @@ void TutorialControl::nextTutorialStepProxy()
     if (sender()->inherits("QAction")) {
       success = disconnect(sender(), SIGNAL(triggered()),
                            this, SLOT(nextTutorialStepProxy()));
+    } else if (sender()->inherits("QMenu")) {
+      success = disconnect(sender(), SIGNAL(aboutToShow()),
+                           this, SLOT(nextTutorialStepProxy()));
     } else {
       success = disconnect(sender(), SIGNAL(pressed()),
                            this, SLOT(nextTutorialStepProxy()));
@@ -289,9 +292,13 @@ bool TutorialControl::waitForAction(const QString &actionName)
       return false;
     }
     if (action->isEnabled()) {
-      connect(action, SIGNAL(triggered()), this, SLOT(nextTutorialStepProxy()));
-      lockUI(false);
-      return true;
+        if (action->menu() != nullptr) {
+            connect(action->menu(), SIGNAL(aboutToShow()), this, SLOT(nextTutorialStepProxy()));
+        } else {
+            connect(action, SIGNAL(triggered()), this, SLOT(nextTutorialStepProxy()));
+        }
+        lockUI(false);
+        return true;
     } else {
       return false;
     }
