@@ -321,26 +321,56 @@ bool TutorialControl::waitForButton(const QString &buttonName)
   }
 }
 
-
-bool TutorialControl::waitForTabOpen(const QString &tabControlName, int tab)
+bool TutorialControl::waitForTabOpen(const QString &tabControlName, const QString &tab)
 {
-  if (m_TargetControl != nullptr) {
-    QTabWidget *tabWidget = m_TargetControl->findChild<QTabWidget*>(tabControlName);
-    if (tabWidget == nullptr) {
-      qCritical("no tab widget \"%s\" in control \"%s\"",
+    if (m_TargetControl != nullptr) {
+        QTabWidget* tabWidget = m_TargetControl->findChild<QTabWidget*>(tabControlName);
+        if (tabWidget == nullptr) {
+            qCritical("no tab widget \"%s\" in control \"%s\"",
                 qUtf8Printable(tabControlName), qUtf8Printable(m_Name));
-      return false;
+            return false;
+        }
+        if (tabWidget->findChild<QWidget*>(tab) == nullptr) {
+            qCritical("no widget \"%s\" found in tab widget \"%s\"",
+                qUtf8Printable(tab), qUtf8Printable(tabControlName));
+            return false;
+        }
+        int tabIndex = tabWidget->indexOf(tabWidget->findChild<QWidget*>(tab));
+        if (tabIndex == -1) {
+            qCritical("widget \"%s\" does not appear to be a tab in tab widget \"%s\"",
+                qUtf8Printable(tab), qUtf8Printable(tabControlName));
+            return false;
+        }
+        if (tabWidget->isEnabled() && (tabWidget->currentIndex() != tabIndex)) {
+            m_ExpectedTab = tabIndex;
+            connect(tabWidget, SIGNAL(currentChanged(int)), this, SLOT(tabChangedProxy(int)));
+            lockUI(false);
+            return true;
+        }
+        else {
+            return false;
+        }
     }
-    if (tabWidget->isEnabled() && (tabWidget->currentIndex() != tab)) {
-      m_ExpectedTab = tab;
-      connect(tabWidget, SIGNAL(currentChanged(int)), this, SLOT(tabChangedProxy(int)));
-      lockUI(false);
-      return true;
+    else {
+        return false;
+    }
+}
+
+const QString TutorialControl::getTabName(const QString &tabControlName) {
+    if (m_TargetControl != nullptr) {
+        QTabWidget* tabWidget = m_TargetControl->findChild<QTabWidget*>(tabControlName);
+        if (tabWidget == nullptr) {
+            qCritical("no tab widget \"%s\" in control \"%s\"",
+                qUtf8Printable(tabControlName), qUtf8Printable(m_Name));
+            return QString();
+        }
+        if (tabWidget->currentIndex() == -1) {
+            return QString();
+        } else {
+            return tabWidget->currentWidget()->objectName();
+        }
     } else {
-      return false;
+        return QString();
     }
-  } else {
-    return false;
-  }
 }
 } // namespace MOBase
