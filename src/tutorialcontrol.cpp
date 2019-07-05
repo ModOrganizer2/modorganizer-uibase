@@ -27,6 +27,7 @@ along with Mod Organizer.  If not, see <http://www.gnu.org/licenses/>.
 #include <QDir>
 #include <QMouseEvent>
 #include <QToolBar>
+#include <QMenuBar>
 #include <QAction>
 #include <QGraphicsObject>
 #include <QTimer>
@@ -225,6 +226,17 @@ QRect TutorialControl::getActionRect(const QString &widgetName)
   }
   return QRect();
 }
+
+
+QRect TutorialControl::getMenuRect(const QString& widgetName)
+{
+    if (m_TargetControl != nullptr) {
+        QMenuBar* menuBar = m_TargetControl->findChild<QMenuBar*>("menuBar");
+        return menuBar->geometry();
+    }
+    return QRect();
+}
+
 
 void TutorialControl::nextTutorialStepProxy()
 {
