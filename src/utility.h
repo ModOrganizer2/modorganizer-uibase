@@ -343,12 +343,14 @@ QDLLEXPORT QString ToQString(const std::wstring &source);
 QDLLEXPORT QString ToString(const SYSTEMTIME &time);
 
 /**
+ * throws on failure
  * @return absolute path of the the desktop directory for the current user
  **/
 QDLLEXPORT QString getDesktopDirectory();
 
 /**
- * @return absolute path of the the start menu directory for the current user
+* throws on failure
+* @return absolute path of the the start menu directory for the current user
  **/
 QDLLEXPORT QString getStartMenuDirectory();
 
