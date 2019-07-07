@@ -551,30 +551,49 @@ bool fixDirectoryName(QString &name)
   }
 }
 
+
+struct CoTaskMemFreer
+{
+  void operator()(void* p)
+  {
+    ::CoTaskMemFree(p);
+  }
+};
+
+template <class T>
+using COMMemPtr = std::unique_ptr<T, CoTaskMemFreer>;
+
+
+QString getKnownFolder(KNOWNFOLDERID id, const QString& what)
+{
+  COMMemPtr<wchar_t> path;
+
+  {
+    wchar_t* rawPath = nullptr;
+    HRESULT res = SHGetKnownFolderPath(id, 0, nullptr, &rawPath);
+
+    if (FAILED(res)) {
+      qCritical()
+        << "failed to get known folder '" << what << "', "
+        << formatSystemMessageQ(res);
+
+      throw std::runtime_error("couldn't get known folder path");
+    }
+
+    path.reset(rawPath);
+  }
+
+  return QString::fromWCharArray(path.get());
+}
+
 QString getDesktopDirectory()
 {
-  LPWSTR path;
-  HRESULT res = SHGetKnownFolderPath(FOLDERID_Desktop, 0, nullptr, &path);
-  if (res != S_OK) {
-    qWarning() << "Couldn't get desktop - error " << res;
-    throw std::runtime_error("Couldn't get path to desktop");
-  }
-  QString dir = QString::fromWCharArray(path);
-  CoTaskMemFree(path);
-  return dir;
+  return getKnownFolder(FOLDERID_Desktop, "desktop");
 }
 
 QString getStartMenuDirectory()
 {
-  LPWSTR path;
-  HRESULT res = SHGetKnownFolderPath(FOLDERID_StartMenu, 0, nullptr, &path);
-  if (res != S_OK) {
-    qWarning() << "Couldn't get desktop - error " << res;
-    throw std::runtime_error("Couldn't get path to desktop");
-  }
-  QString dir = QString::fromWCharArray(path);
-  CoTaskMemFree(path);
-  return dir;
+  return getKnownFolder(FOLDERID_StartMenu, "start menu");
 }
 
 bool shellDeleteQuiet(const QString &fileName, QWidget *dialog)
