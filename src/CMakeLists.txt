@@ -101,6 +101,10 @@ SET(UIS
     textviewer.ui
   )
 
+SET(uibase_RCS
+    version.rc
+	)
+
 
 SET(CMAKE_INCLUDE_CURRENT_DIR ON)
 SET(CMAKE_AUTOMOC ON)
@@ -121,7 +125,7 @@ INCLUDE_DIRECTORIES(${Boost_INCLUDE_DIRS})
 
 ADD_DEFINITIONS(-DUIBASE_EXPORT)
 
-ADD_LIBRARY(uibase SHARED ${uibase_HDRS} ${uibase_SRCS} ${uibase_UIHDRS} ${UIS} ${RSCS} ${TRS} ${MOCS})
+ADD_LIBRARY(uibase SHARED ${uibase_HDRS} ${uibase_SRCS} ${uibase_UIHDRS} ${uibase_RCS} ${UIS} ${RSCS} ${TRS} ${MOCS})
 TARGET_LINK_LIBRARIES(uibase Qt5::Widgets Qt5::WinExtras Qt5::Qml Qt5::QuickWidgets ${Boost_LIBRARIES})
 
 IF (MSVC)
