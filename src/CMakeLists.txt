@@ -9,6 +9,27 @@ if(CMAKE_SIZEOF_VOID_P EQUAL 8)
   SET(PROJ_ARCH x64)
 endif()
 
+macro(add_msvc_precompiled_header PrecompiledHeader PrecompiledSource SourcesVar HeadersVar)
+  if(MSVC)
+    get_filename_component(PrecompiledBasename ${PrecompiledHeader} NAME_WE)
+    set(PrecompiledBinary "${CMAKE_CURRENT_BINARY_DIR}/${PrecompiledBasename}.pch")
+    set(Sources ${${SourcesVar}})
+
+    set_source_files_properties(
+		${PrecompiledSource} PROPERTIES
+		COMPILE_FLAGS "/Yc\"${PrecompiledHeader}\" /Fp\"${PrecompiledBinary}\""
+		OBJECT_OUTPUTS "${PrecompiledBinary}")
+
+    set_source_files_properties(
+		${Sources} PROPERTIES
+		COMPILE_FLAGS "/Yu\"${PrecompiledHeader}\" /FI\"${PrecompiledHeader}\" /Fp\"${PrecompiledBinary}\""
+		OBJECT_DEPENDS "${PrecompiledBinary}")
+
+    list(APPEND ${SourcesVar} ${PrecompiledSource})
+	list(APPEND ${HeadersVar} ${PrecompiledHeader})
+  endif(MSVC)
+endmacro(add_msvc_precompiled_header)
+
 
 SET(uibase_SRCS
     utility.cpp
@@ -106,6 +127,28 @@ SET(uibase_RCS
 	)
 
 
+source_group(src REGULAR_EXPRESSION ".*\\.(h|cpp|ui)")
+
+set(widgets
+)
+
+set(src_filters
+)
+
+foreach(filter in list ${src_filters})
+	set(files)
+	foreach(d in lists ${${filter}})
+		set(files ${files} ${d}.cpp ${d}.h ${d}.inc ${d}.ui)
+	endforeach()
+
+	source_group(src\\${filter} FILES ${files})
+endforeach()
+
+source_group(cmake FILES CMakeLists.txt)
+source_group(resources FILES ${uibase_RCS})
+
+add_msvc_precompiled_header("pch.h" "pch.cpp" uibase_SRCS uibase_HDRS)
+
 SET(CMAKE_INCLUDE_CURRENT_DIR ON)
 SET(CMAKE_AUTOMOC ON)
 SET(CMAKE_AUTOUIC ON)
@@ -123,10 +166,13 @@ SET(Boost_USE_STATIC_RUNTIME    OFF)
 FIND_PACKAGE(Boost REQUIRED)
 INCLUDE_DIRECTORIES(${Boost_INCLUDE_DIRS})
 
+FIND_PACKAGE(fmt REQUIRED)
+INCLUDE_DIRECTORIES(${SPDLOG_ROOT}/include)
+
 ADD_DEFINITIONS(-DUIBASE_EXPORT)
 
 ADD_LIBRARY(uibase SHARED ${uibase_HDRS} ${uibase_SRCS} ${uibase_UIHDRS} ${uibase_RCS} ${UIS} ${RSCS} ${TRS} ${MOCS})
-TARGET_LINK_LIBRARIES(uibase Qt5::Widgets Qt5::WinExtras Qt5::Qml Qt5::QuickWidgets ${Boost_LIBRARIES})
+TARGET_LINK_LIBRARIES(uibase Qt5::Widgets Qt5::WinExtras Qt5::Qml Qt5::QuickWidgets ${Boost_LIBRARIES} fmt::fmt)
 
 IF (MSVC)
   SET_TARGET_PROPERTIES(uibase PROPERTIES COMPILE_FLAGS "/std:c++latest")
