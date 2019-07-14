@@ -26,6 +26,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 #include "dllimport.h"
 #include <QWidget>
 #include <QQuickWidget>
+#include <QRect>
 #include <utility>
 
 namespace MOBase {
@@ -52,10 +53,12 @@ public:
   Q_INVOKABLE void finish();
   Q_INVOKABLE QRect getRect(const QString &widgetName);
   Q_INVOKABLE QRect getActionRect(const QString &widgetName);
+  Q_INVOKABLE QRect getMenuRect(const QString &widgetName);
   Q_INVOKABLE QWidget *getChild(const QString &name);
   Q_INVOKABLE bool waitForButton(const QString &buttonName);
   Q_INVOKABLE bool waitForAction(const QString &actionName);
-  Q_INVOKABLE bool waitForTabOpen(const QString &tabControlName, int tab);
+  Q_INVOKABLE bool waitForTabOpen(const QString &tabControlName, const QString &tab);
+  Q_INVOKABLE const QString getTabName(const QString &tabControlName);
   Q_INVOKABLE void lockUI(bool locked);
   Q_INVOKABLE void simulateClick(int x, int y);
 

@@ -71,6 +71,11 @@ public:
    */
   int expires() const { return m_Expires; }
 
+  /**
+   * @return the parsed user ID
+   */
+  int userId() const { return m_UserId; }
+
 private:
 
   QString m_Game;
@@ -78,6 +83,7 @@ private:
   int m_ModId;
   int m_FileId;
   int m_Expires;
+  int m_UserId;
 };
 
 #endif // NXMURL_H

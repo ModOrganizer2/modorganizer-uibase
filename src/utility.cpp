@@ -22,7 +22,9 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 #include "utility.h"
 #include "report.h"
 #include <memory>
+#include <sstream>
 #include <boost/scoped_array.hpp>
+#include <boost/algorithm/string/trim.hpp>
 #include <QDir>
 #include <QBuffer>
 #include <QDesktopWidget>
@@ -268,6 +270,170 @@ bool shellDelete(const QStringList &fileNames, bool recycle, QWidget *dialog)
   return shellOp(fileNames, QStringList(), dialog, recycle ? FO_RECYCLE : FO_DELETE, false);
 }
 
+
+namespace shell
+{
+
+const char* ShellExecuteError(int i)
+{
+  switch (i) {
+    case 0:
+      return "The operating system is out of memory or resources";
+
+    case ERROR_FILE_NOT_FOUND:
+      return "The specified file was not found";
+
+    case ERROR_PATH_NOT_FOUND:
+      return "The specified path was not found";
+
+    case ERROR_BAD_FORMAT:
+      return "The .exe file is invalid (non-Win32 .exe or error in .exe image)";
+
+    case SE_ERR_ACCESSDENIED:
+      return "The operating system denied access to the specified file";
+
+    case SE_ERR_ASSOCINCOMPLETE:
+      return "The file name association is incomplete or invalid";
+
+    case SE_ERR_DDEBUSY:
+      return "The DDE transaction could not be completed because other DDE "
+        "transactions were being processed";
+
+    case SE_ERR_DDEFAIL:
+      return "The DDE transaction failed";
+
+    case SE_ERR_DDETIMEOUT:
+      return "The DDE transaction could not be completed because the request "
+        "timed out";
+
+    case SE_ERR_DLLNOTFOUND:
+      return "The specified DLL was not found";
+
+    case SE_ERR_NOASSOC:
+      return "There is no application associated with the given file name "
+        "extension";
+
+    case SE_ERR_OOM:
+      return "There was not enough memory to complete the operation";
+
+    case SE_ERR_SHARE:
+      return "A sharing violation occurred";
+
+    default:
+      return "Unknown error";
+  }
+}
+
+void LogShellFailure(
+  const wchar_t* operation, const wchar_t* file, const wchar_t* params,
+  HINSTANCE h)
+{
+  const auto code = static_cast<int>(reinterpret_cast<std::size_t>(h));
+
+  QString s;
+
+  if (operation) {
+    s += " " + QString::fromWCharArray(operation);
+  }
+
+  if (file) {
+    s += " " + QString::fromWCharArray(file);
+  }
+
+  if (params) {
+    s += " " + QString::fromWCharArray(params);
+  }
+
+  qCritical().nospace().noquote()
+    << "failed to invoke '" << s << "': "
+    << ShellExecuteError(code) << " (error " << code << ")";
+}
+
+bool ShellExecuteWrapper(
+  const wchar_t* operation, const wchar_t* file, const wchar_t* params)
+{
+  const auto h = ::ShellExecuteW(
+    0, operation, file, params, nullptr, SW_SHOWNORMAL);
+
+  // anything <= 32 is not an actual HINSTANCE and signals failure
+  if (h <= reinterpret_cast<HINSTANCE>(32))
+  {
+    LogShellFailure(operation, file, params, h);
+    return false;
+  }
+
+  return true;
+}
+
+bool ExploreDirectory(const QFileInfo& info)
+{
+  const auto path = QDir::toNativeSeparators(info.absoluteFilePath());
+  const auto ws_path = path.toStdWString();
+
+  return ShellExecuteWrapper(L"explore", ws_path.c_str(), nullptr);
+}
+
+bool ExploreFileInDirectory(const QFileInfo& info)
+{
+  const auto path = QDir::toNativeSeparators(info.absoluteFilePath());
+  const auto params = "/select,\"" + path + "\"";
+  const auto ws_params = params.toStdWString();
+
+  return ShellExecuteWrapper(nullptr, L"explorer", ws_params.c_str());
+}
+
+
+bool ExploreFile(const QFileInfo& info)
+{
+  if (info.isFile()) {
+    return ExploreFileInDirectory(info);
+  } else if (info.isDir()) {
+    return ExploreDirectory(info);
+  } else {
+    // try the parent directory
+    const auto parent = info.dir();
+
+    if (parent.exists()) {
+      return ExploreDirectory(parent.absolutePath());
+    }
+  }
+
+  return false;
+}
+
+bool ExploreFile(const QString& path)
+{
+  return ExploreFile(QFileInfo(path));
+}
+
+bool ExploreFile(const QDir& dir)
+{
+  return ExploreFile(QFileInfo(dir.absolutePath()));
+}
+
+bool OpenFile(const QString& path)
+{
+  const auto ws_path = path.toStdWString();
+  return ShellExecuteWrapper(L"open", ws_path.c_str(), nullptr);
+}
+
+bool OpenLink(const QUrl& url)
+{
+  const auto ws_url = url.toString().toStdWString();
+  return ShellExecuteWrapper(L"open", ws_url.c_str(), nullptr);
+}
+
+bool Execute(const QString& program, const QString& params)
+{
+  const auto program_ws = program.toStdWString();
+  const auto params_ws = params.toStdWString();
+
+  return ShellExecuteWrapper(L"open", program_ws.c_str(), params_ws.c_str());
+}
+
+} // namespace shell
+
+
 bool moveFileRecursive(const QString &source, const QString &baseDir, const QString &destination)
 {
   QStringList pathComponents = destination.split("/");
@@ -385,30 +551,49 @@ bool fixDirectoryName(QString &name)
   }
 }
 
+
+struct CoTaskMemFreer
+{
+  void operator()(void* p)
+  {
+    ::CoTaskMemFree(p);
+  }
+};
+
+template <class T>
+using COMMemPtr = std::unique_ptr<T, CoTaskMemFreer>;
+
+
+QString getKnownFolder(KNOWNFOLDERID id, const QString& what)
+{
+  COMMemPtr<wchar_t> path;
+
+  {
+    wchar_t* rawPath = nullptr;
+    HRESULT res = SHGetKnownFolderPath(id, 0, nullptr, &rawPath);
+
+    if (FAILED(res)) {
+      qCritical()
+        << "failed to get known folder '" << what << "', "
+        << formatSystemMessageQ(res);
+
+      throw std::runtime_error("couldn't get known folder path");
+    }
+
+    path.reset(rawPath);
+  }
+
+  return QString::fromWCharArray(path.get());
+}
+
 QString getDesktopDirectory()
 {
-  LPWSTR path;
-  HRESULT res = SHGetKnownFolderPath(FOLDERID_Desktop, 0, nullptr, &path);
-  if (res != S_OK) {
-    qWarning() << "Couldn't get desktop - error " << res;
-    throw std::runtime_error("Couldn't get path to desktop");
-  }
-  QString dir = QString::fromWCharArray(path);
-  CoTaskMemFree(path);
-  return dir;
+  return getKnownFolder(FOLDERID_Desktop, "desktop");
 }
 
 QString getStartMenuDirectory()
 {
-  LPWSTR path;
-  HRESULT res = SHGetKnownFolderPath(FOLDERID_StartMenu, 0, nullptr, &path);
-  if (res != S_OK) {
-    qWarning() << "Couldn't get desktop - error " << res;
-    throw std::runtime_error("Couldn't get path to desktop");
-  }
-  QString dir = QString::fromWCharArray(path);
-  CoTaskMemFree(path);
-  return dir;
+  return getKnownFolder(FOLDERID_StartMenu, "start menu");
 }
 
 bool shellDeleteQuiet(const QString &fileName, QWidget *dialog)
@@ -477,6 +662,45 @@ QIcon iconForExecutable(const QString &filePath)
   } else {
     return QIcon(":/MO/gui/executable");
   }
+}
+
+
+std::wstring formatSystemMessage(DWORD id)
+{
+  wchar_t* message = nullptr;
+
+  const auto ret = FormatMessageW(
+    FORMAT_MESSAGE_ALLOCATE_BUFFER |
+    FORMAT_MESSAGE_FROM_SYSTEM |
+    FORMAT_MESSAGE_IGNORE_INSERTS,
+    NULL,
+    id,
+    MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),
+    reinterpret_cast<LPWSTR>(&message),
+    0, NULL);
+
+  std::wstring s;
+
+  std::wostringstream oss;
+  oss << L"0x" << std::hex << id;
+
+  if (ret == 0 || !message) {
+    s = oss.str();
+  } else {
+    s = message;
+    boost::trim(s);
+
+    s += L" (" + oss.str() + L")";
+  }
+
+  LocalFree(message);
+
+  return s;
+}
+
+QDLLEXPORT QString formatSystemMessageQ(DWORD id)
+{
+  return QString::fromStdWString(formatSystemMessage(id));
 }
 
 } // namespace MOBase

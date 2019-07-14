@@ -29,6 +29,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 #include <QTextStream>
 #include <QDir>
 #include <QIcon>
+#include <QUrl>
 #ifndef WIN32_MEAN_AND_LEAN
 #define WIN32_MEAN_AND_LEAN
 #endif
@@ -149,6 +150,52 @@ QDLLEXPORT bool shellDelete(const QStringList &fileNames, bool recycle = false, 
  * @note this is a workaround for win 8 and newer where shell operations caused the windows to loose focus even if no dialog is shown
  **/
 QDLLEXPORT bool shellDeleteQuiet(const QString &fileName, QWidget *dialog = nullptr);
+
+
+namespace shell
+{
+  /** @brief starts explorer using the given directory and/or file
+   *  @param info if this is a directory, opens it in explorer; if this is a file,
+   *         opens the directory and selects it
+   *  @return false if something went wrong
+   **/
+  QDLLEXPORT bool ExploreFile(const QFileInfo& info);
+
+  /** @brief starts explorer using the given directory and/or file
+   *  @param path if this is a directory, opens it in explorer; if this is a file,
+   *         opens the directory and selects it
+   *  @return false if something went wrong
+   **/
+  QDLLEXPORT bool ExploreFile(const QString& path);
+
+  /** @brief starts explorer using the given directory
+   *  @param dir opens this directory
+   *  @return false if something went wrong
+   **/
+  QDLLEXPORT bool ExploreFile(const QDir& dir);
+
+
+  /** @brief asks the shell to open the given file
+   *  @param path file to open
+   *  @return false if something went wrong
+   **/
+  QDLLEXPORT bool OpenFile(const QString& path);
+
+
+  /** @brief asks the shell to open the given link
+   *  @param url link to open
+   *  @return false if something went wrong
+   **/
+  QDLLEXPORT bool OpenLink(const QUrl& url);
+
+
+  /** @brief asks the shell to execute the given program
+   *  @param program the path to the executable
+   *  @param params optional parameters to pass
+   *  @return false if something went wrong
+   **/
+  QDLLEXPORT bool Execute(const QString& program, const QString& params={});
+}
 
 /**
  * @brief construct a string containing the elements of a vector concatenated
@@ -296,12 +343,14 @@ QDLLEXPORT QString ToQString(const std::wstring &source);
 QDLLEXPORT QString ToString(const SYSTEMTIME &time);
 
 /**
+ * throws on failure
  * @return absolute path of the the desktop directory for the current user
  **/
 QDLLEXPORT QString getDesktopDirectory();
 
 /**
- * @return absolute path of the the start menu directory for the current user
+* throws on failure
+* @return absolute path of the the start menu directory for the current user
  **/
 QDLLEXPORT QString getStartMenuDirectory();
 
@@ -340,6 +389,9 @@ template <typename T>
 bool isOneOf(const T &val, const std::initializer_list<T> &list) {
   return std::find(list.begin(), list.end(), val) != list.end();
 }
+
+QDLLEXPORT std::wstring formatSystemMessage(DWORD id);
+QDLLEXPORT QString formatSystemMessageQ(DWORD id);
 
 } // namespace MOBase
 
