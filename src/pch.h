@@ -1,4 +1,5 @@
 #pragma warning(disable: 4251)  // neds to have dll-interface
+#pragma warning(disable: 4355)  // this used in initializer list
 #pragma warning(disable: 4371)  // layout may have changed
 #pragma warning(disable: 4514)  // unreferenced inline function removed
 #pragma warning(disable: 4571)  // catch semantics changed
@@ -8,6 +9,7 @@
 #pragma warning(disable: 4626)  // copy assignment operator deleted
 #pragma warning(disable: 4710)  // function not inlined
 #pragma warning(disable: 4820)  // padding
+#pragma warning(disable: 4866)  // left-to-right evaluation order
 #pragma warning(disable: 5026)  // move constructor deleted
 #pragma warning(disable: 5027)  // move assignment operator deleted
 #pragma warning(disable: 5045)  // spectre mitigation

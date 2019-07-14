@@ -228,7 +228,7 @@ QRect TutorialControl::getActionRect(const QString &widgetName)
 }
 
 
-QRect TutorialControl::getMenuRect(const QString& widgetName)
+QRect TutorialControl::getMenuRect(const QString&)
 {
     if (m_TargetControl != nullptr) {
         QMenuBar* menuBar = m_TargetControl->findChild<QMenuBar*>("menuBar");

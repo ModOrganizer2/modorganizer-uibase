@@ -393,6 +393,17 @@ bool isOneOf(const T &val, const std::initializer_list<T> &list) {
 QDLLEXPORT std::wstring formatSystemMessage(DWORD id);
 QDLLEXPORT QString formatSystemMessageQ(DWORD id);
 
+inline std::wstring formatSystemMessage(HRESULT hr)
+{
+  return formatSystemMessage(static_cast<DWORD>(hr));
+}
+
+inline QString formatSystemMessageQ(HRESULT hr)
+{
+  return formatSystemMessageQ(static_cast<DWORD>(hr));
+}
+
+
 } // namespace MOBase
 
 #endif // UTILITY_H

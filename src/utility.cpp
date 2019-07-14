@@ -267,7 +267,8 @@ bool shellRename(const QString &oldName, const QString &newName, bool yesToAll, 
 
 bool shellDelete(const QStringList &fileNames, bool recycle, QWidget *dialog)
 {
-  return shellOp(fileNames, QStringList(), dialog, recycle ? FO_RECYCLE : FO_DELETE, false);
+  const UINT op = static_cast<UINT>(recycle ? FO_RECYCLE : FO_DELETE);
+  return shellOp(fileNames, QStringList(), dialog, op, false);
 }
 
 
@@ -484,7 +485,7 @@ std::wstring ToWString(const QString &source)
 {
   //FIXME
   //why not source.toStdWString() ?
-  wchar_t *buffer = new wchar_t[source.count() + 1];
+  wchar_t *buffer = new wchar_t[static_cast<std::size_t>(source.count()) + 1];
   source.toWCharArray(buffer);
   buffer[source.count()] = L'\0';
   std::wstring result(buffer);

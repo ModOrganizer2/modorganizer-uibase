@@ -72,7 +72,7 @@ private:
   explicit QuestionBoxMemory(QWidget *parent, const QString &title, const QString &text, const QString *filename, const QDialogButtonBox::StandardButtons buttons,
                              QDialogButtonBox::StandardButton defaultButton);
 
-  static void cleanup();
+  static void cleanup() noexcept;
 
 private:
 

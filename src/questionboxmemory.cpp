@@ -86,11 +86,16 @@ void QuestionBoxMemory::resetDialogs()
   s_SettingFile->remove("DialogChoices");
 }
 
-void QuestionBoxMemory::cleanup()
+void QuestionBoxMemory::cleanup() noexcept
 {
-  QMutexLocker locker(&s_SettingsMutex);
-  s_SettingFile->sync();
-  delete s_SettingFile;
+  try
+  {
+    QMutexLocker locker(&s_SettingsMutex);
+    s_SettingFile->sync();
+    delete s_SettingFile;
+  } catch(...) {
+    // this is called from atexit(), eat any exceptions
+  }
 }
 
 void QuestionBoxMemory::buttonClicked(QAbstractButton *button)
