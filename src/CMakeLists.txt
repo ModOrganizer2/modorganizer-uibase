@@ -152,6 +152,10 @@ add_msvc_precompiled_header("pch.h" "pch.cpp" uibase_SRCS uibase_HDRS)
 SET(CMAKE_INCLUDE_CURRENT_DIR ON)
 SET(CMAKE_AUTOMOC ON)
 SET(CMAKE_AUTOUIC ON)
+
+# make the automoc file include pch.h so warnings are disabled in it
+set(CMAKE_AUTOMOC_MOC_OPTIONS "-bpch.h")
+
 FIND_PACKAGE(Qt5Widgets REQUIRED)
 FIND_PACKAGE(Qt5WinExtras REQUIRED)
 FIND_PACKAGE(Qt5Qml REQUIRED)
