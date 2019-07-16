@@ -404,6 +404,54 @@ inline QString formatSystemMessageQ(HRESULT hr)
 }
 
 
+template <class F>
+class Guard
+{
+public:
+  Guard()
+    : m_call(false)
+  {
+  }
+
+  Guard(F f)
+    : m_f(f), m_call(true)
+  {
+  }
+
+  Guard(Guard&& g)
+    : m_f(std::move(g.m_f))
+  {
+    g.m_call = false;
+  }
+
+  ~Guard()
+  {
+    if (m_call)
+      m_f();
+  }
+
+  Guard& operator=(Guard&& g)
+  {
+    m_f = std::move(g.m_f);
+    g.m_call = false;
+    return *this;
+  }
+
+
+  void kill()
+  {
+    m_call = false;
+  }
+
+
+  Guard(const Guard&) = delete;
+  Guard& operator=(const Guard&) = delete;
+
+private:
+  F m_f;
+  bool m_call;
+};
+
 } // namespace MOBase
 
 #endif // UTILITY_H

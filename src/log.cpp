@@ -16,12 +16,12 @@ static std::unique_ptr<Logger> g_default;
 static bool g_console = false;
 static File g_file;
 static bool g_callbackEnabled = false;
-
+static Callback* g_callback = nullptr;
 
 class CallbackSink : public spdlog::sinks::base_sink<std::mutex>
 {
 public:
-  void sink_it_(const spdlog::details::log_msg&) override
+  void sink_it_(const spdlog::details::log_msg& m) override
   {
     thread_local bool active = false;
 
@@ -30,27 +30,32 @@ public:
       return;
     }
 
-    if (!g_callbackEnabled) {
+    if (!g_callbackEnabled || !g_callback) {
       // disabled
       return;
     }
 
     try
     {
-      /*auto g = guard([&]{ active = false; });
+      auto g = Guard([&]{ active = false; });
       active = true;
 
-      LogEntry e;
+      Entry e;
       e.time = m.time;
-      e.level = static_cast<Logger::Levels>(m.level);
+      e.level = static_cast<Levels>(m.level);
       e.message = fmt::to_string(m.payload);
 
       fmt::memory_buffer formatted;
       sink::formatter_->format(m, formatted);
-      e.formattedMessage = fmt::to_string(formatted);*/
 
-      //std::lock_guard<std::recursive_mutex> lg(g_log_cbs_mutex);
-      //g_log_cbs(e);
+      if (formatted.size() >= 2) {
+        // remove \r\n
+        e.formattedMessage.assign(formatted.begin(), formatted.end() - 2);
+      } else {
+        e.formattedMessage = fmt::to_string(formatted);
+      }
+
+      g_callback(std::move(e));
     }
     catch(std::exception& e)
     {
@@ -202,10 +207,13 @@ spdlog::logger Logger::createLogger(const std::string& name)
 
 void init(
   bool console, const File& file,
-  Logger::Levels maxLevel, const std::string& pattern)
+  Levels maxLevel, const std::string& pattern,
+  Callback* callback)
 {
   g_console = console;
   g_file = file;
+  g_callback = callback;
+  g_callbackEnabled = (callback != nullptr);
 
   g_default = std::make_unique<Logger>("default", maxLevel, pattern);
 }

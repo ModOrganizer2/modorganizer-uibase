@@ -10,6 +10,8 @@
 #include <spdlog/logger.h>
 #pragma warning(pop)
 
+#include "dllimport.h"
+
 namespace MOBase::log::details
 {
 
@@ -44,18 +46,17 @@ void doLog(
 namespace MOBase::log
 {
 
+enum Levels
+{
+  Debug   = spdlog::level::debug,
+  Info    = spdlog::level::info,
+  Warning = spdlog::level::warn,
+  Error   = spdlog::level::err
+};
+
 class QDLLEXPORT Logger
 {
 public:
-  enum Levels
-  {
-    Debug   = spdlog::level::debug,
-    Info    = spdlog::level::info,
-    Warning = spdlog::level::warn,
-    Error   = spdlog::level::err
-  };
-
-
   Logger(std::string name, Levels maxLevel, std::string pattern);
 
   void setLevel(Levels lv);
@@ -100,10 +101,10 @@ private:
 };
 
 
-struct LogEntry
+struct Entry
 {
   std::chrono::system_clock::time_point time;
-  Logger::Levels level;
+  Levels level;
   std::string message;
   std::string formattedMessage;
 };
@@ -136,9 +137,12 @@ private:
 };
 
 
+using Callback = void (Entry);
+
 QDLLEXPORT void init(
   bool console, const File& file,
-  Logger::Levels maxLevel, const std::string& pattern);
+  Levels maxLevel, const std::string& pattern,
+  Callback* callback=nullptr);
 
 QDLLEXPORT Logger& getDefault();
 
@@ -172,7 +176,7 @@ void error(F&& format, Args&&... args) noexcept
 }
 
 template <class F, class... Args>
-void log(Logger::Levels lv, F&& format, Args&&... args) noexcept
+void log(Levels lv, F&& format, Args&&... args) noexcept
 {
   getDefault().log(
     lv, std::forward<F>(format), std::forward<Args>(args)...);
