@@ -62,6 +62,7 @@ SET(uibase_SRCS
     safewritefile.cpp
     registry.cpp
     steamutility.cpp
+	log.cpp
   )
 
 SET(uibase_HDRS
@@ -114,6 +115,7 @@ SET(uibase_HDRS
     safewritefile.h
     registry.h
     steamutility.h
+	log.h
   )
 
 SET(UIS
@@ -129,10 +131,46 @@ SET(uibase_RCS
 
 source_group(src REGULAR_EXPRESSION ".*\\.(h|cpp|ui)")
 
-set(widgets
+set(interfaces
+	imoinfo
+	installationtester
+	iplugin
+	iplugindiagnose
+	ipluginfilemapper
+	iplugingame
+	iplugininstaller
+	iplugininstallercustom
+	iplugininstallersimple
+	ipluginlist
+	ipluginmodpage
+	ipluginpreview
+	ipluginproxy
+	iplugintool
+	iprofile
+	isavegame
+	isavegameinfowidget
+	iinstallationmanager
+	imodinterface
+	imodlist
+	imodrepositorybridge
 )
 
-set(src_filters
+set(tutorials
+	tutorabledialog
+	tutorialcontrol
+	tutorialmanager
+)
+
+set(widgets
+	finddialog
+	lineeditclear
+	questionboxmemory
+	sortabletreewidget
+	taskprogressmanager
+	textviewer
+)
+
+set(src_filters interfaces tutorials widgets
 )
 
 foreach(filter in list ${src_filters})
@@ -153,6 +191,10 @@ SET(CMAKE_INCLUDE_CURRENT_DIR ON)
 SET(CMAKE_AUTOMOC ON)
 SET(CMAKE_AUTOUIC ON)
 
+set_property(GLOBAL PROPERTY AUTOGEN_SOURCE_GROUP autogen)
+set_property(GLOBAL PROPERTY AUTOMOC_SOURCE_GROUP autogen)
+set_property(GLOBAL PROPERTY AUTORCC_SOURCE_GROUP autogen)
+
 # make the automoc file include pch.h so warnings are disabled in it
 set(CMAKE_AUTOMOC_MOC_OPTIONS "-bpch.h")
 
@@ -160,7 +202,6 @@ FIND_PACKAGE(Qt5Widgets REQUIRED)
 FIND_PACKAGE(Qt5WinExtras REQUIRED)
 FIND_PACKAGE(Qt5Qml REQUIRED)
 FIND_PACKAGE(Qt5QuickWidgets REQUIRED)
-QT5_WRAP_UI(uibase_UIHDRS ${UIS})
 
 INCLUDE_DIRECTORIES(${Qt5Declarative_INCLUDES})
 
@@ -175,7 +216,7 @@ INCLUDE_DIRECTORIES(${SPDLOG_ROOT}/include)
 
 ADD_DEFINITIONS(-DUIBASE_EXPORT)
 
-ADD_LIBRARY(uibase SHARED ${uibase_HDRS} ${uibase_SRCS} ${uibase_UIHDRS} ${uibase_RCS} ${UIS} ${RSCS} ${TRS} ${MOCS})
+ADD_LIBRARY(uibase SHARED ${uibase_HDRS} ${uibase_SRCS} ${uibase_RCS} ${UIS} ${RSCS} ${TRS} ${MOCS})
 TARGET_LINK_LIBRARIES(uibase Qt5::Widgets Qt5::WinExtras Qt5::Qml Qt5::QuickWidgets ${Boost_LIBRARIES} fmt::fmt)
 
 IF (MSVC)

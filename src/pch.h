@@ -19,9 +19,12 @@
 #pragma warning(disable: 4774)  // bad format string
 #pragma warning(disable: 4946)  // reinterpret_cast used between related classes
 
+#define _SILENCE_CXX17_CODECVT_HEADER_DEPRECATION_WARNING 1
+
 // std
 #include <algorithm>
 #include <cstdint>
+#include <filesystem>
 #include <functional>
 #include <iostream>
 #include <list>
@@ -42,10 +45,6 @@
 #include <ShlObj.h>
 #include <shobjidl.h>
 #include <Windows.h>
-
-// spdlog
-#include <spdlog/sinks/stdout_color_sinks.h>
-#include <spdlog/spdlog.h>
 
 // fmt
 #include <fmt/format.h>
@@ -127,4 +126,5 @@
 #include <QVBoxLayout>
 #include <QWidget>
 
+#undef _SILENCE_CXX17_CODECVT_HEADER_DEPRECATION_WARNING
 #pragma warning(pop)
