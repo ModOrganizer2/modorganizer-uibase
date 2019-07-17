@@ -2,10 +2,12 @@
 
 #include <string>
 #include <filesystem>
+#include <QString>
 #include <fmt/format.h>
 #include "dllimport.h"
 
 namespace spdlog { class logger; }
+namespace spdlog::sinks { class sink; }
 
 namespace MOBase::log
 {
@@ -24,6 +26,25 @@ enum Levels
 namespace MOBase::log::details
 {
 
+template <class T>
+struct converter
+{
+  static const T& convert(const T& t)
+  {
+    return t;
+  }
+};
+
+template <>
+struct converter<QString>
+{
+  static std::string convert(const QString& s)
+  {
+    return s.toStdString();
+  }
+};
+
+
 void QDLLEXPORT doLogImpl(
   spdlog::logger& lg, Levels lv, const std::string& s);
 
@@ -34,7 +55,8 @@ void doLog(
   try
   {
     const auto s = fmt::format(
-      std::forward<F>(format), std::forward<Args>(args)...);
+      std::forward<F>(format),
+      converter<std::decay_t<Args>>::convert(std::forward<Args>(args))...);
 
     doLogImpl(logger, lv, s);
   }
@@ -54,6 +76,41 @@ void doLog(
 namespace MOBase::log
 {
 
+struct QDLLEXPORT File
+{
+public:
+  enum Types
+  {
+    None = 0,
+    Daily,
+    Rotating
+  };
+
+  File();
+
+  static File daily(std::filesystem::path file, int hour, int minute);
+
+  static File rotating(
+    std::filesystem::path file, std::size_t maxSize, std::size_t maxFiles);
+
+  Types type;
+  std::filesystem::path file;
+  std::size_t maxSize, maxFiles;
+  int dailyHour, dailyMinute;
+};
+
+
+struct Entry
+{
+  std::chrono::system_clock::time_point time;
+  Levels level;
+  std::string message;
+  std::string formattedMessage;
+};
+
+using Callback = void (Entry);
+
+
 class QDLLEXPORT Logger
 {
 public:
@@ -63,6 +120,8 @@ public:
   void setLevel(Levels lv);
 
   void setPattern(const std::string& pattern);
+  void setFile(const File& f);
+  void setCallback(Callback* f);
 
   template <class F, class... Args>
   void debug(F&& format, Args&&... args) noexcept
@@ -97,51 +156,13 @@ public:
 
 private:
   std::unique_ptr<spdlog::logger> m_logger;
+  std::shared_ptr<spdlog::sinks::sink> m_sinks;
+  std::shared_ptr<spdlog::sinks::sink> m_console, m_callback, m_file;
 
-  static std::unique_ptr<spdlog::logger> createLogger(const std::string& name);
+  void createLogger(const std::string& name);
 };
 
-
-struct Entry
-{
-  std::chrono::system_clock::time_point time;
-  Levels level;
-  std::string message;
-  std::string formattedMessage;
-};
-
-
-struct QDLLEXPORT File
-{
-public:
-  enum Types
-  {
-    None = 0,
-    Daily,
-    Rotating
-  };
-
-  File();
-
-  static File daily(std::filesystem::path file, int hour, int minute);
-
-  static File rotating(
-    std::filesystem::path file, std::size_t maxSize, std::size_t maxFiles);
-
-  Types type;
-  std::filesystem::path file;
-  std::size_t maxSize, maxFiles;
-  int dailyHour, dailyMinute;
-};
-
-
-using Callback = void (Entry);
-
-QDLLEXPORT void init(
-  bool console, const File& file,
-  Levels maxLevel, const std::string& pattern,
-  Callback* callback=nullptr);
-
+QDLLEXPORT void createDefault(Levels maxLevel, const std::string& pattern);
 QDLLEXPORT Logger& getDefault();
 
 
