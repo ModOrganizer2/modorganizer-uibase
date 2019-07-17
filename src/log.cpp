@@ -1,11 +1,17 @@
 #include "pch.h"
 #include "log.h"
 #include <iostream>
-#include <spdlog/spdlog.h>
+
+#pragma warning(push)
+#pragma warning(disable: 4365)
+#define SPDLOG_WCHAR_FILENAMES 1
+#include <spdlog/logger.h>
 #include <spdlog/sinks/stdout_color_sinks.h>
 #include <spdlog/sinks/base_sink.h>
 #include <spdlog/sinks/daily_file_sink.h>
 #include <spdlog/sinks/rotating_file_sink.h>
+#pragma warning(pop)
+
 
 namespace MOBase::log
 {
@@ -17,6 +23,49 @@ static bool g_console = false;
 static File g_file;
 static bool g_callbackEnabled = false;
 static Callback* g_callback = nullptr;
+
+
+spdlog::level::level_enum toSpdlog(Levels lv)
+{
+  switch (lv)
+  {
+    case Debug:
+      return spdlog::level::debug;
+
+    case Warning:
+      return spdlog::level::warn;
+
+    case Error:
+      return spdlog::level::err;
+
+    case Info:  // fall-through
+    default:
+      return spdlog::level::info;
+  }
+}
+
+Levels fromSpdlog(spdlog::level::level_enum lv)
+{
+  switch (lv)
+  {
+    case spdlog::level::trace:
+    case spdlog::level::debug:
+      return Debug;
+
+    case spdlog::level::warn:
+      return Warning;
+
+    case spdlog::level::critical: // fall-through
+    case spdlog::level::err:
+      return Error;
+
+    case spdlog::level::info:  // fall-through
+    case spdlog::level::off:
+    default:
+      return Info;
+  }
+}
+
 
 class CallbackSink : public spdlog::sinks::base_sink<std::mutex>
 {
@@ -42,7 +91,7 @@ public:
 
       Entry e;
       e.time = m.time;
-      e.level = static_cast<Levels>(m.level);
+      e.level = fromSpdlog(m.level);
       e.message = fmt::to_string(m.payload);
 
       fmt::memory_buffer formatted;
@@ -77,9 +126,9 @@ public:
 
 
 File::File() :
-  m_type(None),
-  m_maxSize(0), m_maxFiles(0),
-  m_dailyHour(0), m_dailyMinute(0)
+  type(None),
+  maxSize(0), maxFiles(0),
+  dailyHour(0), dailyMinute(0)
 {
 }
 
@@ -87,10 +136,10 @@ File File::daily(fs::path file, int hour, int minute)
 {
   File fl;
 
-  fl.m_type = Daily;
-  fl.m_file = std::move(file);
-  fl.m_dailyHour = hour;
-  fl.m_dailyMinute = minute;
+  fl.type = Daily;
+  fl.file = std::move(file);
+  fl.dailyHour = hour;
+  fl.dailyMinute = minute;
 
   return fl;
 }
@@ -100,33 +149,33 @@ File File::rotating(
 {
   File fl;
 
-  fl.m_type = Rotating;
-  fl.m_file = std::move(file);
-  fl.m_maxSize = maxSize;
-  fl.m_maxFiles = maxFiles;
+  fl.type = Rotating;
+  fl.file = std::move(file);
+  fl.maxSize = maxSize;
+  fl.maxFiles = maxFiles;
 
   return fl;
 }
 
-spdlog::sink_ptr File::make_sink() const
+spdlog::sink_ptr make_sink(const File& f)
 {
   try
   {
-    switch (m_type)
+    switch (f.type)
     {
-      case Daily:
+      case File::Daily:
       {
         return std::make_shared<spdlog::sinks::daily_file_sink_mt>(
-          m_file.native(), m_dailyHour, m_dailyMinute);
+          f.file.native(), f.dailyHour, f.dailyMinute);
       }
 
-      case Rotating:
+      case File::Rotating:
       {
         return std::make_shared<spdlog::sinks::rotating_file_sink_mt>(
-          m_file.native(), m_maxSize, m_maxFiles);
+          f.file.native(), f.maxSize, f.maxFiles);
       }
 
-      case None:  // fall-through
+      case File::None:  // fall-through
       default:
         return {};
     }
@@ -153,7 +202,7 @@ spdlog::sink_ptr get_cb_sink()
 
 spdlog::sink_ptr get_file_sink()
 {
-  static auto s = g_file.make_sink();
+  static auto s = make_sink(g_file);
   return s;
 }
 
@@ -161,22 +210,27 @@ spdlog::sink_ptr get_file_sink()
 Logger::Logger(std::string name, Levels maxLevel, std::string pattern)
   : m_logger(createLogger(name))
 {
-  m_logger.set_level(static_cast<spdlog::level::level_enum>(maxLevel));
-  m_logger.set_pattern(pattern);
-  m_logger.flush_on(spdlog::level::trace);
+  m_logger->set_level(toSpdlog(maxLevel));
+  m_logger->set_pattern(pattern);
+  m_logger->flush_on(spdlog::level::trace);
+}
+
+Levels Logger::level() const
+{
+  return fromSpdlog(m_logger->level());
 }
 
 void Logger::setLevel(Levels lv)
 {
-  m_logger.set_level(static_cast<spdlog::level::level_enum>(lv));
+  m_logger->set_level(toSpdlog(lv));
 }
 
 void Logger::setPattern(const std::string& s)
 {
-  m_logger.set_pattern(s);
+  m_logger->set_pattern(s);
 }
 
-spdlog::logger Logger::createLogger(const std::string& name)
+std::unique_ptr<spdlog::logger> Logger::createLogger(const std::string& name)
 {
   std::vector<spdlog::sink_ptr> sinks;
 
@@ -201,7 +255,7 @@ spdlog::logger Logger::createLogger(const std::string& name)
     }
   }
 
-  return spdlog::logger(name, sinks.begin(), sinks.end());
+  return std::make_unique<spdlog::logger>(name, sinks.begin(), sinks.end());
 }
 
 
@@ -229,8 +283,7 @@ Logger& getDefault()
 namespace MOBase::log::details
 {
 
-void doLogImpl(
-  spdlog::logger& lg, spdlog::level::level_enum lv, const std::string& s)
+void doLogImpl(spdlog::logger& lg, Levels lv, const std::string& s)
 {
   const char* start = s.c_str();
   const char* p = start;
@@ -241,7 +294,7 @@ void doLogImpl(
     }
 
     std::string_view sv(start, static_cast<std::size_t>(p - start));
-    lg.log(lv, "{}", sv);
+    lg.log(toSpdlog(lv), "{}", sv);
 
     if (!*p) {
       break;

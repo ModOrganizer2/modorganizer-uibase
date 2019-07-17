@@ -3,25 +3,33 @@
 #include <string>
 #include <filesystem>
 #include <fmt/format.h>
-
-#pragma warning(push)
-#pragma warning(disable: 4365)
-#define SPDLOG_WCHAR_FILENAMES 1
-#include <spdlog/logger.h>
-#pragma warning(pop)
-
 #include "dllimport.h"
+
+namespace spdlog { class logger; }
+
+namespace MOBase::log
+{
+
+enum Levels
+{
+  Debug   = 0,
+  Info    = 1,
+  Warning = 2,
+  Error   = 3
+};
+
+} // namespace
+
 
 namespace MOBase::log::details
 {
 
 void QDLLEXPORT doLogImpl(
-  spdlog::logger& lg, spdlog::level::level_enum lv, const std::string& s);
+  spdlog::logger& lg, Levels lv, const std::string& s);
 
 template <class F, class... Args>
 void doLog(
-  spdlog::logger& logger, spdlog::level::level_enum lv,
-  F&& format, Args&&... args) noexcept
+  spdlog::logger& logger, Levels lv, F&& format, Args&&... args) noexcept
 {
   try
   {
@@ -46,20 +54,14 @@ void doLog(
 namespace MOBase::log
 {
 
-enum Levels
-{
-  Debug   = spdlog::level::debug,
-  Info    = spdlog::level::info,
-  Warning = spdlog::level::warn,
-  Error   = spdlog::level::err
-};
-
 class QDLLEXPORT Logger
 {
 public:
   Logger(std::string name, Levels maxLevel, std::string pattern);
 
+  Levels level() const;
   void setLevel(Levels lv);
+
   void setPattern(const std::string& pattern);
 
   template <class F, class... Args>
@@ -90,14 +92,13 @@ public:
   void log(Levels lv, F&& format, Args&&... args) noexcept
   {
     details::doLog(
-      m_logger, static_cast<spdlog::level::level_enum>(lv),
-      std::forward<F>(format), std::forward<Args>(args)...);
+      *m_logger, lv, std::forward<F>(format), std::forward<Args>(args)...);
   }
 
 private:
-  spdlog::logger m_logger;
+  std::unique_ptr<spdlog::logger> m_logger;
 
-  static spdlog::logger createLogger(const std::string& name);
+  static std::unique_ptr<spdlog::logger> createLogger(const std::string& name);
 };
 
 
@@ -110,7 +111,7 @@ struct Entry
 };
 
 
-class QDLLEXPORT File
+struct QDLLEXPORT File
 {
 public:
   enum Types
@@ -127,13 +128,10 @@ public:
   static File rotating(
     std::filesystem::path file, std::size_t maxSize, std::size_t maxFiles);
 
-  spdlog::sink_ptr make_sink() const;
-
-private:
-  Types m_type;
-  std::filesystem::path m_file;
-  std::size_t m_maxSize, m_maxFiles;
-  int m_dailyHour, m_dailyMinute;
+  Types type;
+  std::filesystem::path file;
+  std::size_t maxSize, maxFiles;
+  int dailyHour, dailyMinute;
 };
 
 
