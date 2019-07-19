@@ -78,6 +78,8 @@ SET(uibase_HDRS
     ipluginpreview.h
     iplugingame.h
     ipluginfilemapper.h
+	isavegame.h
+	isavegameinfowidget.h
     utility.h
     textviewer.h
     finddialog.h
