@@ -21,6 +21,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 
 #include "utility.h"
 #include "report.h"
+#include "log.h"
 #include <memory>
 #include <sstream>
 #include <boost/scoped_array.hpp>
@@ -345,9 +346,9 @@ void LogShellFailure(
     s += " " + QString::fromWCharArray(params);
   }
 
-  qCritical().nospace().noquote()
-    << "failed to invoke '" << s << "': "
-    << ShellExecuteError(code) << " (error " << code << ")";
+  log::error(
+    "failed to invoke '{}': {} (error {})",
+    s, ShellExecuteError(code), code);
 }
 
 bool ShellExecuteWrapper(
@@ -574,9 +575,9 @@ QString getKnownFolder(KNOWNFOLDERID id, const QString& what)
     HRESULT res = SHGetKnownFolderPath(id, 0, nullptr, &rawPath);
 
     if (FAILED(res)) {
-      qCritical()
-        << "failed to get known folder '" << what << "', "
-        << formatSystemMessageQ(res);
+      log::error(
+        "failed to get known folder '{}', {}",
+        what, formatSystemMessageQ(res));
 
       throw std::runtime_error("couldn't get known folder path");
     }

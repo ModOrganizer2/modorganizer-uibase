@@ -205,6 +205,9 @@ Logger::Logger(std::string name, Levels maxLevel, std::string pattern)
   m_logger->flush_on(spdlog::level::trace);
 }
 
+// anchor
+Logger::~Logger() = default;
+
 Levels Logger::level() const
 {
   return fromSpdlog(m_logger->level());

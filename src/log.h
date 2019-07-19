@@ -44,6 +44,15 @@ struct converter<QString>
   }
 };
 
+template <>
+struct converter<std::wstring>
+{
+  static std::string convert(const std::wstring& s)
+  {
+    return QString::fromStdWString(s).toStdString();
+  }
+};
+
 
 void QDLLEXPORT doLogImpl(
   spdlog::logger& lg, Levels lv, const std::string& s);
@@ -115,6 +124,7 @@ class QDLLEXPORT Logger
 {
 public:
   Logger(std::string name, Levels maxLevel, std::string pattern);
+  ~Logger();
 
   Levels level() const;
   void setLevel(Levels lv);
