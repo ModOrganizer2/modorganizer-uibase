@@ -395,6 +395,10 @@ inline std::wstring formatSystemMessage(HRESULT hr)
   return formatSystemMessage(static_cast<DWORD>(hr));
 }
 
+// forwards to formatSystemMessage(), preserved for ABI
+//
+QDLLEXPORT QString windowsErrorString(DWORD errorCode);
+
 
 template <class F>
 class Guard

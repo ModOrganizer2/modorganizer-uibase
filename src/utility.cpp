@@ -679,4 +679,9 @@ std::wstring formatSystemMessage(DWORD id)
   return s;
 }
 
+QString windowsErrorString(DWORD errorCode)
+{
+  return QString::fromStdWString(formatSystemMessage(errorCode));
+}
+
 } // namespace MOBase
