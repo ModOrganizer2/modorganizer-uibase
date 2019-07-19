@@ -50,28 +50,6 @@ MyException::MyException(const QString &text)
 }
 
 
-QString windowsErrorString(DWORD errorCode)
-{
-  QByteArray result;
-  QTextStream stream(&result);
-
-  LPWSTR buffer = nullptr;
-  // TODO: the message is not english?
-  if (FormatMessageW(FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM,
-                     nullptr, errorCode, MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT), (LPWSTR)&buffer, 0, nullptr) == 0) {
-    stream << " (errorcode " << errorCode << ")";
-  } else {
-    // remove line break
-    LPWSTR lastChar = buffer + wcslen(buffer) - 2;
-    *lastChar = L'\0';
-    stream << ToQString(buffer) << " (errorcode " << errorCode << ")";
-    LocalFree(buffer); // allocated by FormatMessage
-  }
-  stream.flush();
-  return QString(result);
-}
-
-
 bool removeDir(const QString &dirName)
 {
   QDir dir(dirName);
@@ -577,7 +555,7 @@ QString getKnownFolder(KNOWNFOLDERID id, const QString& what)
     if (FAILED(res)) {
       log::error(
         "failed to get known folder '{}', {}",
-        what, formatSystemMessageQ(res));
+        what, formatSystemMessage(res));
 
       throw std::runtime_error("couldn't get known folder path");
     }
@@ -647,7 +625,8 @@ void removeOldFiles(const QString &path, const QString &pattern, int numToKeep, 
     }
 
     if (!shellDelete(deleteFiles)) {
-      log::warn("failed to remove log files: {}", windowsErrorString(::GetLastError()));
+      const auto e = ::GetLastError();
+      log::warn("failed to remove log files: {}", formatSystemMessage(e));
     }
   }
 }
@@ -698,11 +677,6 @@ std::wstring formatSystemMessage(DWORD id)
   LocalFree(message);
 
   return s;
-}
-
-QDLLEXPORT QString formatSystemMessageQ(DWORD id)
-{
-  return QString::fromStdWString(formatSystemMessage(id));
 }
 
 } // namespace MOBase
