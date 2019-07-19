@@ -18,11 +18,17 @@ along with Mod Organizer.  If not, see <http://www.gnu.org/licenses/>.
 */
 
 #include "tutorialcontrol.h"
+#include "utility.h"
+#include "tutorialmanager.h"
+#include "report.h"
+#include "log.h"
+
+#include <boost/scoped_array.hpp>
+
 #include <QCoreApplication>
 #include <QQmlEngine>
 #include <QQmlContext>
 #include <QQuickItem>
-#include <QDebug>
 #include <QFile>
 #include <QDir>
 #include <QMouseEvent>
@@ -33,10 +39,6 @@ along with Mod Organizer.  If not, see <http://www.gnu.org/licenses/>.
 #include <QTimer>
 #include <QAbstractButton>
 #include <QTableWidget>
-#include "utility.h"
-#include "tutorialmanager.h"
-#include "report.h"
-#include <boost/scoped_array.hpp>
 #include <QImage>
 #include <QBitmap>
 
@@ -205,7 +207,7 @@ QRect TutorialControl::getRect(const QString &widgetName)
       res.moveTopLeft(pos);
       return res;
     } else {
-      qCritical("%s not found", qUtf8Printable(widgetName));
+      log::error("{} not found", widgetName);
       return QRect();
     }
   } else {
@@ -259,10 +261,10 @@ void TutorialControl::nextTutorialStepProxy()
                            this, SLOT(nextTutorialStepProxy()));
     }
     if (!success) {
-      qCritical("failed to disconnect tutorial proxy");
+      log::error("failed to disconnect tutorial proxy");
     }
   } else {
-    qCritical("failed to proceed to next tutorial step");
+    log::error("failed to proceed to next tutorial step");
     finish();
   }
 }
@@ -276,7 +278,7 @@ void TutorialControl::tabChangedProxy(int selected)
     lockUI(true);
     if (!disconnect(sender(), SIGNAL(currentChanged(int)),
                     this, SLOT(tabChangedProxy(int)))) {
-      qCritical("failed to disconnect tab-changed proxy");
+      log::error("failed to disconnect tab-changed proxy");
     }
   }
 }
@@ -287,8 +289,7 @@ bool TutorialControl::waitForAction(const QString &actionName)
   if (m_TargetControl != nullptr) {
     QAction *action = m_TargetControl->findChild<QAction*>(actionName);
     if (action == nullptr) {
-      qCritical("no action \"%s\" in control \"%s\"",
-                qUtf8Printable(actionName), qUtf8Printable(m_Name));
+      log::error("no action \"{}\" in control \"{}\"", actionName, m_Name);
       return false;
     }
     if (action->isEnabled()) {
@@ -312,8 +313,7 @@ bool TutorialControl::waitForButton(const QString &buttonName)
   if (m_TargetControl != nullptr) {
     QAbstractButton *button = m_TargetControl->findChild<QAbstractButton*>(buttonName);
     if (button == nullptr) {
-      qCritical("no button \"%s\" in control \"%s\"",
-                qUtf8Printable(buttonName), qUtf8Printable(m_Name));
+      log::error("no button \"{}\" in control \"{}\"", buttonName, m_Name);
       return false;
     }
     if (button->isEnabled()) {
@@ -333,19 +333,18 @@ bool TutorialControl::waitForTabOpen(const QString &tabControlName, const QStrin
     if (m_TargetControl != nullptr) {
         QTabWidget* tabWidget = m_TargetControl->findChild<QTabWidget*>(tabControlName);
         if (tabWidget == nullptr) {
-            qCritical("no tab widget \"%s\" in control \"%s\"",
-                qUtf8Printable(tabControlName), qUtf8Printable(m_Name));
+            log::error("no tab widget \"{}\" in control \"{}\"", tabControlName, m_Name);
             return false;
         }
         if (tabWidget->findChild<QWidget*>(tab) == nullptr) {
-            qCritical("no widget \"%s\" found in tab widget \"%s\"",
-                qUtf8Printable(tab), qUtf8Printable(tabControlName));
+            log::error("no widget \"{}\" found in tab widget \"{}\"", tab, tabControlName);
             return false;
         }
         int tabIndex = tabWidget->indexOf(tabWidget->findChild<QWidget*>(tab));
         if (tabIndex == -1) {
-            qCritical("widget \"%s\" does not appear to be a tab in tab widget \"%s\"",
-                qUtf8Printable(tab), qUtf8Printable(tabControlName));
+            log::error(
+              "widget \"{}\" does not appear to be a tab in tab widget \"{}\"",
+              tab, tabControlName);
             return false;
         }
         if (tabWidget->isEnabled() && (tabWidget->currentIndex() != tabIndex)) {
@@ -367,8 +366,7 @@ const QString TutorialControl::getTabName(const QString &tabControlName) {
     if (m_TargetControl != nullptr) {
         QTabWidget* tabWidget = m_TargetControl->findChild<QTabWidget*>(tabControlName);
         if (tabWidget == nullptr) {
-            qCritical("no tab widget \"%s\" in control \"%s\"",
-                qUtf8Printable(tabControlName), qUtf8Printable(m_Name));
+            log::error("no tab widget \"{}\" in control \"{}\"", tabControlName, m_Name);
             return QString();
         }
         if (tabWidget->currentIndex() == -1) {

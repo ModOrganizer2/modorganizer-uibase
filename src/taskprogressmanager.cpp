@@ -1,4 +1,5 @@
 #include "taskprogressmanager.h"
+#include "log.h"
 #include <QApplication>
 #include <QWidget>
 #include <QMainWindow>
@@ -65,7 +66,7 @@ void TaskProgressManager::showProgress()
         ++count;
       } else {
         // if there was no progress in 15 seconds remove this progress
-        qDebug("no progress in 15 seconds (%d)", iter->second.first.secsTo(now));
+        log::debug("no progress in 15 seconds ({})", iter->second.first.secsTo(now));
         iter = m_Percentages.erase(iter);
       }
     }
@@ -103,9 +104,9 @@ bool TaskProgressManager::tryCreateTaskbar()
   if (m_CreateTries-- > 0) {
     QTimer::singleShot(1000, this, SLOT(tryCreateTaskbar()));
   } else {
-    qWarning().nospace().noquote()
-      << "failed to create taskbar connection (this is to be expected on "
-      << "Windows XP): " << formatSystemMessage(result);
+    log::warn(
+      "failed to create taskbar connection (this is to be expected on "
+      "Windows XP): ", formatSystemMessage(result));
   }
   return false;
 }

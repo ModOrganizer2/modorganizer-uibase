@@ -20,9 +20,9 @@ along with Mod Organizer.  If not, see <http://www.gnu.org/licenses/>.
 #include "tutorialmanager.h"
 #include "tutorialcontrol.h"
 #include "utility.h"
+#include "log.h"
 #include <QDir>
 #include <QString>
-#include <QDebug>
 #include <QApplication>
 
 
@@ -110,7 +110,7 @@ void TutorialManager::unregisterControl(const QString &windowName)
   if (iter != m_Controls.end()) {
     m_Controls.erase(iter);
   } else {
-    qWarning() << "failed to remove tutorial control " << windowName;
+    log::warn("failed to remove tutorial control {}", windowName);
   }
 }
 } // namespace MOBase

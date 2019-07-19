@@ -624,7 +624,7 @@ QString readFileText(const QString &fileName, QString *encoding)
   // check reverse conversion. If this was unicode text there can't be data loss
   // this assumes QString doesn't normalize the data in any way so this is a bit unsafe
   if (codec->fromUnicode(text) != buffer) {
-    qDebug("conversion failed assuming local encoding");
+    log::debug("conversion failed assuming local encoding");
     codec = QTextCodec::codecForLocale();
     text = codec->toUnicode(buffer);
   }
@@ -647,7 +647,7 @@ void removeOldFiles(const QString &path, const QString &pattern, int numToKeep, 
     }
 
     if (!shellDelete(deleteFiles)) {
-      qWarning("failed to remove log files: %s", qUtf8Printable(windowsErrorString(::GetLastError())));
+      log::warn("failed to remove log files: {}", windowsErrorString(::GetLastError()));
     }
   }
 }
