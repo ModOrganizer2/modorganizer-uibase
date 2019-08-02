@@ -266,7 +266,7 @@ void Logger::createLogger(const std::string& name)
 
 void createDefault(Levels maxLevel, const std::string& pattern)
 {
-  g_default = std::make_unique<Logger>("default", maxLevel, pattern);
+  g_default = std::make_unique<Logger>("", maxLevel, pattern);
 }
 
 Logger& getDefault()
