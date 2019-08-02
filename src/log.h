@@ -92,7 +92,8 @@ public:
   {
     None = 0,
     Daily,
-    Rotating
+    Rotating,
+    Single
   };
 
   File();
@@ -101,6 +102,8 @@ public:
 
   static File rotating(
     std::filesystem::path file, std::size_t maxSize, std::size_t maxFiles);
+
+  static File single(std::filesystem::path file);
 
   Types type;
   std::filesystem::path file;
