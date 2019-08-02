@@ -11,6 +11,7 @@
 #include <spdlog/sinks/dist_sink.h>
 #include <spdlog/sinks/daily_file_sink.h>
 #include <spdlog/sinks/rotating_file_sink.h>
+#include <spdlog/sinks/basic_file_sink.h>
 #pragma warning(pop)
 
 
@@ -165,6 +166,16 @@ File File::rotating(
   return fl;
 }
 
+File File::single(std::filesystem::path file)
+{
+  File fl;
+
+  fl.type = Single;
+  fl.file = std::move(file);
+
+  return fl;
+}
+
 spdlog::sink_ptr createFileSink(const File& f)
 {
   try
@@ -181,6 +192,12 @@ spdlog::sink_ptr createFileSink(const File& f)
       {
         return std::make_shared<spdlog::sinks::rotating_file_sink_mt>(
           f.file.native(), f.maxSize, f.maxFiles);
+      }
+
+      case File::Single:
+      {
+        return std::make_shared<spdlog::sinks::basic_file_sink_mt>(
+          f.file.native(), true);
       }
 
       case File::None:  // fall-through
@@ -232,8 +249,17 @@ void Logger::setFile(const File& f)
     m_file = {};
   }
 
-  m_file = createFileSink(f);
-  ds->add_sink(m_file);
+  if (f.type != File::None) {
+    try
+    {
+      m_file = createFileSink(f);
+      ds->add_sink(m_file);
+    }
+    catch(spdlog::spdlog_ex& e)
+    {
+      error(e.what());
+    }
+  }
 }
 
 void Logger::setCallback(Callback* f)
@@ -271,6 +297,7 @@ void createDefault(Levels maxLevel, const std::string& pattern)
 
 Logger& getDefault()
 {
+  Q_ASSERT(g_default);
   return *g_default;
 }
 
