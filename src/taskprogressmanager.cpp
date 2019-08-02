@@ -1,8 +1,8 @@
 #include "taskprogressmanager.h"
+#include "log.h"
 #include <QApplication>
 #include <QWidget>
 #include <QMainWindow>
-#include "comdef.h"
 
 namespace MOBase {
 
@@ -56,17 +56,17 @@ void TaskProgressManager::showProgress()
     m_Taskbar->SetProgressState(m_WinId, TBPF_NORMAL);
 
     QTime now = QTime::currentTime();
-    qint64 total = 0;
-    int count = 0;
+    unsigned long long total = 0;
+    unsigned long long count = 0;
 
     for (auto iter = m_Percentages.begin(); iter != m_Percentages.end();) {
       if (iter->second.first.secsTo(now) < 15) {
-        total += iter->second.second;
+        total += static_cast<unsigned long long>(iter->second.second);
         ++iter;
         ++count;
       } else {
         // if there was no progress in 15 seconds remove this progress
-        qDebug("no progress in 15 seconds (%d)", iter->second.first.secsTo(now));
+        log::debug("no progress in 15 seconds ({})", iter->second.first.secsTo(now));
         iter = m_Percentages.erase(iter);
       }
     }
@@ -88,7 +88,7 @@ bool TaskProgressManager::tryCreateTaskbar()
     }
   }
 
-  HRESULT result;
+  HRESULT result = 0;
   if (m_WinId != nullptr) {
     result = CoCreateInstance(CLSID_TaskbarList, 0, CLSCTX_INPROC_SERVER,
                               IID_PPV_ARGS(&m_Taskbar));
@@ -104,9 +104,9 @@ bool TaskProgressManager::tryCreateTaskbar()
   if (m_CreateTries-- > 0) {
     QTimer::singleShot(1000, this, SLOT(tryCreateTaskbar()));
   } else {
-    _com_error resString(result);
-    qWarning("failed to create taskbar connection (this is to be expected on "
-             "Windows XP): %s", resString.ErrorMessage());
+    log::warn(
+      "failed to create taskbar connection (this is to be expected on "
+      "Windows XP): ", formatSystemMessage(result));
   }
   return false;
 }

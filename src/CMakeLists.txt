@@ -9,6 +9,27 @@ if(CMAKE_SIZEOF_VOID_P EQUAL 8)
   SET(PROJ_ARCH x64)
 endif()
 
+macro(add_msvc_precompiled_header PrecompiledHeader PrecompiledSource SourcesVar HeadersVar)
+  if(MSVC)
+    get_filename_component(PrecompiledBasename ${PrecompiledHeader} NAME_WE)
+    set(PrecompiledBinary "${CMAKE_CURRENT_BINARY_DIR}/${PrecompiledBasename}.pch")
+    set(Sources ${${SourcesVar}})
+
+    set_source_files_properties(
+		${PrecompiledSource} PROPERTIES
+		COMPILE_FLAGS "/Yc\"${PrecompiledHeader}\" /Fp\"${PrecompiledBinary}\""
+		OBJECT_OUTPUTS "${PrecompiledBinary}")
+
+    set_source_files_properties(
+		${Sources} PROPERTIES
+		COMPILE_FLAGS "/Yu\"${PrecompiledHeader}\" /FI\"${PrecompiledHeader}\" /Fp\"${PrecompiledBinary}\""
+		OBJECT_DEPENDS "${PrecompiledBinary}")
+
+    list(APPEND ${SourcesVar} ${PrecompiledSource})
+	list(APPEND ${HeadersVar} ${PrecompiledHeader})
+  endif(MSVC)
+endmacro(add_msvc_precompiled_header)
+
 
 SET(uibase_SRCS
     utility.cpp
@@ -41,6 +62,7 @@ SET(uibase_SRCS
     safewritefile.cpp
     registry.cpp
     steamutility.cpp
+	log.cpp
   )
 
 SET(uibase_HDRS
@@ -56,6 +78,8 @@ SET(uibase_HDRS
     ipluginpreview.h
     iplugingame.h
     ipluginfilemapper.h
+	isavegame.h
+	isavegameinfowidget.h
     utility.h
     textviewer.h
     finddialog.h
@@ -93,6 +117,7 @@ SET(uibase_HDRS
     safewritefile.h
     registry.h
     steamutility.h
+	log.h
   )
 
 SET(UIS
@@ -106,14 +131,79 @@ SET(uibase_RCS
 	)
 
 
+source_group(src REGULAR_EXPRESSION ".*\\.(h|cpp|ui)")
+
+set(interfaces
+	imoinfo
+	installationtester
+	iplugin
+	iplugindiagnose
+	ipluginfilemapper
+	iplugingame
+	iplugininstaller
+	iplugininstallercustom
+	iplugininstallersimple
+	ipluginlist
+	ipluginmodpage
+	ipluginpreview
+	ipluginproxy
+	iplugintool
+	iprofile
+	isavegame
+	isavegameinfowidget
+	iinstallationmanager
+	imodinterface
+	imodlist
+	imodrepositorybridge
+)
+
+set(tutorials
+	tutorabledialog
+	tutorialcontrol
+	tutorialmanager
+)
+
+set(widgets
+	finddialog
+	lineeditclear
+	questionboxmemory
+	sortabletreewidget
+	taskprogressmanager
+	textviewer
+)
+
+set(src_filters interfaces tutorials widgets
+)
+
+foreach(filter in list ${src_filters})
+	set(files)
+	foreach(d in lists ${${filter}})
+		set(files ${files} ${d}.cpp ${d}.h ${d}.inc ${d}.ui)
+	endforeach()
+
+	source_group(src\\${filter} FILES ${files})
+endforeach()
+
+source_group(cmake FILES CMakeLists.txt)
+source_group(resources FILES ${uibase_RCS})
+
+add_msvc_precompiled_header("pch.h" "pch.cpp" uibase_SRCS uibase_HDRS)
+
 SET(CMAKE_INCLUDE_CURRENT_DIR ON)
 SET(CMAKE_AUTOMOC ON)
 SET(CMAKE_AUTOUIC ON)
+
+set_property(GLOBAL PROPERTY AUTOGEN_SOURCE_GROUP autogen)
+set_property(GLOBAL PROPERTY AUTOMOC_SOURCE_GROUP autogen)
+set_property(GLOBAL PROPERTY AUTORCC_SOURCE_GROUP autogen)
+
+# make the automoc file include pch.h so warnings are disabled in it
+set(CMAKE_AUTOMOC_MOC_OPTIONS "-bpch.h")
+
 FIND_PACKAGE(Qt5Widgets REQUIRED)
 FIND_PACKAGE(Qt5WinExtras REQUIRED)
 FIND_PACKAGE(Qt5Qml REQUIRED)
 FIND_PACKAGE(Qt5QuickWidgets REQUIRED)
-QT5_WRAP_UI(uibase_UIHDRS ${UIS})
 
 INCLUDE_DIRECTORIES(${Qt5Declarative_INCLUDES})
 
@@ -123,10 +213,13 @@ SET(Boost_USE_STATIC_RUNTIME    OFF)
 FIND_PACKAGE(Boost REQUIRED)
 INCLUDE_DIRECTORIES(${Boost_INCLUDE_DIRS})
 
+FIND_PACKAGE(fmt REQUIRED)
+INCLUDE_DIRECTORIES(${SPDLOG_ROOT}/include)
+
 ADD_DEFINITIONS(-DUIBASE_EXPORT)
 
-ADD_LIBRARY(uibase SHARED ${uibase_HDRS} ${uibase_SRCS} ${uibase_UIHDRS} ${uibase_RCS} ${UIS} ${RSCS} ${TRS} ${MOCS})
-TARGET_LINK_LIBRARIES(uibase Qt5::Widgets Qt5::WinExtras Qt5::Qml Qt5::QuickWidgets ${Boost_LIBRARIES})
+ADD_LIBRARY(uibase SHARED ${uibase_HDRS} ${uibase_SRCS} ${uibase_RCS} ${UIS} ${RSCS} ${TRS} ${MOCS})
+TARGET_LINK_LIBRARIES(uibase Qt5::Widgets Qt5::WinExtras Qt5::Qml Qt5::QuickWidgets ${Boost_LIBRARIES} fmt::fmt)
 
 IF (MSVC)
   SET_TARGET_PROPERTIES(uibase PROPERTIES COMPILE_FLAGS "/std:c++latest")

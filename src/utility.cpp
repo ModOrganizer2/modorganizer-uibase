@@ -21,6 +21,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 
 #include "utility.h"
 #include "report.h"
+#include "log.h"
 #include <memory>
 #include <sstream>
 #include <boost/scoped_array.hpp>
@@ -46,28 +47,6 @@ namespace MOBase {
 MyException::MyException(const QString &text)
   : std::exception(), m_Message(text.toLocal8Bit())
 {
-}
-
-
-QString windowsErrorString(DWORD errorCode)
-{
-  QByteArray result;
-  QTextStream stream(&result);
-
-  LPWSTR buffer = nullptr;
-  // TODO: the message is not english?
-  if (FormatMessageW(FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM,
-                     nullptr, errorCode, MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT), (LPWSTR)&buffer, 0, nullptr) == 0) {
-    stream << " (errorcode " << errorCode << ")";
-  } else {
-    // remove line break
-    LPWSTR lastChar = buffer + wcslen(buffer) - 2;
-    *lastChar = L'\0';
-    stream << ToQString(buffer) << " (errorcode " << errorCode << ")";
-    LocalFree(buffer); // allocated by FormatMessage
-  }
-  stream.flush();
-  return QString(result);
 }
 
 
@@ -267,7 +246,8 @@ bool shellRename(const QString &oldName, const QString &newName, bool yesToAll, 
 
 bool shellDelete(const QStringList &fileNames, bool recycle, QWidget *dialog)
 {
-  return shellOp(fileNames, QStringList(), dialog, recycle ? FO_RECYCLE : FO_DELETE, false);
+  const UINT op = static_cast<UINT>(recycle ? FO_RECYCLE : FO_DELETE);
+  return shellOp(fileNames, QStringList(), dialog, op, false);
 }
 
 
@@ -344,9 +324,9 @@ void LogShellFailure(
     s += " " + QString::fromWCharArray(params);
   }
 
-  qCritical().nospace().noquote()
-    << "failed to invoke '" << s << "': "
-    << ShellExecuteError(code) << " (error " << code << ")";
+  log::error(
+    "failed to invoke '{}': {} (error {})",
+    s, ShellExecuteError(code), code);
 }
 
 bool ShellExecuteWrapper(
@@ -484,7 +464,7 @@ std::wstring ToWString(const QString &source)
 {
   //FIXME
   //why not source.toStdWString() ?
-  wchar_t *buffer = new wchar_t[source.count() + 1];
+  wchar_t *buffer = new wchar_t[static_cast<std::size_t>(source.count()) + 1];
   source.toWCharArray(buffer);
   buffer[source.count()] = L'\0';
   std::wstring result(buffer);
@@ -573,9 +553,9 @@ QString getKnownFolder(KNOWNFOLDERID id, const QString& what)
     HRESULT res = SHGetKnownFolderPath(id, 0, nullptr, &rawPath);
 
     if (FAILED(res)) {
-      qCritical()
-        << "failed to get known folder '" << what << "', "
-        << formatSystemMessageQ(res);
+      log::error(
+        "failed to get known folder '{}', {}",
+        what, formatSystemMessage(res));
 
       throw std::runtime_error("couldn't get known folder path");
     }
@@ -622,7 +602,7 @@ QString readFileText(const QString &fileName, QString *encoding)
   // check reverse conversion. If this was unicode text there can't be data loss
   // this assumes QString doesn't normalize the data in any way so this is a bit unsafe
   if (codec->fromUnicode(text) != buffer) {
-    qDebug("conversion failed assuming local encoding");
+    log::debug("conversion failed assuming local encoding");
     codec = QTextCodec::codecForLocale();
     text = codec->toUnicode(buffer);
   }
@@ -645,7 +625,8 @@ void removeOldFiles(const QString &path, const QString &pattern, int numToKeep, 
     }
 
     if (!shellDelete(deleteFiles)) {
-      qWarning("failed to remove log files: %s", qUtf8Printable(windowsErrorString(::GetLastError())));
+      const auto e = ::GetLastError();
+      log::warn("failed to remove log files: {}", formatSystemMessage(e));
     }
   }
 }
@@ -698,9 +679,9 @@ std::wstring formatSystemMessage(DWORD id)
   return s;
 }
 
-QDLLEXPORT QString formatSystemMessageQ(DWORD id)
+QString windowsErrorString(DWORD errorCode)
 {
-  return QString::fromStdWString(formatSystemMessage(id));
+  return QString::fromStdWString(formatSystemMessage(errorCode));
 }
 
 } // namespace MOBase

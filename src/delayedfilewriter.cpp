@@ -1,4 +1,5 @@
 #include "delayedfilewriter.h"
+#include "log.h"
 
 
 using namespace MOBase;
@@ -15,7 +16,7 @@ DelayedFileWriterBase::DelayedFileWriterBase(int delay)
 DelayedFileWriterBase::~DelayedFileWriterBase()
 {
   if (m_Timer.isActive()) {
-    qCritical("delayed file save timer active at shutdown");
+    log::error("delayed file save timer active at shutdown");
   }
 }
 

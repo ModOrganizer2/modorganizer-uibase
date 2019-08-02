@@ -21,6 +21,10 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 
 #include "textviewer.h"
 #include "ui_textviewer.h"
+#include "utility.h"
+#include "report.h"
+#include "finddialog.h"
+#include "log.h"
 #include <QFile>
 #include <QVBoxLayout>
 #include <QTextEdit>
@@ -29,9 +33,6 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 #include <QMessageBox>
 #include <QShortcutEvent>
 #include <QAction>
-#include "utility.h"
-#include "report.h"
-#include "finddialog.h"
 
 namespace MOBase {
 
@@ -132,10 +133,10 @@ void TextViewer::saveFile(const QTextEdit *editor)
     if (QMessageBox::question(QApplication::activeModalWidget(),QApplication::tr("File is read-only"),
           QApplication::tr("Mod Organizer is attempting to write to \"%1\" which is currently set to read-only. "
           "Clear the read-only flag to allow the write?").arg(file.fileName())) == QMessageBox::Yes) {
-      qWarning(QString("%1 is read-only.  Attempting to clear read-only flag.").arg(file.fileName()).toLocal8Bit());
+      log::warn("{} is read-only.  Attempting to clear read-only flag.", file.fileName());
       file.setPermissions(file.permissions() | QFile::WriteUser);
     } else {
-      qWarning(QString("%1 is read-only.  User denied clearing the read-only flag.").arg(file.fileName()).toLocal8Bit());
+      log::warn("{} is read-only.  User denied clearing the read-only flag.", file.fileName());
     }
 
     if (!file.open(QIODevice::WriteOnly | QIODevice::Truncate)) {

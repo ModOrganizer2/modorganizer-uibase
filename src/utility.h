@@ -41,8 +41,6 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 
 namespace MOBase {
 
-QDLLEXPORT QString windowsErrorString(DWORD errorCode);
-
 /**
  * @brief remove the specified directory including all sub-directories
  *
@@ -391,7 +389,64 @@ bool isOneOf(const T &val, const std::initializer_list<T> &list) {
 }
 
 QDLLEXPORT std::wstring formatSystemMessage(DWORD id);
-QDLLEXPORT QString formatSystemMessageQ(DWORD id);
+
+inline std::wstring formatSystemMessage(HRESULT hr)
+{
+  return formatSystemMessage(static_cast<DWORD>(hr));
+}
+
+// forwards to formatSystemMessage(), preserved for ABI
+//
+QDLLEXPORT QString windowsErrorString(DWORD errorCode);
+
+
+template <class F>
+class Guard
+{
+public:
+  Guard()
+    : m_call(false)
+  {
+  }
+
+  Guard(F f)
+    : m_f(f), m_call(true)
+  {
+  }
+
+  Guard(Guard&& g)
+    : m_f(std::move(g.m_f))
+  {
+    g.m_call = false;
+  }
+
+  ~Guard()
+  {
+    if (m_call)
+      m_f();
+  }
+
+  Guard& operator=(Guard&& g)
+  {
+    m_f = std::move(g.m_f);
+    g.m_call = false;
+    return *this;
+  }
+
+
+  void kill()
+  {
+    m_call = false;
+  }
+
+
+  Guard(const Guard&) = delete;
+  Guard& operator=(const Guard&) = delete;
+
+private:
+  F m_f;
+  bool m_call;
+};
 
 } // namespace MOBase
 

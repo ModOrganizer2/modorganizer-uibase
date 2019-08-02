@@ -132,6 +132,7 @@ QString VersionInfo::canonicalString() const
     case RELEASE_CANDIDATE: {
       result.append("rc");
     } break;
+    case RELEASE_FINAL:  // fall-through
     default: {
       // nop
     } break;
@@ -180,6 +181,7 @@ QString VersionInfo::displayString(int forcedVersionSegments) const
     case RELEASE_CANDIDATE: {
       result.append("rc");
     } break;
+    case RELEASE_FINAL:  // fall-through
     default: {
       // nop
     } break;

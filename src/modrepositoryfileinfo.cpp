@@ -37,7 +37,7 @@ MOBase::ModRepositoryFileInfo MOBase::ModRepositoryFileInfo::createFromJson(cons
   newInfo.version.parse(result.at(4).toString());
   newInfo.description  = result.at(5).toString();
   newInfo.categoryID   = result.at(6).toInt();
-  newInfo.fileSize     = result.at(7).toInt();
+  newInfo.fileSize     = result.at(7).toUInt();
   newInfo.modID        = result.at(8).toInt();
   newInfo.modName      = result.at(9).toString();
   newInfo.newestVersion.parse(result.at(10).toString());
