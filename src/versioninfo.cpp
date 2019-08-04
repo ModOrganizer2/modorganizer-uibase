@@ -21,6 +21,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 
 #include "versioninfo.h"
 #include <QRegExp>
+#include <QVersionNumber>
 #include <boost/assign.hpp>
 
 namespace MOBase {
@@ -194,6 +195,10 @@ QString VersionInfo::displayString(int forcedVersionSegments) const
   return result;
 }
 
+QVersionNumber VersionInfo::asQVersionNumber() const
+{
+  return QVersionNumber::fromString(displayString()).normalized();
+}
 
 QString VersionInfo::parseReleaseType(QString versionString)
 {
