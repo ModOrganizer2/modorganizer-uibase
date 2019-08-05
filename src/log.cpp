@@ -253,7 +253,10 @@ void Logger::setFile(const File& f)
     try
     {
       m_file = createFileSink(f);
-      ds->add_sink(m_file);
+
+      if (m_file) {
+        ds->add_sink(m_file);
+      }
     }
     catch(spdlog::spdlog_ex& e)
     {
