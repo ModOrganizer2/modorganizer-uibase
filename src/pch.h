@@ -122,6 +122,7 @@
 #include <QUrlQuery>
 #include <QVariant>
 #include <QVariantMap>
+#include <QVersionNumber>
 #include <QVBoxLayout>
 #include <QWidget>
 

@@ -9,7 +9,7 @@ if(CMAKE_SIZEOF_VOID_P EQUAL 8)
   SET(PROJ_ARCH x64)
 endif()
 
-macro(add_msvc_precompiled_header PrecompiledHeader PrecompiledSource SourcesVar HeadersVar)
+macro(add_msvc_precompiled_header PrecompiledHeader PrecompiledSource SourcesVar HeadersVar MocSource)
   if(MSVC)
     get_filename_component(PrecompiledBasename ${PrecompiledHeader} NAME_WE)
     set(PrecompiledBinary "${CMAKE_CURRENT_BINARY_DIR}/${PrecompiledBasename}.pch")
@@ -21,7 +21,7 @@ macro(add_msvc_precompiled_header PrecompiledHeader PrecompiledSource SourcesVar
 		OBJECT_OUTPUTS "${PrecompiledBinary}")
 
     set_source_files_properties(
-		${Sources} PROPERTIES
+		${Sources} ${MocSource} PROPERTIES
 		COMPILE_FLAGS "/Yu\"${PrecompiledHeader}\" /FI\"${PrecompiledHeader}\" /Fp\"${PrecompiledBinary}\""
 		OBJECT_DEPENDS "${PrecompiledBinary}")
 
@@ -187,7 +187,12 @@ endforeach()
 source_group(cmake FILES CMakeLists.txt)
 source_group(resources FILES ${uibase_RCS})
 
-add_msvc_precompiled_header("pch.h" "pch.cpp" uibase_SRCS uibase_HDRS)
+add_msvc_precompiled_header(
+	"pch.h" "pch.cpp"
+	uibase_SRCS uibase_HDRS
+	"${CMAKE_CURRENT_BINARY_DIR}/${CMAKE_PROJECT_NAME}_autogen/mocs_compilation.cpp")
+
+message("${CMAKE_CURRENT_BINARY_DIR}/${CMAKE_PROJECT_NAME}_autogen/mocs_compilation.cpp")
 
 SET(CMAKE_INCLUDE_CURRENT_DIR ON)
 SET(CMAKE_AUTOMOC ON)
