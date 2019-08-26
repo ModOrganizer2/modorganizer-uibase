@@ -55,28 +55,39 @@ struct converter<std::wstring>
 
 
 void QDLLEXPORT doLogImpl(
-  spdlog::logger& lg, Levels lv, const std::string& s);
+  spdlog::logger& lg, Levels lv, const std::string& s) noexcept;
 
 template <class F, class... Args>
 void doLog(
   spdlog::logger& logger, Levels lv, F&& format, Args&&... args) noexcept
 {
+  std::string s;
+
+  // format errors are logged without much information to avoid throwing again
+
   try
   {
-    const auto s = fmt::format(
+    s = fmt::format(
       std::forward<F>(format),
       converter<std::decay_t<Args>>::convert(std::forward<Args>(args))...);
-
-    doLogImpl(logger, lv, s);
   }
-  catch(std::exception& e)
+  catch(fmt::format_error&)
   {
-    fprintf(stderr, "uncaugh exception while logging, %s\n", e.what());
+    s = "format error while logging";
+    lv = Levels::Error;
+  }
+  catch(std::exception&)
+  {
+    s = "exception while formatting for logging";
+    lv = Levels::Error;
   }
   catch(...)
   {
-    fprintf(stderr, "uncaugh exception while logging\n");
+    s = "unknown exception while formatting for logging";
+    lv = Levels::Error;
   }
+
+  doLogImpl(logger, lv, s);
 }
 
 } // namespace

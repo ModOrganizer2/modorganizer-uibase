@@ -115,7 +115,7 @@ public:
     catch(std::exception& e)
     {
       fprintf(
-        stderr, "uncaugh exception un logging callback, %s\n",
+        stderr, "uncaugh exception in logging callback, %s\n",
         e.what());
     }
     catch(...)
@@ -307,25 +307,32 @@ Logger& getDefault()
 namespace MOBase::log::details
 {
 
-void doLogImpl(spdlog::logger& lg, Levels lv, const std::string& s)
+void doLogImpl(spdlog::logger& lg, Levels lv, const std::string& s) noexcept
 {
-  const char* start = s.c_str();
-  const char* p = start;
+  try
+  {
+    const char* start = s.c_str();
+    const char* p = start;
 
-  for (;;) {
-    while (*p && *p != '\n') {
+    for (;;) {
+      while (*p && *p != '\n') {
+        ++p;
+      }
+
+      std::string_view sv(start, static_cast<std::size_t>(p - start));
+      lg.log(toSpdlog(lv), "{}", sv);
+
+      if (!*p) {
+        break;
+      }
+
       ++p;
+      start = p;
     }
-
-    std::string_view sv(start, static_cast<std::size_t>(p - start));
-    lg.log(toSpdlog(lv), "{}", sv);
-
-    if (!*p) {
-      break;
-    }
-
-    ++p;
-    start = p;
+  }
+  catch(...)
+  {
+    // eat it
   }
 }
 
