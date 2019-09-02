@@ -26,6 +26,11 @@ enum Levels
 namespace MOBase::log::details
 {
 
+// T to std::string converters
+//
+// those are kept in this namespace so they don't leak all over the place;
+// they're used directly by doLog() below
+
 template <class T>
 struct converter
 {
@@ -36,21 +41,39 @@ struct converter
 };
 
 template <>
-struct converter<QString>
+struct QDLLEXPORT converter<std::wstring>
 {
-  static std::string convert(const QString& s)
-  {
-    return s.toStdString();
-  }
+  static std::string convert(const std::wstring& s);
 };
 
 template <>
-struct converter<std::wstring>
+struct QDLLEXPORT converter<QString>
 {
-  static std::string convert(const std::wstring& s)
-  {
-    return QString::fromStdWString(s).toStdString();
-  }
+  static std::string convert(const QString& s);
+};
+
+template <>
+struct QDLLEXPORT converter<QSize>
+{
+  static std::string convert(const QSize& s);
+};
+
+template <>
+struct QDLLEXPORT converter<QColor>
+{
+  static std::string convert(const QColor& c);
+};
+
+template <>
+struct QDLLEXPORT converter<QByteArray>
+{
+  static std::string convert(const QByteArray& v);
+};
+
+template <>
+struct QDLLEXPORT converter<QVariant>
+{
+  static std::string convert(const QVariant& v);
 };
 
 

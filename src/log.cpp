@@ -307,6 +307,42 @@ Logger& getDefault()
 namespace MOBase::log::details
 {
 
+std::string converter<std::wstring>::convert(const std::wstring& s)
+{
+  return QString::fromStdWString(s).toStdString();
+}
+
+std::string converter<QString>::convert(const QString& s)
+{
+  return s.toStdString();
+}
+
+std::string converter<QSize>::convert(const QSize& s)
+{
+  return fmt::format("QSize({}, {})", s.width(), s.height());
+}
+
+std::string converter<QColor>::convert(const QColor& c)
+{
+  return fmt::format(
+    "QColor({}, {}, {}, {})",
+    c.red(), c.green(), c.blue(), c.alpha());
+}
+
+std::string converter<QByteArray>::convert(const QByteArray& v)
+{
+  return fmt::format("QByteArray({} bytes)", v.size());
+}
+
+std::string converter<QVariant>::convert(const QVariant& v)
+{
+  return fmt::format(
+    "QVariant(type={}, value='{}')",
+    v.typeName(), (v.type() == QVariant::ByteArray ?
+      "(binary)" : v.toString().toStdString()));
+}
+
+
 void doLogImpl(spdlog::logger& lg, Levels lv, const std::string& s) noexcept
 {
   try
