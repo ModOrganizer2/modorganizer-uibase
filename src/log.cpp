@@ -213,12 +213,16 @@ spdlog::sink_ptr createFileSink(const File& f)
 }
 
 
-Logger::Logger(std::string name, Levels maxLevel, std::string pattern)
+Logger::Logger(LoggerConfiguration conf_moved)
+  : m_conf(std::move(conf_moved))
 {
-  createLogger(name);
+  createLogger(m_conf.name);
 
-  m_logger->set_level(toSpdlog(maxLevel));
-  m_logger->set_pattern(pattern);
+  const auto timeType = m_conf.utc ?
+    spdlog::pattern_time_type::utc : spdlog::pattern_time_type::local;
+
+  m_logger->set_level(toSpdlog(m_conf.maxLevel));
+  m_logger->set_pattern(m_conf.pattern, timeType);
   m_logger->flush_on(spdlog::level::trace);
 }
 
@@ -242,9 +246,9 @@ void Logger::setPattern(const std::string& s)
 
 void Logger::setFile(const File& f)
 {
-  auto* ds = static_cast<spdlog::sinks::dist_sink<std::mutex>*>(m_sinks.get());
 
   if (m_file) {
+    auto* ds = static_cast<spdlog::sinks::dist_sink<std::mutex>*>(m_sinks.get());
     ds->remove_sink(m_file);
     m_file = {};
   }
@@ -255,7 +259,7 @@ void Logger::setFile(const File& f)
       m_file = createFileSink(f);
 
       if (m_file) {
-        ds->add_sink(m_file);
+        addSink(m_file);
       }
     }
     catch(spdlog::spdlog_ex& e)
@@ -270,10 +274,8 @@ void Logger::setCallback(Callback* f)
   if (m_callback) {
     static_cast<CallbackSink*>(m_callback.get())->setCallback(f);
   } else {
-    auto* ds = static_cast<spdlog::sinks::dist_sink<std::mutex>*>(m_sinks.get());
-
     m_callback.reset(new CallbackSink(f));
-    ds->add_sink(m_callback);
+    addSink(m_callback);
   }
 }
 
@@ -292,10 +294,39 @@ void Logger::createLogger(const std::string& name)
   m_logger.reset(new spdlog::logger(name, m_sinks));
 }
 
-
-void createDefault(Levels maxLevel, const std::string& pattern)
+void Logger::addSink(std::shared_ptr<spdlog::sinks::sink> sink)
 {
-  g_default = std::make_unique<Logger>("", maxLevel, pattern);
+  // this is called for both the file and callback sinks
+  //
+  // in createLogger(), the dist_sink that was just created will be given the
+  // pattern that was set in Logger::Logger(), and will pass it to its children;
+  // the log level is irrelevant in child sinks because dist_sink checks it
+  // itself
+  //
+  // the problem then is that dist_sink doesn't have children yet, they're added
+  // in setFile() and setCallback(), which can be called by the user much later
+  // (or not at all)
+  //
+  // however, when a sink is added to dist_sink, it does _not_ set the pattern
+  // on it, it merely adds it to the list
+  //
+  // this sets the formatter on the sink manually before adding it to dist_sink
+
+  auto* ds = static_cast<spdlog::sinks::dist_sink<std::mutex>*>(m_sinks.get());
+
+  const auto timeType = m_conf.utc ?
+    spdlog::pattern_time_type::utc : spdlog::pattern_time_type::local;
+
+  sink->set_formatter(std::make_unique<spdlog::pattern_formatter>(
+    m_conf.pattern, timeType));
+
+  ds->add_sink(sink);
+}
+
+
+void createDefault(LoggerConfiguration conf)
+{
+  g_default = std::make_unique<Logger>(conf);
 }
 
 Logger& getDefault()
