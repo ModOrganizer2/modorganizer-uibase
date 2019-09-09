@@ -684,4 +684,43 @@ QString windowsErrorString(DWORD errorCode)
   return QString::fromStdWString(formatSystemMessage(errorCode));
 }
 
+QDLLEXPORT QString localizedByteSize(unsigned long long bytes)
+{
+  double calc = static_cast<double>(bytes);
+  QStringList list;
+  list << QObject::tr("%1 MB") << QObject::tr("%1 GB") << QObject::tr("%1 TB");
+
+  QStringListIterator i(list);
+  QString unit = QObject::tr("%1 KB");
+
+  calc /= 1024.0;
+  while (calc >= 1024.0 && i.hasNext()) {
+    unit = i.next();
+    calc /= 1024.0;
+  }
+
+  return unit.arg(QString().setNum(calc, 'f', 2));
+}
+
+QDLLEXPORT QString localizedByteSpeed(unsigned long long bytesPerSecond)
+{
+  double speed = static_cast<double>(bytesPerSecond);
+
+  // calculate the download speed
+  QString unit;
+  if (speed < 1000) {
+    unit = QObject::tr("%1 B/s");
+  }
+  else if (speed < 1000*1024) {
+    speed /= 1024;
+    unit = QObject::tr("%1 KB/s");
+  }
+  else {
+    speed /= 1024 * 1024;
+    unit = QObject::tr("%1 MB/s");
+  }
+
+  return unit.arg(QString::number(speed, 'f', 1));
+}
+
 } // namespace MOBase

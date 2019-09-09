@@ -115,7 +115,7 @@ public:
     catch(std::exception& e)
     {
       fprintf(
-        stderr, "uncaugh exception un logging callback, %s\n",
+        stderr, "uncaugh exception in logging callback, %s\n",
         e.what());
     }
     catch(...)
@@ -310,25 +310,68 @@ Logger& getDefault()
 namespace MOBase::log::details
 {
 
-void doLogImpl(spdlog::logger& lg, Levels lv, const std::string& s)
+std::string converter<std::wstring>::convert(const std::wstring& s)
 {
-  const char* start = s.c_str();
-  const char* p = start;
+  return QString::fromStdWString(s).toStdString();
+}
 
-  for (;;) {
-    while (*p && *p != '\n') {
+std::string converter<QString>::convert(const QString& s)
+{
+  return s.toStdString();
+}
+
+std::string converter<QSize>::convert(const QSize& s)
+{
+  return fmt::format("QSize({}, {})", s.width(), s.height());
+}
+
+std::string converter<QColor>::convert(const QColor& c)
+{
+  return fmt::format(
+    "QColor({}, {}, {}, {})",
+    c.red(), c.green(), c.blue(), c.alpha());
+}
+
+std::string converter<QByteArray>::convert(const QByteArray& v)
+{
+  return fmt::format("QByteArray({} bytes)", v.size());
+}
+
+std::string converter<QVariant>::convert(const QVariant& v)
+{
+  return fmt::format(
+    "QVariant(type={}, value='{}')",
+    v.typeName(), (v.type() == QVariant::ByteArray ?
+      "(binary)" : v.toString().toStdString()));
+}
+
+
+void doLogImpl(spdlog::logger& lg, Levels lv, const std::string& s) noexcept
+{
+  try
+  {
+    const char* start = s.c_str();
+    const char* p = start;
+
+    for (;;) {
+      while (*p && *p != '\n') {
+        ++p;
+      }
+
+      std::string_view sv(start, static_cast<std::size_t>(p - start));
+      lg.log(toSpdlog(lv), "{}", sv);
+
+      if (!*p) {
+        break;
+      }
+
       ++p;
+      start = p;
     }
-
-    std::string_view sv(start, static_cast<std::size_t>(p - start));
-    lg.log(toSpdlog(lv), "{}", sv);
-
-    if (!*p) {
-      break;
-    }
-
-    ++p;
-    start = p;
+  }
+  catch(...)
+  {
+    // eat it
   }
 }
 

@@ -400,6 +400,9 @@ inline std::wstring formatSystemMessage(HRESULT hr)
 QDLLEXPORT QString windowsErrorString(DWORD errorCode);
 
 
+QDLLEXPORT QString localizedByteSize(unsigned long long bytes);
+QDLLEXPORT QString localizedByteSpeed(unsigned long long bytesPerSecond);
+
 template <class F>
 class Guard
 {

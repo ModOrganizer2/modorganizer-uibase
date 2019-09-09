@@ -26,6 +26,11 @@ enum Levels
 namespace MOBase::log::details
 {
 
+// T to std::string converters
+//
+// those are kept in this namespace so they don't leak all over the place;
+// they're used directly by doLog() below
+
 template <class T>
 struct converter
 {
@@ -36,47 +41,76 @@ struct converter
 };
 
 template <>
-struct converter<QString>
+struct QDLLEXPORT converter<std::wstring>
 {
-  static std::string convert(const QString& s)
-  {
-    return s.toStdString();
-  }
+  static std::string convert(const std::wstring& s);
 };
 
 template <>
-struct converter<std::wstring>
+struct QDLLEXPORT converter<QString>
 {
-  static std::string convert(const std::wstring& s)
-  {
-    return QString::fromStdWString(s).toStdString();
-  }
+  static std::string convert(const QString& s);
+};
+
+template <>
+struct QDLLEXPORT converter<QSize>
+{
+  static std::string convert(const QSize& s);
+};
+
+template <>
+struct QDLLEXPORT converter<QColor>
+{
+  static std::string convert(const QColor& c);
+};
+
+template <>
+struct QDLLEXPORT converter<QByteArray>
+{
+  static std::string convert(const QByteArray& v);
+};
+
+template <>
+struct QDLLEXPORT converter<QVariant>
+{
+  static std::string convert(const QVariant& v);
 };
 
 
 void QDLLEXPORT doLogImpl(
-  spdlog::logger& lg, Levels lv, const std::string& s);
+  spdlog::logger& lg, Levels lv, const std::string& s) noexcept;
 
 template <class F, class... Args>
 void doLog(
   spdlog::logger& logger, Levels lv, F&& format, Args&&... args) noexcept
 {
+  std::string s;
+
+  // format errors are logged without much information to avoid throwing again
+
   try
   {
-    const auto s = fmt::format(
+    s = fmt::format(
       std::forward<F>(format),
       converter<std::decay_t<Args>>::convert(std::forward<Args>(args))...);
-
-    doLogImpl(logger, lv, s);
   }
-  catch(std::exception& e)
+  catch(fmt::format_error&)
   {
-    fprintf(stderr, "uncaugh exception while logging, %s\n", e.what());
+    s = "format error while logging";
+    lv = Levels::Error;
+  }
+  catch(std::exception&)
+  {
+    s = "exception while formatting for logging";
+    lv = Levels::Error;
   }
   catch(...)
   {
-    fprintf(stderr, "uncaugh exception while logging\n");
+    s = "unknown exception while formatting for logging";
+    lv = Levels::Error;
   }
+
+  doLogImpl(logger, lv, s);
 }
 
 } // namespace

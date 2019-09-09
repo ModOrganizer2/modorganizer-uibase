@@ -17,7 +17,16 @@
    <property name="spacing">
     <number>1</number>
    </property>
-   <property name="margin">
+   <property name="leftMargin">
+    <number>2</number>
+   </property>
+   <property name="topMargin">
+    <number>2</number>
+   </property>
+   <property name="rightMargin">
+    <number>2</number>
+   </property>
+   <property name="bottomMargin">
     <number>2</number>
    </property>
    <item>
@@ -77,7 +86,16 @@
    </item>
    <item>
     <layout class="QHBoxLayout" name="horizontalLayout_2">
-     <property name="margin">
+     <property name="leftMargin">
+      <number>7</number>
+     </property>
+     <property name="topMargin">
+      <number>7</number>
+     </property>
+     <property name="rightMargin">
+      <number>7</number>
+     </property>
+     <property name="bottomMargin">
       <number>7</number>
      </property>
      <item>
@@ -92,7 +110,7 @@
        <item>
         <widget class="QCheckBox" name="rememberForCheckBox">
          <property name="text">
-          <string>Remember selection only for</string>
+          <string>Remember selection only for %1</string>
          </property>
         </widget>
        </item>
