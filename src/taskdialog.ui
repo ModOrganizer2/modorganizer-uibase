@@ -36,7 +36,7 @@
     <widget class="QWidget" name="topPanel" native="true">
      <layout class="QHBoxLayout" name="horizontalLayout" stretch="0,1">
       <item>
-       <widget class="QWidget" name="widget_4" native="true">
+       <widget class="QWidget" name="iconPanel" native="true">
         <layout class="QHBoxLayout" name="horizontalLayout_2">
          <property name="leftMargin">
           <number>9</number>
@@ -243,6 +243,10 @@
              <horstretch>0</horstretch>
              <verstretch>0</verstretch>
             </sizepolicy>
+           </property>
+           <property name="styleSheet">
+            <string notr="true">border: none;
+text-align: left;</string>
            </property>
            <property name="text">
             <string>Details</string>

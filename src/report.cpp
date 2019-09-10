@@ -54,113 +54,204 @@ TaskDialogButton::TaskDialogButton(QString t, QMessageBox::StandardButton b)
 {
 }
 
-QPixmap standardIcon(QMessageBox::Icon icon, QDialog* mb)
+
+TaskDialog::TaskDialog(QWidget* parent, QString title) :
+  m_dialog(new QDialog(parent)), ui(new Ui::TaskDialog),
+  m_title(std::move(title)), m_icon(QMessageBox::NoIcon),
+  m_result(QMessageBox::Cancel)
 {
-  QStyle *style = mb ? mb->style() : QApplication::style();
-  int iconSize = style->pixelMetric(QStyle::PM_MessageBoxIconSize, 0, mb);
-  QIcon tmpIcon;
-  switch (icon) {
-    case QMessageBox::Information:
-      tmpIcon = style->standardIcon(QStyle::SP_MessageBoxInformation, 0, mb);
-      break;
-    case QMessageBox::Warning:
-      tmpIcon = style->standardIcon(QStyle::SP_MessageBoxWarning, 0, mb);
-      break;
-    case QMessageBox::Critical:
-      tmpIcon = style->standardIcon(QStyle::SP_MessageBoxCritical, 0, mb);
-      break;
-    case QMessageBox::Question:
-      tmpIcon = style->standardIcon(QStyle::SP_MessageBoxQuestion, 0, mb);
-    default:
-      break;
-  }
-  if (!tmpIcon.isNull()) {
-    QWindow *window = nullptr;
-    if (mb) {
-      window = mb->windowHandle();
-      if (!window) {
-        if (const QWidget *nativeParent = mb->nativeParentWidget())
-          window = nativeParent->windowHandle();
-      }
-    }
-    return tmpIcon.pixmap(window, QSize(iconSize, iconSize));
-  }
-  return QPixmap();
+  ui->setupUi(m_dialog.get());
 }
 
-QMessageBox::StandardButton taskDialog(
-  QWidget* parent, const QString& title,
-  const QString& mainText, const QString& content, const QString& details,
-  std::vector<TaskDialogButton> buttons)
+TaskDialog::~TaskDialog() = default;
+
+TaskDialog& TaskDialog::title(const QString& s)
 {
-  auto* d = new QDialog(parent);
-  auto* ui = new Ui::TaskDialog;
-  ui->setupUi(d);
+  m_title = s;
+  return *this;
+}
 
-  d->setWindowFlags(Qt::Dialog | Qt::MSWindowsFixedSizeDialogHint);
-  d->setWindowTitle(title);
-  d->layout()->setSizeConstraint(QLayout::SetFixedSize);
+TaskDialog& TaskDialog::main(const QString& s)
+{
+  m_main = s;
+  return *this;
+}
 
-  ui->main->setText(mainText);
-  ui->content->setText(content);
-  ui->details->setText(details);
-  ui->icon->setPixmap(standardIcon(QMessageBox::Critical, d));
+TaskDialog& TaskDialog::content(const QString& s)
+{
+  m_content = s;
+  return *this;
+}
 
-  auto f = ui->main->font();
-  if (f.pointSizeF() > 0) {
-    f.setPointSizeF(f.pointSizeF() * 1.5);
-  } else if (f.pixelSize() > 0) {
-    f.setPixelSize(f.pixelSize() * 1.5);
+TaskDialog& TaskDialog::details(const QString& s)
+{
+  m_details = s;
+  return *this;
+}
+
+TaskDialog& TaskDialog::icon(QMessageBox::Icon i)
+{
+  m_icon = i;
+  return *this;
+}
+
+TaskDialog& TaskDialog::button(TaskDialogButton b)
+{
+  m_buttons.emplace_back(std::move(b));
+  return *this;
+}
+
+QMessageBox::StandardButton TaskDialog::exec()
+{
+  setDialog();
+  setWidgets();
+  setButtons();
+  setDetails();
+
+  m_dialog->adjustSize();
+
+  if (m_dialog->exec() != QDialog::Accepted) {
+    return QMessageBox::Cancel;
   }
 
-  ui->main->setFont(f);
+  return m_result;
+}
 
-  auto answer = QMessageBox::Cancel;
-
-  if (buttons.empty()) {
-    ui->standardButtonsPanel->show();
-    ui->commandButtonsPanel->hide();
-    ui->standardButtons->addButton(QDialogButtonBox::Ok);
+void TaskDialog::setButtons()
+{
+  if (m_buttons.empty()) {
+    setStandardButtons();
   } else {
-    ui->standardButtonsPanel->hide();
-    ui->commandButtonsPanel->show();
-
-    for (auto&& b : buttons) {
-      auto* cb = new QCommandLinkButton(b.text, b.description);
-
-      QObject::connect(cb, &QAbstractButton::clicked, [&]{
-        answer = b.button;
-        d->accept();
-        });
-
-      ui->commandButtons->layout()->addWidget(cb);
-    }
+    setCommandButtons();
   }
 
-  ExpanderWidget expander(ui->detailsExpander, ui->detailsWidget);
+  m_expander.reset(new ExpanderWidget(ui->detailsExpander, ui->detailsWidget));
+}
 
-  QColor bg;
+void TaskDialog::setStandardButtons()
+{
+  ui->standardButtonsPanel->show();
+  ui->commandButtonsPanel->hide();
+  ui->standardButtons->addButton(QDialogButtonBox::Ok);
 
-  {
-    auto cb = std::make_unique<QPushButton>();
-    d->style()->polish(cb.get());
-    bg = cb->palette().color(cb->backgroundRole());
+  QObject::connect(ui->standardButtons, &QDialogButtonBox::clicked, [&](auto* b){
+    m_result = static_cast<QMessageBox::StandardButton>(
+      ui->standardButtons->standardButton(b));
+
+    m_dialog->accept();
+  });
+}
+
+void TaskDialog::setCommandButtons()
+{
+  ui->standardButtonsPanel->hide();
+  ui->commandButtonsPanel->show();
+
+  for (auto&& b : m_buttons) {
+    auto* cb = new QCommandLinkButton(b.text, b.description);
+
+    QObject::connect(cb, &QAbstractButton::clicked, [&]{
+      m_result = b.button;
+      m_dialog->accept();
+    });
+
+    ui->commandButtons->layout()->addWidget(cb);
   }
+}
+
+void TaskDialog::setDetails()
+{
+  const QColor bg = detailsColor();
 
   ui->detailsPanel->setStyleSheet(QString("background-color: rgb(%1, %2, %3)")
     .arg(bg.redF() * 255)
     .arg(bg.greenF() * 255)
     .arg(bg.blueF() * 255));
+}
 
+void TaskDialog::setDialog()
+{
+  m_dialog->setWindowFlags(Qt::Dialog | Qt::MSWindowsFixedSizeDialogHint);
+  m_dialog->layout()->setSizeConstraint(QLayout::SetFixedSize);
 
-  //d->resize(500, d->height());
-  //d->setFixedWidth(550);
-  d->adjustSize();
-  if (d->exec() == QMessageBox::Rejected) {
-    return QMessageBox::Cancel;
+  m_dialog->setWindowTitle(m_title);
+}
+
+void TaskDialog::setWidgets()
+{
+  ui->main->setText(m_main);
+  ui->main->setFont(mainFont());
+
+  ui->content->setText(m_content);
+  ui->details->setText(m_details);
+
+  auto icon = standardIcon(QMessageBox::Critical);
+
+  if (icon.isNull()) {
+    ui->iconPanel->hide();
+  } else {
+    ui->iconPanel->show();
+    ui->icon->setPixmap(std::move(icon));
+  }
+}
+
+QFont TaskDialog::mainFont() const
+{
+  auto f = ui->main->font();
+
+  if (f.pointSizeF() > 0) {
+    f.setPointSizeF(f.pointSizeF() * 1.5);
+  } else if (f.pixelSize() > 0) {
+    f.setPixelSize(static_cast<int>(std::round(f.pixelSize() * 1.5)));
   }
 
-  return answer;
+  return f;
+}
+
+QColor TaskDialog::detailsColor() const
+{
+  auto b = std::make_unique<QPushButton>();
+  m_dialog->style()->polish(b.get());
+  return b->palette().color(b->backgroundRole());
+}
+
+QPixmap TaskDialog::standardIcon(QMessageBox::Icon icon) const
+{
+  QStyle* s = m_dialog->style();
+  QIcon i;
+
+  switch (icon) {
+    case QMessageBox::Information:
+      i = s->standardIcon(QStyle::SP_MessageBoxInformation, 0, m_dialog.get());
+      break;
+    case QMessageBox::Warning:
+      i = s->standardIcon(QStyle::SP_MessageBoxWarning, 0, m_dialog.get());
+      break;
+    case QMessageBox::Critical:
+      i = s->standardIcon(QStyle::SP_MessageBoxCritical, 0, m_dialog.get());
+      break;
+    case QMessageBox::Question:
+      i = s->standardIcon(QStyle::SP_MessageBoxQuestion, 0, m_dialog.get());
+
+    case QMessageBox::NoIcon:  // fall-through
+    default:
+      break;
+  }
+
+  if (i.isNull()) {
+    return {};
+  }
+
+  QWindow *window = m_dialog->windowHandle();
+  if (!window) {
+    if (const QWidget *nativeParent = m_dialog->nativeParentWidget())
+      window = nativeParent->windowHandle();
+  }
+
+  const int iconSize = s->pixelMetric(
+    QStyle::PM_MessageBoxIconSize, 0, m_dialog.get());
+
+  return i.pixmap(window, QSize(iconSize, iconSize));
 }
 
 } // namespace MOBase

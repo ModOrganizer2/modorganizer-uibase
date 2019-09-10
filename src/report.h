@@ -26,7 +26,11 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 #include <QMessageBox>
 #include <wchar.h>
 
+namespace Ui { class TaskDialog; }
+
 namespace MOBase {
+
+class ExpanderWidget;
 
 /**
  * Convenience function displaying an error message box. This function uses WinAPI if no Qt Window is available
@@ -44,10 +48,42 @@ struct QDLLEXPORT TaskDialogButton
   TaskDialogButton(QString text, QMessageBox::StandardButton button);
 };
 
-QDLLEXPORT QMessageBox::StandardButton taskDialog(
-  QWidget* parent, const QString& title,
-  const QString& mainText, const QString& content, const QString& details,
-  std::vector<TaskDialogButton> buttons={});
+
+class QDLLEXPORT TaskDialog
+{
+public:
+  TaskDialog(QWidget* parent=nullptr, QString title={});
+  ~TaskDialog();
+
+  TaskDialog& title(const QString& s);
+  TaskDialog& main(const QString& s);
+  TaskDialog& content(const QString& s);
+  TaskDialog& details(const QString& s);
+  TaskDialog& icon(QMessageBox::Icon i);
+  TaskDialog& button(TaskDialogButton b);
+
+  QMessageBox::StandardButton exec();
+
+private:
+  std::unique_ptr<QDialog> m_dialog;
+  std::unique_ptr<Ui::TaskDialog> ui;
+  QString m_title, m_main, m_content, m_details;
+  QMessageBox::Icon m_icon;
+  std::vector<TaskDialogButton> m_buttons;
+  QMessageBox::StandardButton m_result;
+  std::unique_ptr<ExpanderWidget> m_expander;
+
+  void setDialog();
+  void setWidgets();
+  void setButtons();
+  void setStandardButtons();
+  void setCommandButtons();
+  void setDetails();
+
+  QFont mainFont() const;
+  QColor detailsColor() const;
+  QPixmap standardIcon(QMessageBox::Icon icon) const;
+};
 
 } // namespace MOBase
 
