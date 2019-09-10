@@ -23,6 +23,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 
 #include "dllimport.h"
 #include <QString>
+#include <QMessageBox>
 #include <wchar.h>
 
 namespace MOBase {
@@ -32,6 +33,21 @@ namespace MOBase {
  * yet or QMessageBox otherwise.
  */
 QDLLEXPORT void reportError(const QString &message);
+
+
+struct QDLLEXPORT TaskDialogButton
+{
+  QString text, description;
+  QMessageBox::StandardButton button;
+
+  TaskDialogButton(QString text, QString description, QMessageBox::StandardButton button);
+  TaskDialogButton(QString text, QMessageBox::StandardButton button);
+};
+
+QDLLEXPORT QMessageBox::StandardButton taskDialog(
+  QWidget* parent, const QString& title,
+  const QString& mainText, const QString& content, const QString& details,
+  std::vector<TaskDialogButton> buttons={});
 
 } // namespace MOBase
 

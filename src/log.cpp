@@ -291,6 +291,7 @@ void Logger::createLogger(const std::string& name)
     cs->set_color(spdlog::level::debug, cs->WHITE);
   }
 
+  addSink(m_console);
   m_logger.reset(new spdlog::logger(name, m_sinks));
 }
 
