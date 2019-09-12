@@ -64,6 +64,7 @@ SET(uibase_SRCS
     steamutility.cpp
 	log.cpp
 	expanderwidget.cpp
+	errorcodes.cpp
   )
 
 SET(uibase_HDRS
@@ -120,6 +121,7 @@ SET(uibase_HDRS
     steamutility.h
 	log.h
 	expanderwidget.h
+	errorcodes.h
   )
 
 SET(UIS

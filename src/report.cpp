@@ -24,10 +24,6 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 #include "expanderwidget.h"
 #include "ui_taskdialog.h"
 #include "log.h"
-#include <QApplication>
-#include <QLabel>
-#include <QCommandLinkButton>
-#include <QComboBox>
 #include <Windows.h>
 
 namespace MOBase
@@ -108,6 +104,7 @@ QMessageBox::StandardButton TaskDialog::exec()
   setButtons();
   setDetails();
 
+  ui->topPanel->setMinimumWidth(400);
   m_dialog->adjustSize();
 
   if (m_dialog->exec() != QDialog::Accepted) {
@@ -161,6 +158,11 @@ void TaskDialog::setCommandButtons()
 
 void TaskDialog::setDetails()
 {
+  ui->details->setPlainText(m_details);
+
+  setVisibleLines(ui->details, 10);
+  setFontPercent(ui->details, 0.9);
+
   const QColor bg = detailsColor();
 
   ui->detailsPanel->setStyleSheet(QString("background-color: rgb(%1, %2, %3)")
@@ -180,10 +182,8 @@ void TaskDialog::setDialog()
 void TaskDialog::setWidgets()
 {
   ui->main->setText(m_main);
-  ui->main->setFont(mainFont());
-
+  setFontPercent(ui->main, 1.5);
   ui->content->setText(m_content);
-  ui->details->setText(m_details);
 
   auto icon = standardIcon(QMessageBox::Critical);
 
@@ -193,19 +193,6 @@ void TaskDialog::setWidgets()
     ui->iconPanel->show();
     ui->icon->setPixmap(std::move(icon));
   }
-}
-
-QFont TaskDialog::mainFont() const
-{
-  auto f = ui->main->font();
-
-  if (f.pointSizeF() > 0) {
-    f.setPointSizeF(f.pointSizeF() * 1.5);
-  } else if (f.pixelSize() > 0) {
-    f.setPixelSize(static_cast<int>(std::round(f.pixelSize() * 1.5)));
-  }
-
-  return f;
 }
 
 QColor TaskDialog::detailsColor() const
@@ -252,6 +239,40 @@ QPixmap TaskDialog::standardIcon(QMessageBox::Icon icon) const
     QStyle::PM_MessageBoxIconSize, 0, m_dialog.get());
 
   return i.pixmap(window, QSize(iconSize, iconSize));
+}
+
+void TaskDialog::setVisibleLines(QPlainTextEdit* w, int lines)
+{
+  QTextDocument* d = w->document();
+  QFontMetrics fm(d->defaultFont());
+
+  const QMargins margins = ui->details->contentsMargins();
+
+  double height = 0;
+
+  // lines
+  height += fm.lineSpacing () * lines;
+
+  // top and bottom margins for document and frame
+  height += (d->documentMargin() + ui->details->frameWidth()) * 2;
+
+  // widget margins
+  height += margins.top() + margins.bottom();
+
+  w->setMaximumHeight(static_cast<int>(std::round(height)));
+}
+
+void TaskDialog::setFontPercent(QWidget* w, double p)
+{
+  auto f = w->font();
+
+  if (f.pointSizeF() > 0) {
+    f.setPointSizeF(f.pointSizeF() * p);
+  } else if (f.pixelSize() > 0) {
+    f.setPixelSize(static_cast<int>(std::round(f.pixelSize() * p)));
+  }
+
+  w->setFont(f);
 }
 
 } // namespace MOBase

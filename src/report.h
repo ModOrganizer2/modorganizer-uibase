@@ -24,6 +24,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 #include "dllimport.h"
 #include <QString>
 #include <QMessageBox>
+#include <QPlainTextEdit>
 #include <wchar.h>
 
 namespace Ui { class TaskDialog; }
@@ -80,9 +81,10 @@ private:
   void setCommandButtons();
   void setDetails();
 
-  QFont mainFont() const;
   QColor detailsColor() const;
   QPixmap standardIcon(QMessageBox::Icon icon) const;
+  void setVisibleLines(QPlainTextEdit* w, int lines);
+  void setFontPercent(QWidget* w, double p);
 };
 
 } // namespace MOBase
