@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>436</width>
-    <height>221</height>
+    <height>316</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -79,42 +79,95 @@
           <number>0</number>
          </property>
          <item>
-          <widget class="QLabel" name="main">
-           <property name="styleSheet">
-            <string notr="true"/>
-           </property>
-           <property name="text">
-            <string>TextLabel</string>
-           </property>
-           <property name="wordWrap">
-            <bool>true</bool>
-           </property>
+          <widget class="QWidget" name="mainPanel" native="true">
+           <layout class="QVBoxLayout" name="verticalLayout_11">
+            <property name="leftMargin">
+             <number>0</number>
+            </property>
+            <property name="topMargin">
+             <number>0</number>
+            </property>
+            <property name="rightMargin">
+             <number>0</number>
+            </property>
+            <property name="bottomMargin">
+             <number>0</number>
+            </property>
+            <item>
+             <widget class="QLabel" name="main">
+              <property name="styleSheet">
+               <string notr="true"/>
+              </property>
+              <property name="text">
+               <string>dummy main text</string>
+              </property>
+              <property name="wordWrap">
+               <bool>true</bool>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QWidget" name="mainSpacer" native="true">
+              <property name="sizePolicy">
+               <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+                <horstretch>0</horstretch>
+                <verstretch>0</verstretch>
+               </sizepolicy>
+              </property>
+              <property name="minimumSize">
+               <size>
+                <width>0</width>
+                <height>10</height>
+               </size>
+              </property>
+             </widget>
+            </item>
+           </layout>
           </widget>
          </item>
          <item>
-          <widget class="QWidget" name="spacer1" native="true">
-           <property name="sizePolicy">
-            <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
-             <horstretch>0</horstretch>
-             <verstretch>0</verstretch>
-            </sizepolicy>
-           </property>
-           <property name="minimumSize">
-            <size>
-             <width>0</width>
-             <height>10</height>
-            </size>
-           </property>
-          </widget>
-         </item>
-         <item>
-          <widget class="QLabel" name="content">
-           <property name="text">
-            <string>TextLabel</string>
-           </property>
-           <property name="wordWrap">
-            <bool>true</bool>
-           </property>
+          <widget class="QWidget" name="contentPanel" native="true">
+           <layout class="QVBoxLayout" name="verticalLayout_2">
+            <property name="leftMargin">
+             <number>0</number>
+            </property>
+            <property name="topMargin">
+             <number>0</number>
+            </property>
+            <property name="rightMargin">
+             <number>0</number>
+            </property>
+            <property name="bottomMargin">
+             <number>0</number>
+            </property>
+            <item>
+             <widget class="QLabel" name="content">
+              <property name="text">
+               <string>dummy content text</string>
+              </property>
+              <property name="wordWrap">
+               <bool>true</bool>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QWidget" name="buttonsSpacer" native="true">
+              <property name="sizePolicy">
+               <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+                <horstretch>0</horstretch>
+                <verstretch>0</verstretch>
+               </sizepolicy>
+              </property>
+              <property name="minimumSize">
+               <size>
+                <width>0</width>
+                <height>10</height>
+               </size>
+              </property>
+              <layout class="QVBoxLayout" name="verticalLayout_7"/>
+             </widget>
+            </item>
+           </layout>
           </widget>
          </item>
          <item>
@@ -133,23 +186,6 @@
              <number>0</number>
             </property>
             <item>
-             <widget class="QWidget" name="spacer2" native="true">
-              <property name="sizePolicy">
-               <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
-                <horstretch>0</horstretch>
-                <verstretch>0</verstretch>
-               </sizepolicy>
-              </property>
-              <property name="minimumSize">
-               <size>
-                <width>0</width>
-                <height>10</height>
-               </size>
-              </property>
-              <layout class="QVBoxLayout" name="verticalLayout_7"/>
-             </widget>
-            </item>
-            <item>
              <widget class="QWidget" name="commandButtons" native="true">
               <layout class="QVBoxLayout" name="verticalLayout_9">
                <property name="leftMargin">
@@ -164,7 +200,39 @@
                <property name="bottomMargin">
                 <number>0</number>
                </property>
+               <item>
+                <widget class="QCommandLinkButton" name="dummyButton">
+                 <property name="text">
+                  <string>dummy button</string>
+                 </property>
+                </widget>
+               </item>
               </layout>
+             </widget>
+            </item>
+           </layout>
+          </widget>
+         </item>
+         <item>
+          <widget class="QWidget" name="rememberPanel" native="true">
+           <layout class="QVBoxLayout" name="verticalLayout_12">
+            <property name="leftMargin">
+             <number>0</number>
+            </property>
+            <property name="topMargin">
+             <number>0</number>
+            </property>
+            <property name="rightMargin">
+             <number>0</number>
+            </property>
+            <property name="bottomMargin">
+             <number>0</number>
+            </property>
+            <item>
+             <widget class="QCheckBox" name="dummyCheckbox">
+              <property name="text">
+               <string>dummy checkbox</string>
+              </property>
              </widget>
             </item>
            </layout>
@@ -195,7 +263,7 @@
       <item>
        <widget class="QDialogButtonBox" name="standardButtons">
         <property name="standardButtons">
-         <set>QDialogButtonBox::NoButton</set>
+         <set>QDialogButtonBox::Close</set>
         </property>
        </widget>
       </item>

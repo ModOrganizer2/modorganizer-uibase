@@ -23,7 +23,10 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 #include "utility.h"
 #include "expanderwidget.h"
 #include "ui_taskdialog.h"
+#include "questionboxmemory.h"
 #include "log.h"
+#include <QComboBox>
+#include <QRadioButton>
 #include <Windows.h>
 
 namespace MOBase
@@ -54,7 +57,8 @@ TaskDialogButton::TaskDialogButton(QString t, QMessageBox::StandardButton b)
 TaskDialog::TaskDialog(QWidget* parent, QString title) :
   m_dialog(new QDialog(parent)), ui(new Ui::TaskDialog),
   m_title(std::move(title)), m_icon(QMessageBox::NoIcon),
-  m_result(QMessageBox::Cancel)
+  m_result(QMessageBox::Cancel),
+  m_rememberCheck(nullptr), m_rememberCombo(nullptr)
 {
   ui->setupUi(m_dialog.get());
 }
@@ -97,10 +101,23 @@ TaskDialog& TaskDialog::button(TaskDialogButton b)
   return *this;
 }
 
+TaskDialog& TaskDialog::remember(const QString& action, const QString& file)
+{
+  m_rememberAction = action;
+  m_rememberFile = file;
+  return *this;
+}
+
 QMessageBox::StandardButton TaskDialog::exec()
 {
+  const auto b = checkMemory();
+  if (b != QMessageBox::NoButton) {
+    return b;
+  }
+
   setDialog();
   setWidgets();
+  setChoices();
   setButtons();
   setDetails();
 
@@ -111,7 +128,55 @@ QMessageBox::StandardButton TaskDialog::exec()
     return QMessageBox::Cancel;
   }
 
+  rememberChoice();
   return m_result;
+}
+
+QMessageBox::StandardButton TaskDialog::checkMemory() const
+{
+  const auto b = QuestionBoxMemory::getMemory(m_rememberAction, m_rememberFile);
+
+  const auto logName =
+    m_rememberAction +
+    (m_rememberFile.isEmpty() ? "" : QString("/") + m_rememberFile);
+
+  if (b == QDialogButtonBox::NoButton) {
+    log::debug(
+      "{}: asking because the user has not set a choice before", logName);
+  } else {
+    log::debug(
+      "{}: not asking because user always wants response {}",
+      logName, QuestionBoxMemory::buttonToString(b));
+  }
+
+  return static_cast<QMessageBox::StandardButton>(b);
+}
+
+void TaskDialog::rememberChoice()
+{
+  if (m_rememberAction.isEmpty() && m_rememberFile.isEmpty()) {
+    // nothing
+    return;
+  }
+
+  const auto b = static_cast<QuestionBoxMemory::Button>(m_result);
+
+  if (m_rememberCheck) {
+    // action only
+    if (m_rememberCheck->isChecked()) {
+      QuestionBoxMemory::setWindowMemory(m_rememberAction, b);
+    }
+  } else if (m_rememberCombo) {
+    Q_ASSERT(m_rememberCombo->count() == 3);
+
+    if (m_rememberCombo->currentIndex() == 1) {
+      // remember action
+      QuestionBoxMemory::setWindowMemory(m_rememberAction, b);
+    } else if (m_rememberCombo->currentIndex() == 2) {
+      // remember file
+      QuestionBoxMemory::setFileMemory(m_rememberAction, m_rememberFile, b);
+    }
+  }
 }
 
 void TaskDialog::setButtons()
@@ -129,6 +194,11 @@ void TaskDialog::setStandardButtons()
 {
   ui->standardButtonsPanel->show();
   ui->commandButtonsPanel->hide();
+
+  for (auto* b : ui->standardButtons->buttons()) {
+    ui->standardButtons->removeButton(b);
+  }
+
   ui->standardButtons->addButton(QDialogButtonBox::Ok);
 
   QObject::connect(ui->standardButtons, &QDialogButtonBox::clicked, [&](auto* b){
@@ -144,6 +214,8 @@ void TaskDialog::setCommandButtons()
   ui->standardButtonsPanel->hide();
   ui->commandButtonsPanel->show();
 
+  deleteChildWidgets(ui->commandButtons);
+
   for (auto&& b : m_buttons) {
     auto* cb = new QCommandLinkButton(b.text, b.description);
 
@@ -158,6 +230,11 @@ void TaskDialog::setCommandButtons()
 
 void TaskDialog::setDetails()
 {
+  if (m_details.isEmpty()) {
+    ui->detailsExpander->setEnabled(false);
+    return;
+  }
+
   ui->details->setPlainText(m_details);
 
   setVisibleLines(ui->details, 10);
@@ -185,13 +262,46 @@ void TaskDialog::setWidgets()
   setFontPercent(ui->main, 1.5);
   ui->content->setText(m_content);
 
-  auto icon = standardIcon(QMessageBox::Critical);
+  auto icon = standardIcon(m_icon);
 
   if (icon.isNull()) {
     ui->iconPanel->hide();
   } else {
     ui->iconPanel->show();
     ui->icon->setPixmap(std::move(icon));
+  }
+}
+
+void TaskDialog::setChoices()
+{
+  if (m_rememberAction.isEmpty() && m_rememberFile.isEmpty()) {
+    ui->rememberPanel->hide();
+    return;
+  }
+
+  ui->rememberPanel->show();
+  deleteChildWidgets(ui->rememberPanel);
+
+  const auto tooltip = QObject::tr(
+    "You can reset these choices by clicking \"Reset Dialog Choices\" in the "
+    "General tab of the Settings");
+
+  if (!m_rememberAction.isEmpty() && !m_rememberFile.isEmpty()) {
+    // both
+    m_rememberCombo = new QComboBox;
+    m_rememberCombo->setToolTip(tooltip);
+
+    m_rememberCombo->addItem(QObject::tr("Always ask"));
+    m_rememberCombo->addItem(QObject::tr("Remember my choice"));
+    m_rememberCombo->addItem(QObject::tr("Remember my choice for %1").arg(m_rememberFile));
+
+    ui->rememberPanel->layout()->setAlignment(Qt::AlignLeft);
+    ui->rememberPanel->layout()->addWidget(m_rememberCombo);
+  } else if (!m_rememberAction.isEmpty() || !m_rememberFile.isEmpty()) {
+    // either
+    m_rememberCheck = new QCheckBox(QObject::tr("Remember my choice"));
+    m_rememberCheck->setToolTip(tooltip);
+    ui->rememberPanel->layout()->addWidget(m_rememberCheck);
   }
 }
 

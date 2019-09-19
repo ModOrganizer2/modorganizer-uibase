@@ -62,6 +62,7 @@ public:
   TaskDialog& details(const QString& s);
   TaskDialog& icon(QMessageBox::Icon i);
   TaskDialog& button(TaskDialogButton b);
+  TaskDialog& remember(const QString& action, const QString& file);
 
   QMessageBox::StandardButton exec();
 
@@ -74,8 +75,16 @@ private:
   QMessageBox::StandardButton m_result;
   std::unique_ptr<ExpanderWidget> m_expander;
 
+  QString m_rememberAction, m_rememberFile;
+  QCheckBox* m_rememberCheck;
+  QComboBox* m_rememberCombo;
+
+  QMessageBox::StandardButton checkMemory() const;
+  void rememberChoice();
+
   void setDialog();
   void setWidgets();
+  void setChoices();
   void setButtons();
   void setStandardButtons();
   void setCommandButtons();
