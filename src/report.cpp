@@ -134,6 +134,10 @@ QMessageBox::StandardButton TaskDialog::exec()
 
 QMessageBox::StandardButton TaskDialog::checkMemory() const
 {
+  if (m_rememberAction.isEmpty() && m_rememberFile.isEmpty()) {
+    return QMessageBox::NoButton;
+  }
+
   const auto b = QuestionBoxMemory::getMemory(m_rememberAction, m_rememberFile);
 
   const auto logName =
