@@ -38,17 +38,6 @@ static QuestionBoxMemory::GetButton g_get;
 static QuestionBoxMemory::SetWindowButton g_setWindow;
 static QuestionBoxMemory::SetFileButton g_setFile;
 
-QString buttonToString(QDialogButtonBox::StandardButton b)
-{
-  if (b == QDialogButtonBox::Yes) {
-    return QString("'yes' (0x%1)").arg(static_cast<int>(b), 0, 16);
-  } else if (b == QDialogButtonBox::No) {
-    return QString("'no' (0x%1)").arg(static_cast<int>(b), 0, 16);
-  } else {
-    return QString("0x%1").arg(static_cast<int>(b), 0, 16);
-  }
-}
-
 
 QuestionBoxMemory::QuestionBoxMemory(
   QWidget *parent, const QString &title, const QString &text, QString const *filename,
@@ -127,7 +116,7 @@ QDialogButtonBox::StandardButton QuestionBoxMemory::queryImpl(
 {
   QMutexLocker locker(&g_mutex);
 
-  const auto button = g_get(windowName, (fileName ? *fileName : ""));
+  const auto button = getMemory(windowName, (fileName ? *fileName : ""));
   if (button != NoButton) {
     log::debug(
       "{}: not asking because user always wants response {}",
@@ -142,23 +131,78 @@ QDialogButtonBox::StandardButton QuestionBoxMemory::queryImpl(
 
   if (dialog.m_Button != QDialogButtonBox::Cancel) {
     if (dialog.ui->rememberCheckBox->isChecked()) {
-      log::debug(
-        "remembering choice {} for window {}",
-        buttonToString(dialog.m_Button), windowName);
-
-      g_setWindow(windowName, dialog.m_Button);
+      setWindowMemory(windowName, dialog.m_Button);
     }
 
     if (fileName != nullptr && dialog.ui->rememberForCheckBox->isChecked()) {
-      log::debug(
-        "remembering choice {} for file {}",
-        buttonToString(dialog.m_Button), windowName + "/" + *fileName);
-
-      g_setFile(windowName, *fileName, dialog.m_Button);
+      setFileMemory(windowName, *fileName, dialog.m_Button);
     }
   }
 
   return dialog.m_Button;
+}
+
+void QuestionBoxMemory::setWindowMemory(const QString& windowName, Button b)
+{
+  log::debug(
+    "remembering choice {} for window {}",
+    buttonToString(b), windowName);
+
+  g_setWindow(windowName, b);
+}
+
+void QuestionBoxMemory::setFileMemory(
+  const QString& windowName, const QString& filename, Button b)
+{
+  log::debug(
+    "remembering choice {} for file {}",
+    buttonToString(b), windowName + "/" + filename);
+
+  g_setFile(windowName, filename, b);
+}
+
+QuestionBoxMemory::Button QuestionBoxMemory::getMemory(
+  const QString& windowName, const QString& filename)
+{
+  return g_get(windowName, filename);
+}
+
+QString QuestionBoxMemory::buttonToString(Button b)
+{
+  using BB = QDialogButtonBox;
+
+  static const std::map<Button, QString> map = {
+    {BB::NoButton, "none"},
+    {BB::Ok, "ok"},
+    {BB::Save, "save"},
+    {BB::SaveAll, "saveall"},
+    {BB::Open, "open"},
+    {BB::Yes, "yes"},
+    {BB::YesToAll, "yestoall"},
+    {BB::No, "no"},
+    {BB::NoToAll, "notoall"},
+    {BB::Abort, "abort"},
+    {BB::Retry, "retry"},
+    {BB::Ignore, "ignore"},
+    {BB::Close, "close"},
+    {BB::Cancel, "cancel"},
+    {BB::Discard, "discard"},
+    {BB::Help, "help"},
+    {BB::Apply, "apply"},
+    {BB::Reset, "reset"},
+    {BB::RestoreDefaults, "restoredefaults"}
+  };
+
+  auto itor = map.find(b);
+
+  if (itor == map.end()) {
+    return QString("0x%1")
+      .arg(static_cast<int>(b), 0, 16);
+  } else {
+    return QString("'%1' (0x%2)")
+      .arg(itor->second)
+      .arg(static_cast<int>(b), 0, 16);
+  }
 }
 
 } // namespace

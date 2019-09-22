@@ -18,6 +18,7 @@
 #pragma warning(disable: 4365)  // signed/unsigned mismatch
 #pragma warning(disable: 4774)  // bad format string
 #pragma warning(disable: 4946)  // reinterpret_cast used between related classes
+#pragma warning(disable: 4800)  // implicit conversion
 
 #define _SILENCE_CXX17_CODECVT_HEADER_DEPRECATION_WARNING 1
 
@@ -62,6 +63,7 @@
 #include <QApplication>
 #include <QBitmap>
 #include <QBuffer>
+#include <QCommandLinkButton>
 #include <QCoreApplication>
 #include <QCryptographicHash>
 #include <QDateTime>
@@ -76,6 +78,7 @@
 #include <QGraphicsObject>
 #include <QIcon>
 #include <QImage>
+#include <QLabel>
 #include <QLineEdit>
 #include <QMainWindow>
 #include <QMenuBar>
@@ -90,6 +93,7 @@
 #include <QMutexLocker>
 #include <QNetworkReply>
 #include <QObject>
+#include <QPlainTextEdit>
 #include <QPushButton>
 #include <QQmlContext>
 #include <QQmlEngine>

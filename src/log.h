@@ -157,10 +157,19 @@ struct Entry
 using Callback = void (Entry);
 
 
+struct LoggerConfiguration
+{
+  std::string name;
+  Levels maxLevel = Levels::Info;
+  std::string pattern;
+  bool utc = false;
+};
+
+
 class QDLLEXPORT Logger
 {
 public:
-  Logger(std::string name, Levels maxLevel, std::string pattern);
+  Logger(LoggerConfiguration conf);
   ~Logger();
 
   Levels level() const;
@@ -202,14 +211,16 @@ public:
   }
 
 private:
+  LoggerConfiguration m_conf;
   std::unique_ptr<spdlog::logger> m_logger;
   std::shared_ptr<spdlog::sinks::sink> m_sinks;
   std::shared_ptr<spdlog::sinks::sink> m_console, m_callback, m_file;
 
   void createLogger(const std::string& name);
+  void addSink(std::shared_ptr<spdlog::sinks::sink> sink);
 };
 
-QDLLEXPORT void createDefault(Levels maxLevel, const std::string& pattern);
+QDLLEXPORT void createDefault(LoggerConfiguration conf);
 QDLLEXPORT Logger& getDefault();
 
 

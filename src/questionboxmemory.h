@@ -71,6 +71,16 @@ public:
     QDialogButtonBox::StandardButtons buttons = QDialogButtonBox::Yes | QDialogButtonBox::No,
     QDialogButtonBox::StandardButton defaultButton = QDialogButtonBox::NoButton);
 
+  static void setWindowMemory(const QString& windowName, Button b);
+
+  static void setFileMemory(
+    const QString& windowName, const QString& filename, Button b);
+
+  static Button getMemory(
+    const QString& windowName, const QString& filename);
+
+  static QString buttonToString(Button b);
+
 private slots:
   void buttonClicked(QAbstractButton *button);
 

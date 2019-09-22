@@ -645,6 +645,18 @@ QIcon iconForExecutable(const QString &filePath)
   }
 }
 
+void deleteChildWidgets(QWidget* w)
+{
+  auto* ly = w->layout();
+  if (!ly) {
+    return;
+  }
+
+  while (auto* item=ly->takeAt(0)) {
+    delete item->widget();
+    delete item;
+  }
+}
 
 std::wstring formatSystemMessage(DWORD id)
 {

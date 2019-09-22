@@ -63,6 +63,8 @@ SET(uibase_SRCS
     registry.cpp
     steamutility.cpp
 	log.cpp
+	expanderwidget.cpp
+	errorcodes.cpp
   )
 
 SET(uibase_HDRS
@@ -118,6 +120,8 @@ SET(uibase_HDRS
     registry.h
     steamutility.h
 	log.h
+	expanderwidget.h
+	errorcodes.h
   )
 
 SET(UIS
@@ -170,6 +174,7 @@ set(widgets
 	sortabletreewidget
 	taskprogressmanager
 	textviewer
+	expanderwidget
 )
 
 set(src_filters interfaces tutorials widgets
