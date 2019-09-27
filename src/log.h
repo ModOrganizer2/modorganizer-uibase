@@ -59,6 +59,12 @@ struct QDLLEXPORT converter<QSize>
 };
 
 template <>
+struct QDLLEXPORT converter<QRect>
+{
+  static std::string convert(const QRect& s);
+};
+
+template <>
 struct QDLLEXPORT converter<QColor>
 {
   static std::string convert(const QColor& c);
