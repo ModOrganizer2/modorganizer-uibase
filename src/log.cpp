@@ -357,6 +357,12 @@ std::string converter<QSize>::convert(const QSize& s)
   return fmt::format("QSize({}, {})", s.width(), s.height());
 }
 
+std::string converter<QRect>::convert(const QRect& r)
+{
+  return fmt::format(
+    "QRect({},{}-{},{})", r.left(), r.top(), r.right(), r.bottom());
+}
+
 std::string converter<QColor>::convert(const QColor& c)
 {
   return fmt::format(
