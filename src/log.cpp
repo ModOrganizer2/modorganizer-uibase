@@ -275,7 +275,6 @@ void Logger::setCallback(Callback* f)
   if (m_callback) {
     static_cast<CallbackSink*>(m_callback.get())->setCallback(f);
   } else {
-    auto callbackLogger = spdlog::synchronous_factory::create<CallbackSink>("callback_logger", f);
     m_callback.reset(new CallbackSink(f));
     addSink(m_callback);
   }
