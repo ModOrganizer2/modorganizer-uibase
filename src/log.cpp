@@ -7,15 +7,12 @@
 namespace spdlog { using wstring_view_t = fmt::basic_string_view<wchar_t>; }
 #define SPDLOG_WCHAR_FILENAMES 1
 #include <spdlog/logger.h>
-#include <spdlog/details/null_mutex.h>
 #include <spdlog/sinks/stdout_color_sinks.h>
 #include <spdlog/sinks/base_sink.h>
 #include <spdlog/sinks/dist_sink.h>
 #include <spdlog/sinks/daily_file_sink.h>
 #include <spdlog/sinks/rotating_file_sink.h>
 #include <spdlog/sinks/basic_file_sink.h>
-#include <spdlog/details/console_globals.h>
-#include <spdlog/details/synchronous_factory.h>
 #pragma warning(pop)
 
 
@@ -66,8 +63,7 @@ Levels fromSpdlog(spdlog::level::level_enum lv)
   }
 }
 
-template<typename Mutex>
-class CallbackSink : public spdlog::sinks::base_sink<Mutex>
+class CallbackSink : public spdlog::sinks::base_sink<std::mutex>
 {
 public:
   CallbackSink(Callback* f)
@@ -106,7 +102,7 @@ protected:
       e.message = fmt::to_string(m.payload);
 
       spdlog::memory_buf_t formatted;
-      spdlog::sinks::base_sink<Mutex>::formatter_->format(m, formatted);
+      base_sink::formatter_->format(m, formatted);
 
       if (formatted.size() >= 2) {
         // remove \r\n
@@ -277,10 +273,10 @@ void Logger::setFile(const File& f)
 void Logger::setCallback(Callback* f)
 {
   if (m_callback) {
-    static_cast<CallbackSink<std::mutex>*>(m_callback.get())->setCallback(f);
+    static_cast<CallbackSink*>(m_callback.get())->setCallback(f);
   } else {
-    auto callbackLogger = spdlog::synchronous_factory::create<CallbackSink<std::mutex>>("callback_logger", f);
-    m_callback.reset(new CallbackSink<std::mutex>(f));
+    auto callbackLogger = spdlog::synchronous_factory::create<CallbackSink>("callback_logger", f);
+    m_callback.reset(new CallbackSink(f));
     addSink(m_callback);
   }
 }
