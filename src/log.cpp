@@ -4,14 +4,18 @@
 
 #pragma warning(push)
 #pragma warning(disable: 4365)
+namespace spdlog { using wstring_view_t = fmt::basic_string_view<wchar_t>; }
 #define SPDLOG_WCHAR_FILENAMES 1
 #include <spdlog/logger.h>
+#include <spdlog/details/null_mutex.h>
 #include <spdlog/sinks/stdout_color_sinks.h>
 #include <spdlog/sinks/base_sink.h>
 #include <spdlog/sinks/dist_sink.h>
 #include <spdlog/sinks/daily_file_sink.h>
 #include <spdlog/sinks/rotating_file_sink.h>
 #include <spdlog/sinks/basic_file_sink.h>
+#include <spdlog/details/console_globals.h>
+#include <spdlog/details/synchronous_factory.h>
 #pragma warning(pop)
 
 
@@ -62,8 +66,8 @@ Levels fromSpdlog(spdlog::level::level_enum lv)
   }
 }
 
-
-class CallbackSink : public spdlog::sinks::base_sink<std::mutex>
+template<typename Mutex>
+class CallbackSink : public spdlog::sinks::base_sink<Mutex>
 {
 public:
   CallbackSink(Callback* f)
@@ -76,6 +80,7 @@ public:
     m_f = f;
   }
 
+protected:
   void sink_it_(const spdlog::details::log_msg& m) override
   {
     thread_local bool active = false;
@@ -100,8 +105,8 @@ public:
       e.level = fromSpdlog(m.level);
       e.message = fmt::to_string(m.payload);
 
-      fmt::memory_buffer formatted;
-      sink::formatter_->format(m, formatted);
+      spdlog::memory_buf_t formatted;
+      spdlog::sinks::base_sink<Mutex>::formatter_->format(m, formatted);
 
       if (formatted.size() >= 2) {
         // remove \r\n
@@ -272,9 +277,10 @@ void Logger::setFile(const File& f)
 void Logger::setCallback(Callback* f)
 {
   if (m_callback) {
-    static_cast<CallbackSink*>(m_callback.get())->setCallback(f);
+    static_cast<CallbackSink<std::mutex>*>(m_callback.get())->setCallback(f);
   } else {
-    m_callback.reset(new CallbackSink(f));
+    auto callbackLogger = spdlog::synchronous_factory::create<CallbackSink<std::mutex>>("callback_logger", f);
+    m_callback.reset(new CallbackSink<std::mutex>(f));
     addSink(m_callback);
   }
 }
@@ -282,16 +288,20 @@ void Logger::setCallback(Callback* f)
 void Logger::createLogger(const std::string& name)
 {
   m_sinks.reset(new spdlog::sinks::dist_sink<std::mutex>);
-  m_console.reset(new spdlog::sinks::stderr_color_sink_mt);
 
-  using sink_type = spdlog::sinks::wincolor_stderr_sink_mt;
+  DWORD console_mode;
+  if (::GetConsoleMode(::GetStdHandle(STD_ERROR_HANDLE), &console_mode) != 0) {
+      using sink_type = spdlog::sinks::wincolor_stderr_sink_mt;
+      m_console.reset(new sink_type);
 
-  if (auto* cs=dynamic_cast<sink_type*>(m_console.get())) {
-    cs->set_color(spdlog::level::info, cs->WHITE);
-    cs->set_color(spdlog::level::debug, cs->WHITE);
+      if (auto* cs = dynamic_cast<sink_type*>(m_console.get())) {
+          cs->set_color(spdlog::level::info, cs->WHITE);
+          cs->set_color(spdlog::level::debug, cs->WHITE);
+      }
+
+      addSink(m_console);
   }
 
-  addSink(m_console);
   m_logger.reset(new spdlog::logger(name, m_sinks));
 }
 
