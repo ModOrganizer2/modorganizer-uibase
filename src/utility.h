@@ -152,47 +152,80 @@ QDLLEXPORT bool shellDeleteQuiet(const QString &fileName, QWidget *dialog = null
 
 namespace shell
 {
-  /** @brief starts explorer using the given directory and/or file
-   *  @param info if this is a directory, opens it in explorer; if this is a file,
-   *         opens the directory and selects it
-   *  @return false if something went wrong
-   **/
-  QDLLEXPORT bool ExploreFile(const QFileInfo& info);
+  // returned by the various shell functions
+  //
+  class QDLLEXPORT Result
+  {
+  public:
+    Result(bool success, DWORD error, QString message);
 
-  /** @brief starts explorer using the given directory and/or file
-   *  @param path if this is a directory, opens it in explorer; if this is a file,
-   *         opens the directory and selects it
-   *  @return false if something went wrong
-   **/
-  QDLLEXPORT bool ExploreFile(const QString& path);
+    static Result makeFailure(DWORD error, QString message={});
+    static Result makeSuccess();
 
-  /** @brief starts explorer using the given directory
-   *  @param dir opens this directory
-   *  @return false if something went wrong
-   **/
-  QDLLEXPORT bool ExploreFile(const QDir& dir);
+    // whether the operation was successful
+    //
+    bool success() const;
+
+    // error returned by the underlying function
+    //
+    DWORD error();
+
+    // string representation of the message, may be localized
+    //
+    const QString& message() const;
+
+    // the message, or the error number if empty
+    //
+    QString toString() const;
+
+  private:
+    bool m_success;
+    DWORD m_error;
+    QString m_message;
+  };
+
+  // starts explorer using the given directory and/or file
+  //
+  // if `info` is a directory, opens it in explorer; if it's a file, opens the
+  // directory and selects it
+  //
+  QDLLEXPORT Result Explore(const QFileInfo& info);
+
+  // starts explorer using the given directory and/or file
+  //
+  // if `path` is a directory, opens it in explorer; if it's a file, opens the
+  // directory and selects it
+  //
+  QDLLEXPORT Result Explore(const QString& path);
+
+  // starts explorer using the given directory
+  //
+  QDLLEXPORT Result Explore(const QDir& dir);
 
 
-  /** @brief asks the shell to open the given file
-   *  @param path file to open
-   *  @return false if something went wrong
-   **/
-  QDLLEXPORT bool OpenFile(const QString& path);
+  // asks the shell to open the given file with its default handler
+  //
+  QDLLEXPORT Result Open(const QString& path);
+
+  // asks the shell to open the given link with the default browser
+  //
+  QDLLEXPORT Result Open(const QUrl& url);
 
 
-  /** @brief asks the shell to open the given link
-   *  @param url link to open
-   *  @return false if something went wrong
-   **/
-  QDLLEXPORT bool OpenLink(const QUrl& url);
+  // @brief asks the shell to execute the given program, with optional
+  // parameters
+  //
+  QDLLEXPORT Result Execute(const QString& program, const QString& params={});
 
 
-  /** @brief asks the shell to execute the given program
-   *  @param program the path to the executable
-   *  @param params optional parameters to pass
-   *  @return false if something went wrong
-   **/
-  QDLLEXPORT bool Execute(const QString& program, const QString& params={});
+  // asks the shell to delete the given file (not directory)
+  //
+  QDLLEXPORT Result Delete(const QFileInfo& path);
+
+  // asks the shell to rename a file or directory from `src` to `dest`; works
+  // across volumes
+  //
+  QDLLEXPORT Result Rename(const QFileInfo& src, const QFileInfo& dest);
 }
 
 /**

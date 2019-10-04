@@ -254,7 +254,50 @@ bool shellDelete(const QStringList &fileNames, bool recycle, QWidget *dialog)
 namespace shell
 {
 
-const char* ShellExecuteError(int i)
+Result::Result(bool success, DWORD error, QString message)
+  : m_success(success), m_error(error), m_message(std::move(message))
+{
+  if (m_message.isEmpty()) {
+    m_message = QString::fromStdWString(formatSystemMessage(m_error));
+  }
+}
+
+Result Result::makeFailure(DWORD error, QString message)
+{
+  return Result(false, error, std::move(message));
+}
+
+Result Result::makeSuccess()
+{
+  return Result(true, ERROR_SUCCESS, {});
+}
+
+bool Result::success() const
+{
+  return m_success;
+}
+
+DWORD Result::error()
+{
+  return m_error;
+}
+
+const QString& Result::message() const
+{
+  return m_message;
+}
+
+QString Result::toString() const
+{
+  if (m_message.isEmpty()) {
+    return QObject::tr("Error %1").arg(m_error);
+  } else {
+    return m_message;
+  }
+}
+
+
+QString ShellExecuteError(int i)
 {
   switch (i) {
     case 0:
@@ -300,16 +343,14 @@ const char* ShellExecuteError(int i)
       return "A sharing violation occurred";
 
     default:
-      return "Unknown error";
+      return QString("Unknown error %1").arg(i);
   }
 }
 
 void LogShellFailure(
   const wchar_t* operation, const wchar_t* file, const wchar_t* params,
-  HINSTANCE h)
+  int code)
 {
-  const auto code = static_cast<int>(reinterpret_cast<std::size_t>(h));
-
   QString s;
 
   if (operation) {
@@ -329,23 +370,25 @@ void LogShellFailure(
     s, ShellExecuteError(code), code);
 }
 
-bool ShellExecuteWrapper(
+Result ShellExecuteWrapper(
   const wchar_t* operation, const wchar_t* file, const wchar_t* params)
 {
-  const auto h = ::ShellExecuteW(
+  const auto hinst = ::ShellExecuteW(
     0, operation, file, params, nullptr, SW_SHOWNORMAL);
 
-  // anything <= 32 is not an actual HINSTANCE and signals failure
-  if (h <= reinterpret_cast<HINSTANCE>(32))
+  const auto r = static_cast<int>(reinterpret_cast<std::uintptr_t>(hinst));
+
+  // anything <= 32 signals failure
+  if (r <= 32)
   {
-    LogShellFailure(operation, file, params, h);
-    return false;
+    LogShellFailure(operation, file, params, r);
+    return Result::makeFailure(static_cast<DWORD>(r), ShellExecuteError(r));
   }
 
-  return true;
+  return Result::makeSuccess();
 }
 
-bool ExploreDirectory(const QFileInfo& info)
+Result ExploreDirectory(const QFileInfo& info)
 {
   const auto path = QDir::toNativeSeparators(info.absoluteFilePath());
   const auto ws_path = path.toStdWString();
@@ -353,7 +396,7 @@ bool ExploreDirectory(const QFileInfo& info)
   return ShellExecuteWrapper(L"explore", ws_path.c_str(), nullptr);
 }
 
-bool ExploreFileInDirectory(const QFileInfo& info)
+Result ExploreFileInDirectory(const QFileInfo& info)
 {
   const auto path = QDir::toNativeSeparators(info.absoluteFilePath());
   const auto params = "/select,\"" + path + "\"";
@@ -363,7 +406,7 @@ bool ExploreFileInDirectory(const QFileInfo& info)
 }
 
 
-bool ExploreFile(const QFileInfo& info)
+Result Explore(const QFileInfo& info)
 {
   if (info.isFile()) {
     return ExploreFileInDirectory(info);
@@ -375,40 +418,75 @@ bool ExploreFile(const QFileInfo& info)
 
     if (parent.exists()) {
       return ExploreDirectory(parent.absolutePath());
+    } else {
+      return Result::makeFailure(ERROR_FILE_NOT_FOUND);
     }
   }
-
-  return false;
 }
 
-bool ExploreFile(const QString& path)
+Result Explore(const QString& path)
 {
-  return ExploreFile(QFileInfo(path));
+  return Explore(QFileInfo(path));
 }
 
-bool ExploreFile(const QDir& dir)
+Result Explore(const QDir& dir)
 {
-  return ExploreFile(QFileInfo(dir.absolutePath()));
+  return Explore(QFileInfo(dir.absolutePath()));
 }
 
-bool OpenFile(const QString& path)
+Result Open(const QString& path)
 {
   const auto ws_path = path.toStdWString();
   return ShellExecuteWrapper(L"open", ws_path.c_str(), nullptr);
 }
 
-bool OpenLink(const QUrl& url)
+Result Open(const QUrl& url)
 {
   const auto ws_url = url.toString().toStdWString();
   return ShellExecuteWrapper(L"open", ws_url.c_str(), nullptr);
 }
 
-bool Execute(const QString& program, const QString& params)
+Result Execute(const QString& program, const QString& params)
 {
   const auto program_ws = program.toStdWString();
   const auto params_ws = params.toStdWString();
 
   return ShellExecuteWrapper(L"open", program_ws.c_str(), params_ws.c_str());
+}
+
+std::wstring toUNC(const QFileInfo& path)
+{
+  auto wpath = QDir::toNativeSeparators(path.absoluteFilePath()).toStdWString();
+  if (!wpath.starts_with(L"\\\\?\\")) {
+    wpath = L"\\\\?\\" + wpath;
+  }
+
+  return wpath;
+}
+
+Result Delete(const QFileInfo& path)
+{
+  const auto wpath = toUNC(path);
+
+  if (!::DeleteFileW(wpath.c_str())) {
+    const auto e = ::GetLastError();
+    return Result::makeFailure(e);
+  }
+
+  return Result::makeSuccess();
+}
+
+Result Rename(const QFileInfo& src, const QFileInfo& dest)
+{
+  const auto wsrc = toUNC(src);
+  const auto wdest = toUNC(dest);
+
+  if (!::MoveFileEx(wsrc.c_str(), wdest.c_str(), MOVEFILE_COPY_ALLOWED)) {
+    const auto e = ::GetLastError();
+    return Result::makeFailure(e);
+  }
+
+  return Result::makeSuccess();
 }
 
 } // namespace shell
