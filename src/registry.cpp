@@ -17,6 +17,7 @@ along with Mod Organizer.  If not, see <http://www.gnu.org/licenses/>.
 
 #include "registry.h"
 #include "log.h"
+#include "report.h"
 #include <QString>
 #include <QMessageBox>
 #include <QApplication>
@@ -33,19 +34,32 @@ bool WriteRegistryValue(LPCWSTR appName, LPCWSTR keyName, LPCWSTR value, LPCWSTR
       {
         DWORD attrs = ::GetFileAttributes(fileName);
         if ((attrs != INVALID_FILE_ATTRIBUTES) && (attrs & FILE_ATTRIBUTE_READONLY)) {
-          if (QMessageBox::question(QApplication::activeModalWidget(),QApplication::tr("INI file is read-only"),
-                QApplication::tr("Mod Organizer is attempting to write to \"%1\" which is currently set to read-only. "
-                "Clear the read-only flag to allow the write?").arg(fileName)) == QMessageBox::Yes) {
-            log::warn("{} is read-only. Attempting to clear read-only flag.", QString::fromWCharArray(fileName));
+          QMessageBox::StandardButton result =
+            MOBase::TaskDialog(
+              qApp->activeModalWidget(),
+              qApp->tr("INI file is read-only"))
+            .main(qApp->tr("INI file is read-only"))
+            .content(qApp->tr("Mod Organizer is attempting to write to \"%1\" which is currently set to read-only. "
+              "Clear the read-only flag to allow the write?").arg(fileName))
+            .icon(QMessageBox::Question)
+            .button({
+              qApp->tr("Clear the read-only flag"),
+              QMessageBox::Yes})
+            .button({
+              qApp->tr("Do nothing"),
+              qApp->tr("The write operation may fail."),
+              QMessageBox::Cancel})
+            .remember("clearReadOnly", QString("%1").arg(fileName))
+            .exec();
+
+          if (result == QMessageBox::Yes) {
             attrs &= ~(FILE_ATTRIBUTE_READONLY);
             if (::SetFileAttributes(fileName, attrs)) {
               if (::WritePrivateProfileString(appName, keyName, value, fileName)) {
                 success = true;
               }
             }
-          } else {
-            log::warn("{} is read-only. User denied clearing the read-only flag.", QString::fromWCharArray(fileName));
-          }
+          } 
         }
       } break;
     }
