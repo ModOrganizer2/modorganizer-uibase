@@ -34,22 +34,22 @@ bool WriteRegistryValue(LPCWSTR appName, LPCWSTR keyName, LPCWSTR value, LPCWSTR
       {
         DWORD attrs = ::GetFileAttributes(fileName);
         if ((attrs != INVALID_FILE_ATTRIBUTES) && (attrs & FILE_ATTRIBUTE_READONLY)) {
+          QFileInfo fileInfo(QString("%1").arg(fileName));
+
           QMessageBox::StandardButton result =
             MOBase::TaskDialog(
               qApp->activeModalWidget(),
-              qApp->tr("INI file is read-only"))
-            .main(qApp->tr("INI file is read-only"))
-            .content(qApp->tr("Mod Organizer is attempting to write to \"%1\" which is currently set to read-only. "
-              "Clear the read-only flag to allow the write?").arg(fileName))
-            .icon(QMessageBox::Question)
+              QObject::tr("INI file is read-only"))
+            .main(QObject::tr("INI file is read-only"))
+            .content(QObject::tr("Mod Organizer is attempting to write to \"%1\" which is currently set to read-only.").arg(fileInfo.fileName()))
+            .icon(QMessageBox::Warning)
             .button({
-              qApp->tr("Clear the read-only flag"),
+              QObject::tr("Clear the read-only flag"),
               QMessageBox::Yes})
             .button({
-              qApp->tr("Do nothing"),
-              qApp->tr("The write operation may fail."),
-              QMessageBox::Cancel})
-            .remember("clearReadOnly", QString("%1").arg(fileName))
+              QObject::tr("Skip this file"),
+              QMessageBox::No})
+            .remember("clearReadOnly",fileInfo.fileName())
             .exec();
 
           if (result == QMessageBox::Yes) {
