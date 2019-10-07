@@ -47,19 +47,30 @@ bool WriteRegistryValue(LPCWSTR appName, LPCWSTR keyName, LPCWSTR value, LPCWSTR
               QObject::tr("Clear the read-only flag"),
               QMessageBox::Yes})
             .button({
+              QObject::tr("Allow the write once"),
+              QObject::tr("The file will be set to read-only again."),
+              QMessageBox::Ignore})
+            .button({
               QObject::tr("Skip this file"),
               QMessageBox::No})
             .remember("clearReadOnly",fileInfo.fileName())
             .exec();
 
-          if (result == QMessageBox::Yes) {
+          // clear the read-only flag if requested
+          if (result & (QMessageBox::Yes |QMessageBox::Ignore)) {
             attrs &= ~(FILE_ATTRIBUTE_READONLY);
             if (::SetFileAttributes(fileName, attrs)) {
               if (::WritePrivateProfileString(appName, keyName, value, fileName)) {
                 success = true;
               }
             }
-          } 
+          }
+
+          // set the read-only flag if requested
+          if (result == QMessageBox::Ignore) {
+            attrs |= FILE_ATTRIBUTE_READONLY;
+            ::SetFileAttributes(fileName, attrs);
+          }
         }
       } break;
     }
