@@ -64,7 +64,7 @@ public:
   TaskDialog& details(const QString& s);
   TaskDialog& icon(QMessageBox::Icon i);
   TaskDialog& button(TaskDialogButton b);
-  TaskDialog& remember(const QString& action, const QString& file);
+  TaskDialog& remember(const QString& action, const QString& file={});
 
   QMessageBox::StandardButton exec();
 
