@@ -261,6 +261,11 @@ public:
    */
   virtual QString getLauncherName() const = 0;
 
+  /**
+   * @brief Get whether the game supports light plugins (ESL,.esl)
+   */
+  virtual bool supportsLightPlugins() const = 0;
+
 protected:
 
   virtual std::map<std::type_index, boost::any> featureList() const = 0;
