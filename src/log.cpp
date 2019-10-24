@@ -1,5 +1,6 @@
 #include "pch.h"
 #include "log.h"
+#include "utility.h"
 #include <iostream>
 
 #pragma warning(push)

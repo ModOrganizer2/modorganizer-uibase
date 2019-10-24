@@ -254,8 +254,9 @@ bool shellDelete(const QStringList &fileNames, bool recycle, QWidget *dialog)
 namespace shell
 {
 
-Result::Result(bool success, DWORD error, QString message)
-  : m_success(success), m_error(error), m_message(std::move(message))
+Result::Result(bool success, DWORD error, QString message, HANDLE process) :
+  m_success(success), m_error(error), m_message(std::move(message)),
+  m_process(process)
 {
   if (m_message.isEmpty()) {
     m_message = QString::fromStdWString(formatSystemMessage(m_error));
@@ -264,12 +265,12 @@ Result::Result(bool success, DWORD error, QString message)
 
 Result Result::makeFailure(DWORD error, QString message)
 {
-  return Result(false, error, std::move(message));
+  return Result(false, error, std::move(message), INVALID_HANDLE_VALUE);
 }
 
-Result Result::makeSuccess()
+Result Result::makeSuccess(HANDLE process)
 {
-  return Result(true, ERROR_SUCCESS, {});
+  return Result(true, ERROR_SUCCESS, {}, process);
 }
 
 bool Result::success() const
@@ -287,6 +288,18 @@ const QString& Result::message() const
   return m_message;
 }
 
+HANDLE Result::processHandle() const
+{
+  return m_process.get();
+}
+
+HANDLE Result::stealProcessHandle()
+{
+  const auto h = m_process.release();
+  m_process.reset(INVALID_HANDLE_VALUE);
+  return h;
+}
+
 QString Result::toString() const
 {
   if (m_message.isEmpty()) {
@@ -297,7 +310,7 @@ QString Result::toString() const
 }
 
 
-QString ShellExecuteError(int i)
+QString formatError(int i)
 {
   switch (i) {
     case 0:
@@ -349,7 +362,7 @@ QString ShellExecuteError(int i)
 
 void LogShellFailure(
   const wchar_t* operation, const wchar_t* file, const wchar_t* params,
-  int code)
+  DWORD error)
 {
   QString s;
 
@@ -365,27 +378,34 @@ void LogShellFailure(
     s += " " + QString::fromWCharArray(params);
   }
 
-  log::error(
-    "failed to invoke '{}': {} (error {})",
-    s, ShellExecuteError(code), code);
+  log::error("failed to invoke '{}': {}", s, formatSystemMessage(error));
 }
 
 Result ShellExecuteWrapper(
   const wchar_t* operation, const wchar_t* file, const wchar_t* params)
 {
-  const auto hinst = ::ShellExecuteW(
-    0, operation, file, params, nullptr, SW_SHOWNORMAL);
+  SHELLEXECUTEINFOW info = {};
 
-  const auto r = static_cast<int>(reinterpret_cast<std::uintptr_t>(hinst));
+  info.cbSize = sizeof(info);
+  info.fMask = SEE_MASK_FLAG_NO_UI | SEE_MASK_NOCLOSEPROCESS;
+  info.lpVerb = operation;
+  info.lpFile = file;
+  info.lpParameters = params;
+  info.nShow = SW_SHOWNORMAL;
 
-  // anything <= 32 signals failure
-  if (r <= 32)
+  const auto r = ::ShellExecuteExW(&info);
+
+  if (!r)
   {
-    LogShellFailure(operation, file, params, r);
-    return Result::makeFailure(static_cast<DWORD>(r), ShellExecuteError(r));
+    const auto e = ::GetLastError();
+    LogShellFailure(operation, file, params, e);
+
+    return Result::makeFailure(
+      e, QString::fromStdWString(formatSystemMessage(e)));
   }
 
-  return Result::makeSuccess();
+  const HANDLE process = info.hProcess ? info.hProcess : INVALID_HANDLE_VALUE;
+  return Result::makeSuccess(process);
 }
 
 Result ExploreDirectory(const QFileInfo& info)
