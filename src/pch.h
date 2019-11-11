@@ -10,6 +10,7 @@
 #pragma warning(disable: 4710)  // function not inlined
 #pragma warning(disable: 4820)  // padding
 #pragma warning(disable: 4866)  // left-to-right evaluation order
+#pragma warning(disable: 4868)  // left-to-right evaluation order
 #pragma warning(disable: 5026)  // move constructor deleted
 #pragma warning(disable: 5027)  // move assignment operator deleted
 #pragma warning(disable: 5045)  // spectre mitigation
@@ -37,18 +38,23 @@
 #include <string>
 #include <typeindex>
 #include <unordered_map>
-#include <utility.h>
 #include <utility>
 #include <vector>
 #include <wchar.h>
 
+// fmt
+#include <fmt/format.h>
+
 // windows
+#ifndef NOMINMAX
+#define NOMINMAX
+#endif
+#ifndef WIN32_MEAN_AND_LEAN
+#define WIN32_MEAN_AND_LEAN
+#endif
 #include <ShlObj.h>
 #include <shobjidl.h>
 #include <Windows.h>
-
-// fmt
-#include <fmt/format.h>
 
 // boost
 #include <boost/algorithm/string/trim.hpp>

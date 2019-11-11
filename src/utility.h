@@ -30,12 +30,6 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 #include <QDir>
 #include <QIcon>
 #include <QUrl>
-#ifndef WIN32_MEAN_AND_LEAN
-#define WIN32_MEAN_AND_LEAN
-#endif
-#ifndef NOMINMAX
-#define NOMINMAX
-#endif
 #include <Windows.h>
 
 
@@ -152,15 +146,42 @@ QDLLEXPORT bool shellDeleteQuiet(const QString &fileName, QWidget *dialog = null
 
 namespace shell
 {
-  // returned by the various shell functions
+  namespace details
+  {
+    // used by HandlePtr, calls CloseHandle() as the deleter
+    //
+    struct HandleCloser
+    {
+      using pointer = HANDLE;
+
+      void operator()(HANDLE h)
+      {
+        if (h != INVALID_HANDLE_VALUE) {
+          ::CloseHandle(h);
+        }
+      }
+    };
+
+    using HandlePtr = std::unique_ptr<HANDLE, HandleCloser>;
+  }
+
+
+  // returned by the various shell functions; note that the process handle is
+  // closed in the destructor, unless stealProcessHandle() was called
   //
   class QDLLEXPORT Result
   {
   public:
-    Result(bool success, DWORD error, QString message);
+    Result(bool success, DWORD error, QString message, HANDLE process);
+
+    // non-copyable
+    Result(const Result&) = delete;
+    Result& operator=(const Result&) = delete;
+    Result(Result&&) = default;
+    Result& operator=(Result&&) = default;
 
     static Result makeFailure(DWORD error, QString message={});
-    static Result makeSuccess();
+    static Result makeSuccess(HANDLE process=INVALID_HANDLE_VALUE);
 
     // whether the operation was successful
     //
@@ -174,6 +195,15 @@ namespace shell
     //
     const QString& message() const;
 
+    // process handle, if any
+    //
+    HANDLE processHandle() const;
+
+    // process handle, if any; sets the internal handle to INVALID_HANDLE_VALUE
+    // so that the caller is in charge of closing it
+    //
+    HANDLE stealProcessHandle();
+
     // the message, or the error number if empty
     //
     QString toString() const;
@@ -182,7 +212,15 @@ namespace shell
     bool m_success;
     DWORD m_error;
     QString m_message;
+    details::HandlePtr m_process;
   };
+
+  // returns a string representation of the given shell error; these errors are
+  // returned as an HINSTANCE from various functions such as ShellExecuteW() or
+  // FindExecutableW()
+  //
+  QDLLEXPORT QString formatError(int i);
+
 
   // starts explorer using the given directory and/or file
   //
@@ -286,6 +324,10 @@ QString SetJoin(const std::set<T> &value, const QString &separator, size_t maxim
 /**
  * @brief exception class that takes a QString as the parameter
  **/
+
+#pragma warning(push)
+#pragma warning(disable: 4275)  // non-dll interface
+
 class QDLLEXPORT MyException : public std::exception {
 public:
   /**
@@ -300,6 +342,8 @@ public:
 private:
   QByteArray m_Message;
 };
+
+#pragma warning(pop)
 
 
 /**
@@ -431,6 +475,7 @@ inline std::wstring formatSystemMessage(HRESULT hr)
 {
   return formatSystemMessage(static_cast<DWORD>(hr));
 }
+
 
 // forwards to formatSystemMessage(), preserved for ABI
 //
