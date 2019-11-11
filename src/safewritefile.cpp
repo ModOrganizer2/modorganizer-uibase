@@ -30,7 +30,7 @@ SafeWriteFile::SafeWriteFile(const QString &fileName)
 : m_FileName(fileName)
 {
   if (!m_TempFile.open()) {
-    throw MyException(QObject::tr("failed to open temporary file"));
+    throw MyException(QObject::tr(m_TempFile.errorString().toLocal8Bit().data()));
   }
 }
 
