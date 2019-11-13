@@ -32,11 +32,11 @@ SafeWriteFile::SafeWriteFile(const QString &fileName)
 {
   if (!m_TempFile.open()) {
     log::error(
-      "attempt to create file at {} for {} failed (error {}: {})"
-      , QDir::tempPath()
+      "failed to open temporary file '{}', error {} ('{}'), temp path is '{}'"
       , m_FileName
       , m_TempFile.error()
-      , m_TempFile.errorString());
+      , m_TempFile.errorString()
+      , QDir::tempPath());
     
     QString errorMsg;
     switch (m_TempFile.error()) {
@@ -53,6 +53,7 @@ SafeWriteFile::SafeWriteFile(const QString &fileName)
           .arg(QDir::tempPath());
         break;
       case QFileDevice::FileError::NoError:  // fall-through
+      case QFileDevice::FileError::ReadError:
       case QFileDevice::FileError::WriteError:
       case QFileDevice::FileError::FatalError:
       case QFileDevice::FileError::OpenError:
