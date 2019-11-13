@@ -19,6 +19,7 @@ along with Mod Organizer.  If not, see <http://www.gnu.org/licenses/>.
 
 
 #include "safewritefile.h"
+#include "log.h"
 #include <QStringList>
 #include <QCryptographicHash>
 
@@ -30,7 +31,44 @@ SafeWriteFile::SafeWriteFile(const QString &fileName)
 : m_FileName(fileName)
 {
   if (!m_TempFile.open()) {
-    throw MyException(QObject::tr(m_TempFile.errorString().toLocal8Bit().data()));
+    log::error(
+      "attempt to create file at {} for {} failed (error {}: {})"
+      , QDir::tempPath()
+      , m_FileName
+      , m_TempFile.error()
+      , m_TempFile.errorString());
+    
+    QString errorMsg;
+    switch (m_TempFile.error()) {
+      case QFileDevice::FileError::PermissionsError:
+        errorMsg = QObject::tr(
+          "not allowed to access directory %1. \
+           Make sure the permissions on the directory allow reading and writing")
+          .arg(QDir::tempPath());
+        break;
+      case QFileDevice::FileError::ResourceError:
+        errorMsg = QObject::tr(
+          "not enough resources to create a file in %1. Make sure there is \
+           enough space left on the device")
+          .arg(QDir::tempPath());
+        break;
+      case QFileDevice::FileError::NoError:  // fall-through
+      case QFileDevice::FileError::WriteError:
+      case QFileDevice::FileError::FatalError:
+      case QFileDevice::FileError::OpenError:
+      case QFileDevice::FileError::AbortError:
+      case QFileDevice::FileError::TimeOutError:
+      case QFileDevice::FileError::UnspecifiedError:
+      case QFileDevice::FileError::RemoveError:
+      case QFileDevice::FileError::RenameError:
+      case QFileDevice::FileError::PositionError:
+      case QFileDevice::FileError::ResizeError:
+      case QFileDevice::FileError::CopyError:
+      default:
+        errorMsg = QObject::tr("failed to open temporary file: %1").arg(m_TempFile.errorString());
+    }
+
+    throw MyException(errorMsg);
   }
 }
 
