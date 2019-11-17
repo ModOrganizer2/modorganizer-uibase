@@ -22,7 +22,7 @@ along with Mod Organizer.  If not, see <http://www.gnu.org/licenses/>.
 #include "log.h"
 #include <QStringList>
 #include <QCryptographicHash>
-
+#include <QStorageInfo>
 
 namespace MOBase {
 
@@ -31,43 +31,20 @@ SafeWriteFile::SafeWriteFile(const QString &fileName)
 : m_FileName(fileName)
 {
   if (!m_TempFile.open()) {
+    const auto av = static_cast<double>(
+      QStorageInfo(QDir::tempPath()).bytesAvailable());
+
     log::error(
-      "failed to open temporary file '{}', error {} ('{}'), temp path is '{}'"
-      , m_FileName
-      , m_TempFile.error()
-      , m_TempFile.errorString()
-      , QDir::tempPath());
-    
-    QString errorMsg;
-    switch (m_TempFile.error()) {
-      case QFileDevice::FileError::PermissionsError:
-        errorMsg = QObject::tr(
-          "not allowed to access directory %1. \
-           Make sure the permissions on the directory allow reading and writing")
-          .arg(QDir::tempPath());
-        break;
-      case QFileDevice::FileError::ResourceError:
-        errorMsg = QObject::tr(
-          "not enough resources to create a file in %1. Make sure there is \
-           enough space left on the device")
-          .arg(QDir::tempPath());
-        break;
-      case QFileDevice::FileError::NoError:  // fall-through
-      case QFileDevice::FileError::ReadError:
-      case QFileDevice::FileError::WriteError:
-      case QFileDevice::FileError::FatalError:
-      case QFileDevice::FileError::OpenError:
-      case QFileDevice::FileError::AbortError:
-      case QFileDevice::FileError::TimeOutError:
-      case QFileDevice::FileError::UnspecifiedError:
-      case QFileDevice::FileError::RemoveError:
-      case QFileDevice::FileError::RenameError:
-      case QFileDevice::FileError::PositionError:
-      case QFileDevice::FileError::ResizeError:
-      case QFileDevice::FileError::CopyError:
-      default:
-        errorMsg = QObject::tr("failed to open temporary file: %1").arg(m_TempFile.errorString());
-    }
+      "failed to create temporary file for '{}', error {} ('{}'), "
+      "temp path is '{}', {:.3f}GB available",
+      m_FileName, m_TempFile.error(), m_TempFile.errorString(),
+      QDir::tempPath(), (av/1024/1024/1024));
+
+    QString errorMsg = QObject::tr(
+      "Failed to save '{}', could not create a temporary file: {} (error {})")
+      .arg(m_FileName)
+      .arg(m_TempFile.errorString())
+      .arg(m_TempFile.error());
 
     throw MyException(errorMsg);
   }
