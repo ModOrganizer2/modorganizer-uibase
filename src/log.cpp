@@ -331,6 +331,16 @@ void Logger::addSink(std::shared_ptr<spdlog::sinks::sink> sink)
 }
 
 
+QString levelToString(Levels level)
+{
+  const auto spdlogLevel = toSpdlog(level);
+  const auto sv = spdlog::level::to_string_view(spdlogLevel);
+  const std::string s(sv.begin(), sv.end());
+
+  return QString::fromStdString(s);
+}
+
+
 void createDefault(LoggerConfiguration conf)
 {
   g_default = std::make_unique<Logger>(conf);
