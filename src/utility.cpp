@@ -278,6 +278,11 @@ bool Result::success() const
   return m_success;
 }
 
+Result::operator bool() const
+{
+  return m_success;
+}
+
 DWORD Result::error()
 {
   return m_error;

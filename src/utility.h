@@ -186,6 +186,7 @@ namespace shell
     // whether the operation was successful
     //
     bool success() const;
+    explicit operator bool() const;
 
     // error returned by the underlying function
     //
