@@ -265,4 +265,8 @@ void log(Levels lv, F&& format, Args&&... args) noexcept
     lv, std::forward<F>(format), std::forward<Args>(args)...);
 }
 
+
+//
+QDLLEXPORT QString levelToString(Levels level);
+
 } // namespace
