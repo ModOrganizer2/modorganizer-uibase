@@ -167,7 +167,11 @@ QString VersionInfo::displayString(int forcedVersionSegments) const
     result = QString("%1.%2.%3.%4").arg(m_Major).arg(m_Minor).arg(m_SubMinor).arg(m_SubSubMinor);
   } else if (m_Scheme == SCHEME_DATE) {
     // year.month.day was stored in the version fields
-    result = QString("%1-%2-%3").arg(m_Major).arg(QString("%1").arg(m_Minor).rightJustified(2, '0')).arg(QString("%1").arg(m_SubMinor).rightJustified(2, '0'));
+    const auto year = m_Major;
+    const auto month = m_Minor;
+    const auto day = m_SubMinor;
+
+    return QDate(year, month, day).toString(Qt::SystemLocaleShortDate);
   }
   switch (m_ReleaseType) {
     case RELEASE_PREALPHA: {
