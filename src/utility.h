@@ -31,6 +31,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 #include <QIcon>
 #include <QUrl>
 #include <Windows.h>
+#include <ShlObj.h>
 
 
 namespace MOBase {
@@ -420,13 +421,21 @@ QDLLEXPORT QString ToString(const SYSTEMTIME &time);
 
 /**
  * throws on failure
- * @return absolute path of the the desktop directory for the current user
+ * @param id    the folder id
+ * @param what  the name of the folder, used for logging errors only
+ * @return absolute path of the given known folder id
+ **/
+QDLLEXPORT QDir getKnownFolder(KNOWNFOLDERID id, const QString& what={});
+
+/**
+ * throws on failure
+ * @return absolute path of the desktop directory for the current user
  **/
 QDLLEXPORT QString getDesktopDirectory();
 
 /**
 * throws on failure
-* @return absolute path of the the start menu directory for the current user
+* @return absolute path of the start menu directory for the current user
  **/
 QDLLEXPORT QString getStartMenuDirectory();
 
