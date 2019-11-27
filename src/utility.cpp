@@ -32,10 +32,10 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 #include <QApplication>
 #include <QTextCodec>
 #include <QtDebug>
+#include <QUuid>
 #include <QtWinExtras/QtWin>
 #define WIN32_LEAN_AND_MEAN
 #include <Windows.h>
-#include <ShlObj.h>
 
 
 #define FO_RECYCLE 0x1003
@@ -647,7 +647,7 @@ template <class T>
 using COMMemPtr = std::unique_ptr<T, CoTaskMemFreer>;
 
 
-QString getKnownFolder(KNOWNFOLDERID id, const QString& what)
+QDir getKnownFolder(KNOWNFOLDERID id, const QString& what)
 {
   COMMemPtr<wchar_t> path;
 
@@ -658,7 +658,8 @@ QString getKnownFolder(KNOWNFOLDERID id, const QString& what)
     if (FAILED(res)) {
       log::error(
         "failed to get known folder '{}', {}",
-        what, formatSystemMessage(res));
+        what.isEmpty() ? QUuid(id).toString() : what,
+        formatSystemMessage(res));
 
       throw std::runtime_error("couldn't get known folder path");
     }
@@ -671,12 +672,12 @@ QString getKnownFolder(KNOWNFOLDERID id, const QString& what)
 
 QString getDesktopDirectory()
 {
-  return getKnownFolder(FOLDERID_Desktop, "desktop");
+  return getKnownFolder(FOLDERID_Desktop, "desktop").absolutePath();
 }
 
 QString getStartMenuDirectory()
 {
-  return getKnownFolder(FOLDERID_StartMenu, "start menu");
+  return getKnownFolder(FOLDERID_StartMenu, "start menu").absolutePath();
 }
 
 bool shellDeleteQuiet(const QString &fileName, QWidget *dialog)
