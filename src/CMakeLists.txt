@@ -65,6 +65,7 @@ SET(uibase_SRCS
 	log.cpp
 	expanderwidget.cpp
 	errorcodes.cpp
+	linklabel.cpp
   )
 
 SET(uibase_HDRS
@@ -122,6 +123,7 @@ SET(uibase_HDRS
 	log.h
 	expanderwidget.h
 	errorcodes.h
+	linklabel.h
   )
 
 SET(UIS
@@ -175,6 +177,7 @@ set(widgets
 	taskprogressmanager
 	textviewer
 	expanderwidget
+	linklabel
 )
 
 set(src_filters interfaces tutorials widgets
