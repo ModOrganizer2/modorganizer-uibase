@@ -45,7 +45,7 @@ namespace MOBase {
 
 
 MyException::MyException(const QString &text)
-  : std::exception(), m_Message(text.toLocal8Bit())
+  : std::exception(), m_Message(text.toUtf8())
 {
 }
 
