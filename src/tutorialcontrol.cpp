@@ -347,13 +347,18 @@ bool TutorialControl::waitForTabOpen(const QString &tabControlName, const QStrin
               tab, tabControlName);
             return false;
         }
-        if (tabWidget->isEnabled() && (tabWidget->currentIndex() != tabIndex)) {
-            m_ExpectedTab = tabIndex;
-            connect(tabWidget, SIGNAL(currentChanged(int)), this, SLOT(tabChangedProxy(int)));
-            lockUI(false);
+        if (tabWidget->isEnabled()) {
+            if (tabWidget->currentIndex() != tabIndex) {
+                m_ExpectedTab = tabIndex;
+                connect(tabWidget, SIGNAL(currentChanged(int)), this, SLOT(tabChangedProxy(int)));
+                lockUI(false);
+            } else {
+                QObject* background = m_TutorialView->rootObject();
+                QTimer::singleShot(1, background, SLOT(nextStep()));
+                lockUI(true);
+            }
             return true;
-        }
-        else {
+        } else {
             return false;
         }
     }
