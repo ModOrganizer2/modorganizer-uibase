@@ -210,6 +210,12 @@ void TextViewer::addFile(const QString &fileName, bool writable)
   editor->setDocumentTitle(fileName);
   editor->installEventFilter(this);
   editor->setReadOnly(!writable);
+ 
+  // set text highlighting color in inactive window equal to text hightlighting color in active window
+  QPalette palette = editor->palette();
+  palette.setColor(QPalette::Inactive, QPalette::Highlight, palette.color(QPalette::Active, QPalette::Highlight));
+  palette.setColor(QPalette::Inactive, QPalette::HighlightedText, palette.color(QPalette::Active, QPalette::HighlightedText));
+  editor->setPalette(palette);
 
   // add hotkeys for searching through the document
   QAction *findAction = new QAction(QString("&Find"), editor);
