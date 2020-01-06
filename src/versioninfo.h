@@ -25,6 +25,8 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 #include "dllimport.h"
 #include <QString>
 
+class QVersionNumber;
+
 namespace MOBase {
 
 
@@ -140,6 +142,10 @@ public:
    * @return the versioning scheme in effect
    */
   VersionScheme scheme() const { return m_Scheme; }
+
+  // returns this version number as a QVersionNumber
+  //
+  QVersionNumber asQVersionNumber() const;
 
 private:
 

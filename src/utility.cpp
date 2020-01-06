@@ -21,6 +21,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 
 #include "utility.h"
 #include "report.h"
+#include "log.h"
 #include <memory>
 #include <sstream>
 #include <boost/scoped_array.hpp>
@@ -31,10 +32,10 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 #include <QApplication>
 #include <QTextCodec>
 #include <QtDebug>
+#include <QUuid>
 #include <QtWinExtras/QtWin>
 #define WIN32_LEAN_AND_MEAN
 #include <Windows.h>
-#include <ShlObj.h>
 
 
 #define FO_RECYCLE 0x1003
@@ -44,30 +45,8 @@ namespace MOBase {
 
 
 MyException::MyException(const QString &text)
-  : std::exception(), m_Message(text.toLocal8Bit())
+  : std::exception(), m_Message(text.toUtf8())
 {
-}
-
-
-QString windowsErrorString(DWORD errorCode)
-{
-  QByteArray result;
-  QTextStream stream(&result);
-
-  LPWSTR buffer = nullptr;
-  // TODO: the message is not english?
-  if (FormatMessageW(FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM,
-                     nullptr, errorCode, MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT), (LPWSTR)&buffer, 0, nullptr) == 0) {
-    stream << " (errorcode " << errorCode << ")";
-  } else {
-    // remove line break
-    LPWSTR lastChar = buffer + wcslen(buffer) - 2;
-    *lastChar = L'\0';
-    stream << ToQString(buffer) << " (errorcode " << errorCode << ")";
-    LocalFree(buffer); // allocated by FormatMessage
-  }
-  stream.flush();
-  return QString(result);
 }
 
 
@@ -267,14 +246,76 @@ bool shellRename(const QString &oldName, const QString &newName, bool yesToAll, 
 
 bool shellDelete(const QStringList &fileNames, bool recycle, QWidget *dialog)
 {
-  return shellOp(fileNames, QStringList(), dialog, recycle ? FO_RECYCLE : FO_DELETE, false);
+  const UINT op = static_cast<UINT>(recycle ? FO_RECYCLE : FO_DELETE);
+  return shellOp(fileNames, QStringList(), dialog, op, false);
 }
 
 
 namespace shell
 {
 
-const char* ShellExecuteError(int i)
+Result::Result(bool success, DWORD error, QString message, HANDLE process) :
+  m_success(success), m_error(error), m_message(std::move(message)),
+  m_process(process)
+{
+  if (m_message.isEmpty()) {
+    m_message = QString::fromStdWString(formatSystemMessage(m_error));
+  }
+}
+
+Result Result::makeFailure(DWORD error, QString message)
+{
+  return Result(false, error, std::move(message), INVALID_HANDLE_VALUE);
+}
+
+Result Result::makeSuccess(HANDLE process)
+{
+  return Result(true, ERROR_SUCCESS, {}, process);
+}
+
+bool Result::success() const
+{
+  return m_success;
+}
+
+Result::operator bool() const
+{
+  return m_success;
+}
+
+DWORD Result::error()
+{
+  return m_error;
+}
+
+const QString& Result::message() const
+{
+  return m_message;
+}
+
+HANDLE Result::processHandle() const
+{
+  return m_process.get();
+}
+
+HANDLE Result::stealProcessHandle()
+{
+  const auto h = m_process.release();
+  m_process.reset(INVALID_HANDLE_VALUE);
+  return h;
+}
+
+QString Result::toString() const
+{
+  if (m_message.isEmpty()) {
+    return QObject::tr("Error %1").arg(m_error);
+  } else {
+    return m_message;
+  }
+}
+
+
+QString formatError(int i)
 {
   switch (i) {
     case 0:
@@ -320,16 +361,14 @@ const char* ShellExecuteError(int i)
       return "A sharing violation occurred";
 
     default:
-      return "Unknown error";
+      return QString("Unknown error %1").arg(i);
   }
 }
 
 void LogShellFailure(
   const wchar_t* operation, const wchar_t* file, const wchar_t* params,
-  HINSTANCE h)
+  DWORD error)
 {
-  const auto code = static_cast<int>(reinterpret_cast<std::size_t>(h));
-
   QString s;
 
   if (operation) {
@@ -344,28 +383,37 @@ void LogShellFailure(
     s += " " + QString::fromWCharArray(params);
   }
 
-  qCritical().nospace().noquote()
-    << "failed to invoke '" << s << "': "
-    << ShellExecuteError(code) << " (error " << code << ")";
+  log::error("failed to invoke '{}': {}", s, formatSystemMessage(error));
 }
 
-bool ShellExecuteWrapper(
+Result ShellExecuteWrapper(
   const wchar_t* operation, const wchar_t* file, const wchar_t* params)
 {
-  const auto h = ::ShellExecuteW(
-    0, operation, file, params, nullptr, SW_SHOWNORMAL);
+  SHELLEXECUTEINFOW info = {};
 
-  // anything <= 32 is not an actual HINSTANCE and signals failure
-  if (h <= reinterpret_cast<HINSTANCE>(32))
+  info.cbSize = sizeof(info);
+  info.fMask = SEE_MASK_FLAG_NO_UI | SEE_MASK_NOCLOSEPROCESS;
+  info.lpVerb = operation;
+  info.lpFile = file;
+  info.lpParameters = params;
+  info.nShow = SW_SHOWNORMAL;
+
+  const auto r = ::ShellExecuteExW(&info);
+
+  if (!r)
   {
-    LogShellFailure(operation, file, params, h);
-    return false;
+    const auto e = ::GetLastError();
+    LogShellFailure(operation, file, params, e);
+
+    return Result::makeFailure(
+      e, QString::fromStdWString(formatSystemMessage(e)));
   }
 
-  return true;
+  const HANDLE process = info.hProcess ? info.hProcess : INVALID_HANDLE_VALUE;
+  return Result::makeSuccess(process);
 }
 
-bool ExploreDirectory(const QFileInfo& info)
+Result ExploreDirectory(const QFileInfo& info)
 {
   const auto path = QDir::toNativeSeparators(info.absoluteFilePath());
   const auto ws_path = path.toStdWString();
@@ -373,7 +421,7 @@ bool ExploreDirectory(const QFileInfo& info)
   return ShellExecuteWrapper(L"explore", ws_path.c_str(), nullptr);
 }
 
-bool ExploreFileInDirectory(const QFileInfo& info)
+Result ExploreFileInDirectory(const QFileInfo& info)
 {
   const auto path = QDir::toNativeSeparators(info.absoluteFilePath());
   const auto params = "/select,\"" + path + "\"";
@@ -383,7 +431,7 @@ bool ExploreFileInDirectory(const QFileInfo& info)
 }
 
 
-bool ExploreFile(const QFileInfo& info)
+Result Explore(const QFileInfo& info)
 {
   if (info.isFile()) {
     return ExploreFileInDirectory(info);
@@ -395,40 +443,75 @@ bool ExploreFile(const QFileInfo& info)
 
     if (parent.exists()) {
       return ExploreDirectory(parent.absolutePath());
+    } else {
+      return Result::makeFailure(ERROR_FILE_NOT_FOUND);
     }
   }
-
-  return false;
 }
 
-bool ExploreFile(const QString& path)
+Result Explore(const QString& path)
 {
-  return ExploreFile(QFileInfo(path));
+  return Explore(QFileInfo(path));
 }
 
-bool ExploreFile(const QDir& dir)
+Result Explore(const QDir& dir)
 {
-  return ExploreFile(QFileInfo(dir.absolutePath()));
+  return Explore(QFileInfo(dir.absolutePath()));
 }
 
-bool OpenFile(const QString& path)
+Result Open(const QString& path)
 {
   const auto ws_path = path.toStdWString();
   return ShellExecuteWrapper(L"open", ws_path.c_str(), nullptr);
 }
 
-bool OpenLink(const QUrl& url)
+Result Open(const QUrl& url)
 {
   const auto ws_url = url.toString().toStdWString();
   return ShellExecuteWrapper(L"open", ws_url.c_str(), nullptr);
 }
 
-bool Execute(const QString& program, const QString& params)
+Result Execute(const QString& program, const QString& params)
 {
   const auto program_ws = program.toStdWString();
   const auto params_ws = params.toStdWString();
 
   return ShellExecuteWrapper(L"open", program_ws.c_str(), params_ws.c_str());
+}
+
+std::wstring toUNC(const QFileInfo& path)
+{
+  auto wpath = QDir::toNativeSeparators(path.absoluteFilePath()).toStdWString();
+  if (!wpath.starts_with(L"\\\\?\\")) {
+    wpath = L"\\\\?\\" + wpath;
+  }
+
+  return wpath;
+}
+
+Result Delete(const QFileInfo& path)
+{
+  const auto wpath = toUNC(path);
+
+  if (!::DeleteFileW(wpath.c_str())) {
+    const auto e = ::GetLastError();
+    return Result::makeFailure(e);
+  }
+
+  return Result::makeSuccess();
+}
+
+Result Rename(const QFileInfo& src, const QFileInfo& dest)
+{
+  const auto wsrc = toUNC(src);
+  const auto wdest = toUNC(dest);
+
+  if (!::MoveFileEx(wsrc.c_str(), wdest.c_str(), MOVEFILE_COPY_ALLOWED)) {
+    const auto e = ::GetLastError();
+    return Result::makeFailure(e);
+  }
+
+  return Result::makeSuccess();
 }
 
 } // namespace shell
@@ -484,7 +567,7 @@ std::wstring ToWString(const QString &source)
 {
   //FIXME
   //why not source.toStdWString() ?
-  wchar_t *buffer = new wchar_t[source.count() + 1];
+  wchar_t *buffer = new wchar_t[static_cast<std::size_t>(source.count()) + 1];
   source.toWCharArray(buffer);
   buffer[source.count()] = L'\0';
   std::wstring result(buffer);
@@ -564,7 +647,7 @@ template <class T>
 using COMMemPtr = std::unique_ptr<T, CoTaskMemFreer>;
 
 
-QString getKnownFolder(KNOWNFOLDERID id, const QString& what)
+QDir getKnownFolder(KNOWNFOLDERID id, const QString& what)
 {
   COMMemPtr<wchar_t> path;
 
@@ -573,9 +656,10 @@ QString getKnownFolder(KNOWNFOLDERID id, const QString& what)
     HRESULT res = SHGetKnownFolderPath(id, 0, nullptr, &rawPath);
 
     if (FAILED(res)) {
-      qCritical()
-        << "failed to get known folder '" << what << "', "
-        << formatSystemMessageQ(res);
+      log::error(
+        "failed to get known folder '{}', {}",
+        what.isEmpty() ? QUuid(id).toString() : what,
+        formatSystemMessage(res));
 
       throw std::runtime_error("couldn't get known folder path");
     }
@@ -588,12 +672,12 @@ QString getKnownFolder(KNOWNFOLDERID id, const QString& what)
 
 QString getDesktopDirectory()
 {
-  return getKnownFolder(FOLDERID_Desktop, "desktop");
+  return getKnownFolder(FOLDERID_Desktop, "desktop").absolutePath();
 }
 
 QString getStartMenuDirectory()
 {
-  return getKnownFolder(FOLDERID_StartMenu, "start menu");
+  return getKnownFolder(FOLDERID_StartMenu, "start menu").absolutePath();
 }
 
 bool shellDeleteQuiet(const QString &fileName, QWidget *dialog)
@@ -622,7 +706,7 @@ QString readFileText(const QString &fileName, QString *encoding)
   // check reverse conversion. If this was unicode text there can't be data loss
   // this assumes QString doesn't normalize the data in any way so this is a bit unsafe
   if (codec->fromUnicode(text) != buffer) {
-    qDebug("conversion failed assuming local encoding");
+    log::debug("conversion failed assuming local encoding");
     codec = QTextCodec::codecForLocale();
     text = codec->toUnicode(buffer);
   }
@@ -645,7 +729,8 @@ void removeOldFiles(const QString &path, const QString &pattern, int numToKeep, 
     }
 
     if (!shellDelete(deleteFiles)) {
-      qWarning("failed to remove log files: %s", qUtf8Printable(windowsErrorString(::GetLastError())));
+      const auto e = ::GetLastError();
+      log::warn("failed to remove log files: {}", formatSystemMessage(e));
     }
   }
 }
@@ -664,6 +749,18 @@ QIcon iconForExecutable(const QString &filePath)
   }
 }
 
+void deleteChildWidgets(QWidget* w)
+{
+  auto* ly = w->layout();
+  if (!ly) {
+    return;
+  }
+
+  while (auto* item=ly->takeAt(0)) {
+    delete item->widget();
+    delete item;
+  }
+}
 
 std::wstring formatSystemMessage(DWORD id)
 {
@@ -698,9 +795,48 @@ std::wstring formatSystemMessage(DWORD id)
   return s;
 }
 
-QDLLEXPORT QString formatSystemMessageQ(DWORD id)
+QString windowsErrorString(DWORD errorCode)
 {
-  return QString::fromStdWString(formatSystemMessage(id));
+  return QString::fromStdWString(formatSystemMessage(errorCode));
+}
+
+QDLLEXPORT QString localizedByteSize(unsigned long long bytes)
+{
+  double calc = static_cast<double>(bytes);
+  QStringList list;
+  list << QObject::tr("%1 MB") << QObject::tr("%1 GB") << QObject::tr("%1 TB");
+
+  QStringListIterator i(list);
+  QString unit = QObject::tr("%1 KB");
+
+  calc /= 1024.0;
+  while (calc >= 1024.0 && i.hasNext()) {
+    unit = i.next();
+    calc /= 1024.0;
+  }
+
+  return unit.arg(QString().setNum(calc, 'f', 2));
+}
+
+QDLLEXPORT QString localizedByteSpeed(unsigned long long bytesPerSecond)
+{
+  double speed = static_cast<double>(bytesPerSecond);
+
+  // calculate the download speed
+  QString unit;
+  if (speed < 1000) {
+    unit = QObject::tr("%1 B/s");
+  }
+  else if (speed < 1000*1024) {
+    speed /= 1024;
+    unit = QObject::tr("%1 KB/s");
+  }
+  else {
+    speed /= 1024 * 1024;
+    unit = QObject::tr("%1 MB/s");
+  }
+
+  return unit.arg(QString::number(speed, 'f', 1));
 }
 
 } // namespace MOBase

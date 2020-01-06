@@ -5,10 +5,10 @@ using namespace MOBase;
 ExecutableForcedLoadSetting::ExecutableForcedLoadSetting(
                               const QString &process,
                               const QString &library)
-  : m_Process(process)
+  : m_Enabled(false)
+  , m_Process(process)
   , m_Library(library)
   , m_Forced(false)
-  , m_Enabled(false)
 {
 }
 

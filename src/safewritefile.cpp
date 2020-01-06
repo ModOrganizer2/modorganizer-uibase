@@ -19,9 +19,10 @@ along with Mod Organizer.  If not, see <http://www.gnu.org/licenses/>.
 
 
 #include "safewritefile.h"
+#include "log.h"
 #include <QStringList>
 #include <QCryptographicHash>
-
+#include <QStorageInfo>
 
 namespace MOBase {
 
@@ -30,7 +31,22 @@ SafeWriteFile::SafeWriteFile(const QString &fileName)
 : m_FileName(fileName)
 {
   if (!m_TempFile.open()) {
-    throw MyException(QObject::tr("failed to open temporary file"));
+    const auto av = static_cast<double>(
+      QStorageInfo(QDir::tempPath()).bytesAvailable());
+
+    log::error(
+      "failed to create temporary file for '{}', error {} ('{}'), "
+      "temp path is '{}', {:.3f}GB available",
+      m_FileName, m_TempFile.error(), m_TempFile.errorString(),
+      QDir::tempPath(), (av/1024/1024/1024));
+
+    QString errorMsg = QObject::tr(
+      "Failed to save '{}', could not create a temporary file: {} (error {})")
+      .arg(m_FileName)
+      .arg(m_TempFile.errorString())
+      .arg(m_TempFile.error());
+
+    throw MyException(errorMsg);
   }
 }
 

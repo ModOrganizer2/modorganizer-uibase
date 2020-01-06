@@ -30,18 +30,11 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 #include <QDir>
 #include <QIcon>
 #include <QUrl>
-#ifndef WIN32_MEAN_AND_LEAN
-#define WIN32_MEAN_AND_LEAN
-#endif
-#ifndef NOMINMAX
-#define NOMINMAX
-#endif
 #include <Windows.h>
+#include <ShlObj.h>
 
 
 namespace MOBase {
-
-QDLLEXPORT QString windowsErrorString(DWORD errorCode);
 
 /**
  * @brief remove the specified directory including all sub-directories
@@ -154,47 +147,125 @@ QDLLEXPORT bool shellDeleteQuiet(const QString &fileName, QWidget *dialog = null
 
 namespace shell
 {
-  /** @brief starts explorer using the given directory and/or file
-   *  @param info if this is a directory, opens it in explorer; if this is a file,
-   *         opens the directory and selects it
-   *  @return false if something went wrong
-   **/
-  QDLLEXPORT bool ExploreFile(const QFileInfo& info);
+  namespace details
+  {
+    // used by HandlePtr, calls CloseHandle() as the deleter
+    //
+    struct HandleCloser
+    {
+      using pointer = HANDLE;
 
-  /** @brief starts explorer using the given directory and/or file
-   *  @param path if this is a directory, opens it in explorer; if this is a file,
-   *         opens the directory and selects it
-   *  @return false if something went wrong
-   **/
-  QDLLEXPORT bool ExploreFile(const QString& path);
+      void operator()(HANDLE h)
+      {
+        if (h != INVALID_HANDLE_VALUE) {
+          ::CloseHandle(h);
+        }
+      }
+    };
 
-  /** @brief starts explorer using the given directory
-   *  @param dir opens this directory
-   *  @return false if something went wrong
-   **/
-  QDLLEXPORT bool ExploreFile(const QDir& dir);
-
-
-  /** @brief asks the shell to open the given file
-   *  @param path file to open
-   *  @return false if something went wrong
-   **/
-  QDLLEXPORT bool OpenFile(const QString& path);
+    using HandlePtr = std::unique_ptr<HANDLE, HandleCloser>;
+  }
 
 
-  /** @brief asks the shell to open the given link
-   *  @param url link to open
-   *  @return false if something went wrong
-   **/
-  QDLLEXPORT bool OpenLink(const QUrl& url);
+  // returned by the various shell functions; note that the process handle is
+  // closed in the destructor, unless stealProcessHandle() was called
+  //
+  class QDLLEXPORT Result
+  {
+  public:
+    Result(bool success, DWORD error, QString message, HANDLE process);
+
+    // non-copyable
+    Result(const Result&) = delete;
+    Result& operator=(const Result&) = delete;
+    Result(Result&&) = default;
+    Result& operator=(Result&&) = default;
+
+    static Result makeFailure(DWORD error, QString message={});
+    static Result makeSuccess(HANDLE process=INVALID_HANDLE_VALUE);
+
+    // whether the operation was successful
+    //
+    bool success() const;
+    explicit operator bool() const;
+
+    // error returned by the underlying function
+    //
+    DWORD error();
+
+    // string representation of the message, may be localized
+    //
+    const QString& message() const;
+
+    // process handle, if any
+    //
+    HANDLE processHandle() const;
+
+    // process handle, if any; sets the internal handle to INVALID_HANDLE_VALUE
+    // so that the caller is in charge of closing it
+    //
+    HANDLE stealProcessHandle();
+
+    // the message, or the error number if empty
+    //
+    QString toString() const;
+
+  private:
+    bool m_success;
+    DWORD m_error;
+    QString m_message;
+    details::HandlePtr m_process;
+  };
+
+  // returns a string representation of the given shell error; these errors are
+  // returned as an HINSTANCE from various functions such as ShellExecuteW() or
+  // FindExecutableW()
+  //
+  QDLLEXPORT QString formatError(int i);
 
 
-  /** @brief asks the shell to execute the given program
-   *  @param program the path to the executable
-   *  @param params optional parameters to pass
-   *  @return false if something went wrong
-   **/
-  QDLLEXPORT bool Execute(const QString& program, const QString& params={});
+  // starts explorer using the given directory and/or file
+  //
+  // if `info` is a directory, opens it in explorer; if it's a file, opens the
+  // directory and selects it
+  //
+  QDLLEXPORT Result Explore(const QFileInfo& info);
+
+  // starts explorer using the given directory and/or file
+  //
+  // if `path` is a directory, opens it in explorer; if it's a file, opens the
+  // directory and selects it
+  //
+  QDLLEXPORT Result Explore(const QString& path);
+
+  // starts explorer using the given directory
+  //
+  QDLLEXPORT Result Explore(const QDir& dir);
+
+
+  // asks the shell to open the given file with its default handler
+  //
+  QDLLEXPORT Result Open(const QString& path);
+
+  // asks the shell to open the given link with the default browser
+  //
+  QDLLEXPORT Result Open(const QUrl& url);
+
+
+  // @brief asks the shell to execute the given program, with optional
+  // parameters
+  //
+  QDLLEXPORT Result Execute(const QString& program, const QString& params={});
+
+
+  // asks the shell to delete the given file (not directory)
+  //
+  QDLLEXPORT Result Delete(const QFileInfo& path);
+
+  // asks the shell to rename a file or directory from `src` to `dest`; works
+  // across volumes
+  //
+  QDLLEXPORT Result Rename(const QFileInfo& src, const QFileInfo& dest);
 }
 
 /**
@@ -255,6 +326,10 @@ QString SetJoin(const std::set<T> &value, const QString &separator, size_t maxim
 /**
  * @brief exception class that takes a QString as the parameter
  **/
+
+#pragma warning(push)
+#pragma warning(disable: 4275)  // non-dll interface
+
 class QDLLEXPORT MyException : public std::exception {
 public:
   /**
@@ -269,6 +344,8 @@ public:
 private:
   QByteArray m_Message;
 };
+
+#pragma warning(pop)
 
 
 /**
@@ -344,13 +421,21 @@ QDLLEXPORT QString ToString(const SYSTEMTIME &time);
 
 /**
  * throws on failure
- * @return absolute path of the the desktop directory for the current user
+ * @param id    the folder id
+ * @param what  the name of the folder, used for logging errors only
+ * @return absolute path of the given known folder id
+ **/
+QDLLEXPORT QDir getKnownFolder(KNOWNFOLDERID id, const QString& what={});
+
+/**
+ * throws on failure
+ * @return absolute path of the desktop directory for the current user
  **/
 QDLLEXPORT QString getDesktopDirectory();
 
 /**
 * throws on failure
-* @return absolute path of the the start menu directory for the current user
+* @return absolute path of the start menu directory for the current user
  **/
 QDLLEXPORT QString getStartMenuDirectory();
 
@@ -385,13 +470,78 @@ QDLLEXPORT void removeOldFiles(const QString &path, const QString &pattern, int 
  **/
 QDLLEXPORT QIcon iconForExecutable(const QString &filePath);
 
+// removes and deletes all the children of the given widget
+//
+QDLLEXPORT void deleteChildWidgets(QWidget* w);
+
 template <typename T>
 bool isOneOf(const T &val, const std::initializer_list<T> &list) {
   return std::find(list.begin(), list.end(), val) != list.end();
 }
 
 QDLLEXPORT std::wstring formatSystemMessage(DWORD id);
-QDLLEXPORT QString formatSystemMessageQ(DWORD id);
+
+inline std::wstring formatSystemMessage(HRESULT hr)
+{
+  return formatSystemMessage(static_cast<DWORD>(hr));
+}
+
+
+// forwards to formatSystemMessage(), preserved for ABI
+//
+QDLLEXPORT QString windowsErrorString(DWORD errorCode);
+
+
+QDLLEXPORT QString localizedByteSize(unsigned long long bytes);
+QDLLEXPORT QString localizedByteSpeed(unsigned long long bytesPerSecond);
+
+template <class F>
+class Guard
+{
+public:
+  Guard()
+    : m_call(false)
+  {
+  }
+
+  Guard(F f)
+    : m_f(f), m_call(true)
+  {
+  }
+
+  Guard(Guard&& g)
+    : m_f(std::move(g.m_f))
+  {
+    g.m_call = false;
+  }
+
+  ~Guard()
+  {
+    if (m_call)
+      m_f();
+  }
+
+  Guard& operator=(Guard&& g)
+  {
+    m_f = std::move(g.m_f);
+    g.m_call = false;
+    return *this;
+  }
+
+
+  void kill()
+  {
+    m_call = false;
+  }
+
+
+  Guard(const Guard&) = delete;
+  Guard& operator=(const Guard&) = delete;
+
+private:
+  F m_f;
+  bool m_call;
+};
 
 } // namespace MOBase
 

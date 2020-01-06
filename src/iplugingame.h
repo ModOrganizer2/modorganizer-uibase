@@ -59,7 +59,11 @@ public:
       try {
         return boost::any_cast<T*>(iter->second);
       } catch (const boost::bad_any_cast&) {
-        qCritical("failed to retrieve feature type %s (got %s)", typeid(T).name(), typeid(iter->second).name());
+        // don't use log::error() here so log.h and fmt aren't pulled into
+        // plugins
+        qCritical(
+          "failed to retrieve feature type %s (got %s)",
+          typeid(T).name(), typeid(iter->second).name());
         return nullptr;
       }
     } else {
