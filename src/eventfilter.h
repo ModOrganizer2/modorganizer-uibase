@@ -23,6 +23,7 @@ along with Mod Organizer.  If not, see <http://www.gnu.org/licenses/>.
 #include <QObject>
 #include <functional>
 
+namespace MOBase {
 
 class QDLLEXPORT EventFilter : public QObject {
 
@@ -42,3 +43,4 @@ private:
 
 };
 
+} // namespace

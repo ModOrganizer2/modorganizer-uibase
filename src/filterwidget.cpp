@@ -4,7 +4,7 @@
 #include <QSortFilterProxyModel>
 #include <QEvent>
 
-using namespace MOBase;
+namespace MOBase {
 
 FilterWidgetProxyModel::FilterWidgetProxyModel(FilterWidget& fw, QWidget* parent)
   : QSortFilterProxyModel(parent), m_filter(fw)
@@ -221,3 +221,5 @@ void FilterWidget::repositionClearButton()
 
   m_clear->move(x, y);
 }
+
+} // namespace

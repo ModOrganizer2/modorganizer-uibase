@@ -9,6 +9,7 @@
 #include <QSortFilterProxyModel>
 #include "dllimport.h"
 
+namespace MOBase {
 
 class EventFilter;
 class FilterWidget;
@@ -69,5 +70,7 @@ private:
 
   void compile();
 };
+
+} // namespace
 
 #endif // FILTERWIDGET_H

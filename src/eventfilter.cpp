@@ -20,6 +20,8 @@ along with Mod Organizer.  If not, see <http://www.gnu.org/licenses/>.
 
 #include "eventfilter.h"
 
+namespace MOBase {
+
 EventFilter::EventFilter(QObject *parent,
                          const EventFilter::HandlerFunc &handler)
   : QObject(parent)
@@ -31,3 +33,5 @@ bool EventFilter::eventFilter(QObject *obj, QEvent *event)
 {
   return m_Handler(obj, event);
 }
+
+} // namespace
