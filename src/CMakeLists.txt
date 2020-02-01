@@ -64,6 +64,8 @@ SET(uibase_SRCS
     steamutility.cpp
 	log.cpp
 	expanderwidget.cpp
+    filterwidget.cpp
+    eventfilter.cpp
 	errorcodes.cpp
 	linklabel.cpp
   )
@@ -122,6 +124,8 @@ SET(uibase_HDRS
     steamutility.h
 	log.h
 	expanderwidget.h
+    eventfilter.h
+    filterwidget.h
 	errorcodes.h
 	linklabel.h
   )
@@ -177,6 +181,7 @@ set(widgets
 	taskprogressmanager
 	textviewer
 	expanderwidget
+    filterwidget
 	linklabel
 )
 
