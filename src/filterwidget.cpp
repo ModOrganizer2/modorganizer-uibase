@@ -9,6 +9,7 @@ namespace MOBase {
 FilterWidgetProxyModel::FilterWidgetProxyModel(FilterWidget& fw, QWidget* parent)
   : QSortFilterProxyModel(parent), m_filter(fw)
 {
+  setRecursiveFilteringEnabled(true);
   connect(&fw, &FilterWidget::changed, [&]{ invalidateFilter(); });
 }
 
@@ -26,7 +27,6 @@ bool FilterWidgetProxyModel::filterAcceptsRow(
         return true;
       }
     }
-
     return false;
     });
 
