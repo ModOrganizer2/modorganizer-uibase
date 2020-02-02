@@ -809,6 +809,10 @@ QDLLEXPORT QString localizedByteSize(unsigned long long bytes)
   QStringListIterator i(list);
   QString unit = QObject::tr("%1 KB");
 
+  if (bytes == 0) {
+    return unit.arg(0);
+  }
+
   calc /= 1024.0;
   while (calc >= 1024.0 && i.hasNext()) {
     unit = i.next();
