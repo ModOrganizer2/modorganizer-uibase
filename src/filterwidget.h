@@ -22,11 +22,16 @@ public:
   FilterWidgetProxyModel(FilterWidget& fw, QWidget* parent=nullptr);
   using QSortFilterProxyModel::invalidateFilter;
 
+  void setUseSourceSort(bool b);
+  bool useSourceSort() const;
+
 protected:
   bool filterAcceptsRow(int row, const QModelIndex& parent) const override;
+  void sort(int column, Qt::SortOrder order = Qt::AscendingOrder) override;
 
 private:
   FilterWidget& m_filter;
+  bool m_useSourceSort;
 };
 
 
@@ -44,12 +49,18 @@ public:
   void clear();
   bool empty() const;
 
+  void setUseSourceSort(bool b);
+  bool useSourceSort() const;
+
+  FilterWidgetProxyModel* proxyModel();
+
   QModelIndex map(const QModelIndex& index);
 
   bool matches(predFun pred) const;
 
 signals:
-  void changed();
+  void aboutToChange(const QString& oldFilter, const QString& newFilter);
+  void changed(const QString& oldFilter, const QString& newFilter);
 
 private:
   QLineEdit* m_edit;

@@ -7,10 +7,20 @@
 namespace MOBase {
 
 FilterWidgetProxyModel::FilterWidgetProxyModel(FilterWidget& fw, QWidget* parent)
-  : QSortFilterProxyModel(parent), m_filter(fw)
+  : QSortFilterProxyModel(parent), m_filter(fw), m_useSourceSort(true)
 {
   setRecursiveFilteringEnabled(true);
   connect(&fw, &FilterWidget::changed, [&]{ invalidateFilter(); });
+}
+
+void FilterWidgetProxyModel::setUseSourceSort(bool b)
+{
+  m_useSourceSort = b;
+}
+
+bool FilterWidgetProxyModel::useSourceSort() const
+{
+  return m_useSourceSort;
 }
 
 bool FilterWidgetProxyModel::filterAcceptsRow(
@@ -28,9 +38,14 @@ bool FilterWidgetProxyModel::filterAcceptsRow(
       }
     }
     return false;
-    });
+  });
 
   return m;
+}
+
+void FilterWidgetProxyModel::sort(int column, Qt::SortOrder order)
+{
+  sourceModel()->sort(column, order);
 }
 
 
@@ -78,6 +93,30 @@ void FilterWidget::clear()
 bool FilterWidget::empty() const
 {
   return m_text.isEmpty();
+}
+
+void FilterWidget::setUseSourceSort(bool b)
+{
+  if (m_proxy) {
+    m_proxy->setUseSourceSort(b);
+  } else {
+    log::error("FilterWidget::setUseSourceSort() called, but proxy isn't set up");
+  }
+}
+
+bool FilterWidget::useSourceSort() const
+{
+  if (m_proxy) {
+    return m_proxy->useSourceSort();
+  } else {
+    log::error("FilterWidget::useSourceSort() called, but proxy isn't set up");
+    return false;
+  }
+}
+
+FilterWidgetProxyModel* FilterWidget::proxyModel()
+{
+  return m_proxy;
 }
 
 QModelIndex FilterWidget::map(const QModelIndex& index)
@@ -172,7 +211,7 @@ void FilterWidget::createClear()
 
 void FilterWidget::hookEvents()
 {
-  m_eventFilter = new EventFilter(m_edit, [&](auto* w, auto* e) {
+  m_eventFilter = new EventFilter(m_edit, [&](auto*, auto* e) {
     if (e->type() == QEvent::Resize) {
       onResized();
     }
@@ -190,6 +229,10 @@ void FilterWidget::onTextChanged()
   const auto text = m_edit->text();
 
   if (text != m_text) {
+    const QString old = m_text;
+
+    emit aboutToChange(old, text);
+
     m_text = text;
     compile();
 
@@ -197,7 +240,7 @@ void FilterWidget::onTextChanged()
       m_proxy->invalidateFilter();
     }
 
-    emit changed();
+    emit changed(old, text);
   }
 }
 
