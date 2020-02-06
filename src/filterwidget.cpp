@@ -6,8 +6,9 @@
 
 namespace MOBase {
 
-FilterWidgetProxyModel::FilterWidgetProxyModel(FilterWidget& fw, QWidget* parent)
-  : QSortFilterProxyModel(parent), m_filter(fw), m_useSourceSort(true)
+FilterWidgetProxyModel::FilterWidgetProxyModel(FilterWidget& fw, QWidget* parent) :
+  QSortFilterProxyModel(parent), m_filter(fw), m_useSourceSort(true),
+  m_filterColumn(-1)
 {
   setRecursiveFilteringEnabled(true);
   connect(&fw, &FilterWidget::changed, [&]{ invalidateFilter(); });
@@ -23,24 +24,46 @@ bool FilterWidgetProxyModel::useSourceSort() const
   return m_useSourceSort;
 }
 
+void FilterWidgetProxyModel::setFilterColumn(int i)
+{
+  m_filterColumn = i;
+}
+
+int FilterWidgetProxyModel::filterColumn() const
+{
+  return m_filterColumn;
+}
+
 bool FilterWidgetProxyModel::filterAcceptsRow(
   int sourceRow, const QModelIndex& sourceParent) const
 {
   const auto cols = sourceModel()->columnCount();
 
   const auto m = m_filter.matches([&](auto&& what) {
-    for (int c=0; c<cols; ++c) {
-      QModelIndex index = sourceModel()->index(sourceRow, c, sourceParent);
-      const auto text = sourceModel()->data(index, Qt::DisplayRole).toString();
-
-      if (text.contains(what, Qt::CaseInsensitive)) {
-        return true;
+    if (m_filterColumn == -1) {
+      for (int c=0; c<cols; ++c) {
+        if (columnMatches(sourceRow, sourceParent, c, what)) {
+          return true;
+        }
       }
+
+      return false;
+    } else {
+      return columnMatches(sourceRow, sourceParent, m_filterColumn, what);
     }
-    return false;
   });
 
   return m;
+}
+
+bool FilterWidgetProxyModel::columnMatches(
+  int sourceRow, const QModelIndex& sourceParent,
+  int c, const QString& what) const
+{
+  QModelIndex index = sourceModel()->index(sourceRow, c, sourceParent);
+  const auto text = sourceModel()->data(index, Qt::DisplayRole).toString();
+
+  return text.contains(what, Qt::CaseInsensitive);
 }
 
 void FilterWidgetProxyModel::sort(int column, Qt::SortOrder order)
@@ -111,6 +134,25 @@ bool FilterWidget::useSourceSort() const
   } else {
     log::error("FilterWidget::useSourceSort() called, but proxy isn't set up");
     return false;
+  }
+}
+
+void FilterWidget::setFilterColumn(int i)
+{
+  if (m_proxy) {
+    m_proxy->setFilterColumn(i);
+  } else {
+    log::error("FilterWidget::setFilterColumn() called, but proxy isn't set up");
+  }
+}
+
+int FilterWidget::filterColumn() const
+{
+  if (m_proxy) {
+    return m_proxy->filterColumn();
+  } else {
+    log::error("FilterWidget::filterColumn() called, but proxy isn't set up");
+    return -1;
   }
 }
 

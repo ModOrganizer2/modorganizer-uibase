@@ -25,6 +25,9 @@ public:
   void setUseSourceSort(bool b);
   bool useSourceSort() const;
 
+  void setFilterColumn(int i);
+  int filterColumn() const;
+
 protected:
   bool filterAcceptsRow(int row, const QModelIndex& parent) const override;
   void sort(int column, Qt::SortOrder order = Qt::AscendingOrder) override;
@@ -32,6 +35,11 @@ protected:
 private:
   FilterWidget& m_filter;
   bool m_useSourceSort;
+  int m_filterColumn;
+
+  bool columnMatches(
+    int sourceRow, const QModelIndex& sourceParent,
+    int c, const QString& what) const;
 };
 
 
@@ -51,6 +59,9 @@ public:
 
   void setUseSourceSort(bool b);
   bool useSourceSort() const;
+
+  void setFilterColumn(int i);
+  int filterColumn() const;
 
   FilterWidgetProxyModel* proxyModel();
 
