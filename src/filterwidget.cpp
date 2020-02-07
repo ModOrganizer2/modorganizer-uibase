@@ -11,7 +11,6 @@ FilterWidgetProxyModel::FilterWidgetProxyModel(FilterWidget& fw, QWidget* parent
   m_filterColumn(-1)
 {
   setRecursiveFilteringEnabled(true);
-  connect(&fw, &FilterWidget::changed, [&]{ invalidateFilter(); });
 }
 
 void FilterWidgetProxyModel::setUseSourceSort(bool b)
