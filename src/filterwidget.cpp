@@ -272,21 +272,24 @@ void FilterWidget::onTextChanged()
   m_clear->setVisible(!m_edit->text().isEmpty());
 
   const auto text = m_edit->text();
-
-  if (text != m_text) {
-    const QString old = m_text;
-
-    emit aboutToChange(old, text);
-
-    m_text = text;
-    compile();
-
-    if (m_proxy) {
-      m_proxy->invalidateFilter();
-    }
-
-    emit changed(old, text);
+  if (text == m_text) {
+    return;
   }
+
+  const QString old = m_text;
+
+  emit aboutToChange(old, text);
+
+  m_text = text;
+  compile();
+
+  if (m_proxy) {
+    m_proxy->invalidateFilter();
+  }
+
+  setListBorder(!m_text.isEmpty());
+
+  emit changed(old, text);
 }
 
 void FilterWidget::onResized()
@@ -308,6 +311,24 @@ void FilterWidget::repositionClearButton()
   const auto y = (r.bottom() + 1 - sz.height()) / 2;
 
   m_clear->move(x, y);
+}
+
+void FilterWidget::setListBorder(bool active)
+{
+  if (!m_list) {
+    return;
+  }
+
+  if (active) {
+    m_list->setProperty("filtered", true);
+  } else {
+    m_list->setProperty("filtered", false);
+  }
+
+  if (auto* s=m_list->style()) {
+    s->unpolish(m_list);
+    s->polish(m_list);
+  }
 }
 
 } // namespace

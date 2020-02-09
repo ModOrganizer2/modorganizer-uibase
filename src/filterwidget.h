@@ -89,6 +89,7 @@ private:
 
   void onTextChanged();
   void onResized();
+  void setListBorder(bool active);
 
   void compile();
 };
