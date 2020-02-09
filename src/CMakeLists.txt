@@ -68,6 +68,7 @@ SET(uibase_SRCS
     eventfilter.cpp
 	errorcodes.cpp
 	linklabel.cpp
+	widgetutility.cpp
   )
 
 SET(uibase_HDRS
@@ -128,6 +129,7 @@ SET(uibase_HDRS
     filterwidget.h
 	errorcodes.h
 	linklabel.h
+	widgetutility.h
   )
 
 SET(UIS
@@ -183,6 +185,7 @@ set(widgets
 	expanderwidget
     filterwidget
 	linklabel
+	widgetutility
 )
 
 set(src_filters interfaces tutorials widgets
