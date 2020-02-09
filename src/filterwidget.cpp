@@ -326,9 +326,17 @@ void FilterWidget::setListBorder(bool active)
   }
 
   if (auto* s=m_list->style()) {
+    // changing properties doesn't repolish automatically
     s->unpolish(m_list);
     s->polish(m_list);
   }
+
+  // the qss will probably change the border, which requires sending a manual
+  // StyleChange because the box model has changed
+  QEvent event(QEvent::StyleChange);
+  QApplication::sendEvent(m_list, &event);
+  m_list->update();
+  m_list->updateGeometry();
 }
 
 } // namespace
