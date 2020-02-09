@@ -6,11 +6,31 @@
 
 namespace MOBase {
 
-FilterWidgetProxyModel::FilterWidgetProxyModel(FilterWidget& fw, QWidget* parent)
-  : QSortFilterProxyModel(parent), m_filter(fw)
+FilterWidgetProxyModel::FilterWidgetProxyModel(FilterWidget& fw, QWidget* parent) :
+  QSortFilterProxyModel(parent), m_filter(fw), m_useSourceSort(false),
+  m_filterColumn(-1)
 {
   setRecursiveFilteringEnabled(true);
-  connect(&fw, &FilterWidget::changed, [&]{ invalidateFilter(); });
+}
+
+void FilterWidgetProxyModel::setUseSourceSort(bool b)
+{
+  m_useSourceSort = b;
+}
+
+bool FilterWidgetProxyModel::useSourceSort() const
+{
+  return m_useSourceSort;
+}
+
+void FilterWidgetProxyModel::setFilterColumn(int i)
+{
+  m_filterColumn = i;
+}
+
+int FilterWidgetProxyModel::filterColumn() const
+{
+  return m_filterColumn;
 }
 
 bool FilterWidgetProxyModel::filterAcceptsRow(
@@ -19,18 +39,39 @@ bool FilterWidgetProxyModel::filterAcceptsRow(
   const auto cols = sourceModel()->columnCount();
 
   const auto m = m_filter.matches([&](auto&& what) {
-    for (int c=0; c<cols; ++c) {
-      QModelIndex index = sourceModel()->index(sourceRow, c, sourceParent);
-      const auto text = sourceModel()->data(index, Qt::DisplayRole).toString();
-
-      if (text.contains(what, Qt::CaseInsensitive)) {
-        return true;
+    if (m_filterColumn == -1) {
+      for (int c=0; c<cols; ++c) {
+        if (columnMatches(sourceRow, sourceParent, c, what)) {
+          return true;
+        }
       }
+
+      return false;
+    } else {
+      return columnMatches(sourceRow, sourceParent, m_filterColumn, what);
     }
-    return false;
-    });
+  });
 
   return m;
+}
+
+bool FilterWidgetProxyModel::columnMatches(
+  int sourceRow, const QModelIndex& sourceParent,
+  int c, const QString& what) const
+{
+  QModelIndex index = sourceModel()->index(sourceRow, c, sourceParent);
+  const auto text = sourceModel()->data(index, Qt::DisplayRole).toString();
+
+  return text.contains(what, Qt::CaseInsensitive);
+}
+
+void FilterWidgetProxyModel::sort(int column, Qt::SortOrder order)
+{
+  if (m_useSourceSort) {
+    sourceModel()->sort(column, order);
+  } else {
+    QSortFilterProxyModel::sort(column, order);
+  }
 }
 
 
@@ -78,6 +119,49 @@ void FilterWidget::clear()
 bool FilterWidget::empty() const
 {
   return m_text.isEmpty();
+}
+
+void FilterWidget::setUseSourceSort(bool b)
+{
+  if (m_proxy) {
+    m_proxy->setUseSourceSort(b);
+  } else {
+    log::error("FilterWidget::setUseSourceSort() called, but proxy isn't set up");
+  }
+}
+
+bool FilterWidget::useSourceSort() const
+{
+  if (m_proxy) {
+    return m_proxy->useSourceSort();
+  } else {
+    log::error("FilterWidget::useSourceSort() called, but proxy isn't set up");
+    return false;
+  }
+}
+
+void FilterWidget::setFilterColumn(int i)
+{
+  if (m_proxy) {
+    m_proxy->setFilterColumn(i);
+  } else {
+    log::error("FilterWidget::setFilterColumn() called, but proxy isn't set up");
+  }
+}
+
+int FilterWidget::filterColumn() const
+{
+  if (m_proxy) {
+    return m_proxy->filterColumn();
+  } else {
+    log::error("FilterWidget::filterColumn() called, but proxy isn't set up");
+    return -1;
+  }
+}
+
+FilterWidgetProxyModel* FilterWidget::proxyModel()
+{
+  return m_proxy;
 }
 
 QModelIndex FilterWidget::map(const QModelIndex& index)
@@ -172,7 +256,7 @@ void FilterWidget::createClear()
 
 void FilterWidget::hookEvents()
 {
-  m_eventFilter = new EventFilter(m_edit, [&](auto* w, auto* e) {
+  m_eventFilter = new EventFilter(m_edit, [&](auto*, auto* e) {
     if (e->type() == QEvent::Resize) {
       onResized();
     }
@@ -190,6 +274,10 @@ void FilterWidget::onTextChanged()
   const auto text = m_edit->text();
 
   if (text != m_text) {
+    const QString old = m_text;
+
+    emit aboutToChange(old, text);
+
     m_text = text;
     compile();
 
@@ -197,7 +285,7 @@ void FilterWidget::onTextChanged()
       m_proxy->invalidateFilter();
     }
 
-    emit changed();
+    emit changed(old, text);
   }
 }
 

@@ -800,43 +800,94 @@ QString windowsErrorString(DWORD errorCode)
   return QString::fromStdWString(formatSystemMessage(errorCode));
 }
 
-QDLLEXPORT QString localizedByteSize(unsigned long long bytes)
+QString localizedSize(
+  unsigned long long bytes,
+  const QString& B, const QString& KB, const QString& MB,
+  const QString& GB, const QString& TB)
 {
-  double calc = static_cast<double>(bytes);
-  QStringList list;
-  list << QObject::tr("%1 MB") << QObject::tr("%1 GB") << QObject::tr("%1 TB");
+  constexpr unsigned long long OneKB = 1024ull;
+  constexpr unsigned long long OneMB = 1024ull * 1024;
+  constexpr unsigned long long OneGB = 1024ull * 1024 * 1024;
+  constexpr unsigned long long OneTB = 1024ull * 1024 * 1024 * 1024;
 
-  QStringListIterator i(list);
-  QString unit = QObject::tr("%1 KB");
+  auto makeNum = [&](int factor) {
+    const double n = bytes / std::pow(1024.0, factor);
 
-  calc /= 1024.0;
-  while (calc >= 1024.0 && i.hasNext()) {
-    unit = i.next();
-    calc /= 1024.0;
+    // avoids rounding something like "1.999" to "2.00 KB"
+    const double truncated = static_cast<unsigned long long>(n * 100) / 100.0;
+
+    return QString().setNum(truncated, 'f', 2);
+  };
+
+  if (bytes < OneKB) {
+    return B.arg(bytes);
+  } else if (bytes < OneMB) {
+    return KB.arg(makeNum(1));
+  } else if (bytes < OneGB) {
+    return MB.arg(makeNum(2));
+  } else if (bytes < OneTB) {
+    return GB.arg(makeNum(3));
+  } else {
+    return TB.arg(makeNum(4));
   }
-
-  return unit.arg(QString().setNum(calc, 'f', 2));
 }
 
-QDLLEXPORT QString localizedByteSpeed(unsigned long long bytesPerSecond)
+
+QDLLEXPORT QString localizedByteSize(unsigned long long bytes)
 {
-  double speed = static_cast<double>(bytesPerSecond);
+  return localizedSize(
+    bytes,
+    QObject::tr("%1 B"),
+    QObject::tr("%1 KB"),
+    QObject::tr("%1 MB"),
+    QObject::tr("%1 GB"),
+    QObject::tr("%1 TB"));
+}
 
-  // calculate the download speed
-  QString unit;
-  if (speed < 1000) {
-    unit = QObject::tr("%1 B/s");
-  }
-  else if (speed < 1000*1024) {
-    speed /= 1024;
-    unit = QObject::tr("%1 KB/s");
-  }
-  else {
-    speed /= 1024 * 1024;
-    unit = QObject::tr("%1 MB/s");
-  }
+QDLLEXPORT QString localizedByteSpeed(unsigned long long bps)
+{
+  return localizedSize(
+    bps,
+    QObject::tr("%1 B/s"),
+    QObject::tr("%1 KB/s"),
+    QObject::tr("%1 MB/s"),
+    QObject::tr("%1 GB/s"),
+    QObject::tr("%1 TB/s"));
+}
 
-  return unit.arg(QString::number(speed, 'f', 1));
+
+QDLLEXPORT void localizedByteSizeTests()
+{
+  auto f = [](unsigned long long n) {
+    return localizedByteSize(n).toStdString();
+  };
+
+#define CHECK_EQ(a, b) if ((a) != (b)){ \
+  std::cerr << "failed: " << a << " == " << b << "\n"; \
+  DebugBreak(); \
+}
+
+  CHECK_EQ(f(0),    "0 B");
+  CHECK_EQ(f(1),    "1 B");
+  CHECK_EQ(f(999),  "999 B");
+  CHECK_EQ(f(1000), "1000 B");
+  CHECK_EQ(f(1023), "1023 B");
+
+  CHECK_EQ(f(1024),    "1.00 KB");
+  CHECK_EQ(f(2047),    "1.99 KB");
+  CHECK_EQ(f(2048),    "2.00 KB");
+  CHECK_EQ(f(1048575), "1023.99 KB");
+
+  CHECK_EQ(f(1048576),    "1.00 MB");
+  CHECK_EQ(f(1073741823), "1023.99 MB");
+
+  CHECK_EQ(f(1073741824), "1.00 GB");
+  CHECK_EQ(f(1099511627775), "1023.99 GB");
+
+  CHECK_EQ(f(1099511627776), "1.00 TB");
+  CHECK_EQ(f(2759774185818), "2.51 TB");
+
+#undef CHECK_EQ
 }
 
 } // namespace MOBase
