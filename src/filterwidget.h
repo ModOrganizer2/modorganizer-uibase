@@ -7,6 +7,7 @@
 #include <QList>
 #include <QAbstractItemView>
 #include <QSortFilterProxyModel>
+#include <QRegularExpression>
 #include "dllimport.h"
 
 namespace MOBase {
@@ -39,7 +40,7 @@ private:
 
   bool columnMatches(
     int sourceRow, const QModelIndex& sourceParent,
-    int c, const QString& what) const;
+    int c, const QRegularExpression& what) const;
 };
 
 
@@ -48,9 +49,19 @@ class QDLLEXPORT FilterWidget : public QObject
   Q_OBJECT;
 
 public:
-  using predFun = std::function<bool (const QString& what)>;
+  struct Options
+  {
+    bool useRegex = false;
+    bool regexCaseSensitive = false;
+    bool regexExtended = false;
+  };
+
+  using predFun = std::function<bool (const QRegularExpression& what)>;
 
   FilterWidget();
+
+  static void setOptions(const Options& o);
+  static Options options();
 
   void setEdit(QLineEdit* edit);
   void setList(QAbstractItemView* list);
@@ -74,13 +85,16 @@ signals:
   void changed(const QString& oldFilter, const QString& newFilter);
 
 private:
+  using Compiled = QList<QList<QRegularExpression>>;
+
   QLineEdit* m_edit;
   QAbstractItemView* m_list;
   FilterWidgetProxyModel* m_proxy;
   EventFilter* m_eventFilter;
   QToolButton* m_clear;
   QString m_text;
-  QList<QList<QString>> m_compiled;
+  Compiled m_compiled;
+  bool m_valid;
 
   void unhook();
   void createClear();
@@ -89,8 +103,10 @@ private:
 
   void onTextChanged();
   void onResized();
-  void setListBorder(bool active);
+  void onContextMenu(QObject*, QContextMenuEvent* e);
 
+  void set(const QString& text);
+  void update();
   void compile();
 };
 
