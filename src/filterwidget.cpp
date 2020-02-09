@@ -7,7 +7,7 @@
 namespace MOBase {
 
 FilterWidgetProxyModel::FilterWidgetProxyModel(FilterWidget& fw, QWidget* parent) :
-  QSortFilterProxyModel(parent), m_filter(fw), m_useSourceSort(true),
+  QSortFilterProxyModel(parent), m_filter(fw), m_useSourceSort(false),
   m_filterColumn(-1)
 {
   setRecursiveFilteringEnabled(true);
@@ -67,7 +67,11 @@ bool FilterWidgetProxyModel::columnMatches(
 
 void FilterWidgetProxyModel::sort(int column, Qt::SortOrder order)
 {
-  sourceModel()->sort(column, order);
+  if (m_useSourceSort) {
+    sourceModel()->sort(column, order);
+  } else {
+    QSortFilterProxyModel::sort(column, order);
+  }
 }
 
 
