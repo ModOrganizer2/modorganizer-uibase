@@ -26,30 +26,9 @@ void setStyleProperty(QWidget* w, const char* k, const QVariant& v)
 
 
 FilterWidgetProxyModel::FilterWidgetProxyModel(FilterWidget& fw, QWidget* parent) :
-  QSortFilterProxyModel(parent), m_filter(fw), m_useSourceSort(false),
-  m_filterColumn(-1)
+  QSortFilterProxyModel(parent), m_filter(fw)
 {
   setRecursiveFilteringEnabled(true);
-}
-
-void FilterWidgetProxyModel::setUseSourceSort(bool b)
-{
-  m_useSourceSort = b;
-}
-
-bool FilterWidgetProxyModel::useSourceSort() const
-{
-  return m_useSourceSort;
-}
-
-void FilterWidgetProxyModel::setFilterColumn(int i)
-{
-  m_filterColumn = i;
-}
-
-int FilterWidgetProxyModel::filterColumn() const
-{
-  return m_filterColumn;
 }
 
 bool FilterWidgetProxyModel::filterAcceptsRow(
@@ -58,7 +37,7 @@ bool FilterWidgetProxyModel::filterAcceptsRow(
   const auto cols = sourceModel()->columnCount();
 
   const auto m = m_filter.matches([&](auto&& regex) {
-    if (m_filterColumn == -1) {
+    if (m_filter.filterColumn() == -1) {
       for (int c=0; c<cols; ++c) {
         if (columnMatches(sourceRow, sourceParent, c, regex)) {
           return true;
@@ -67,7 +46,8 @@ bool FilterWidgetProxyModel::filterAcceptsRow(
 
       return false;
     } else {
-      return columnMatches(sourceRow, sourceParent, m_filterColumn, regex);
+      return columnMatches(
+        sourceRow, sourceParent, m_filter.filterColumn(), regex);
     }
   });
 
@@ -86,7 +66,7 @@ bool FilterWidgetProxyModel::columnMatches(
 
 void FilterWidgetProxyModel::sort(int column, Qt::SortOrder order)
 {
-  if (m_useSourceSort) {
+  if (m_filter.useSourceSort()) {
     sourceModel()->sort(column, order);
   } else {
     QSortFilterProxyModel::sort(column, order);
@@ -98,7 +78,8 @@ static FilterWidget::Options s_options;
 
 FilterWidget::FilterWidget() :
   m_edit(nullptr), m_list(nullptr), m_proxy(nullptr),
-  m_eventFilter(nullptr), m_clear(nullptr), m_valid(true)
+  m_eventFilter(nullptr), m_clear(nullptr), m_valid(true),
+  m_useSourceSort(false), m_filterColumn(-1)
 {
 }
 
@@ -154,40 +135,22 @@ bool FilterWidget::empty() const
 
 void FilterWidget::setUseSourceSort(bool b)
 {
-  if (m_proxy) {
-    m_proxy->setUseSourceSort(b);
-  } else {
-    log::error("FilterWidget::setUseSourceSort() called, but proxy isn't set up");
-  }
+  m_useSourceSort = b;
 }
 
 bool FilterWidget::useSourceSort() const
 {
-  if (m_proxy) {
-    return m_proxy->useSourceSort();
-  } else {
-    log::error("FilterWidget::useSourceSort() called, but proxy isn't set up");
-    return false;
-  }
+  return m_useSourceSort;
 }
 
 void FilterWidget::setFilterColumn(int i)
 {
-  if (m_proxy) {
-    m_proxy->setFilterColumn(i);
-  } else {
-    log::error("FilterWidget::setFilterColumn() called, but proxy isn't set up");
-  }
+  m_filterColumn = i;
 }
 
 int FilterWidget::filterColumn() const
 {
-  if (m_proxy) {
-    return m_proxy->filterColumn();
-  } else {
-    log::error("FilterWidget::filterColumn() called, but proxy isn't set up");
-    return -1;
-  }
+  return m_filterColumn;
 }
 
 FilterWidgetProxyModel* FilterWidget::proxyModel()

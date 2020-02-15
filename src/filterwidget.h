@@ -23,20 +23,12 @@ public:
   FilterWidgetProxyModel(FilterWidget& fw, QWidget* parent=nullptr);
   using QSortFilterProxyModel::invalidateFilter;
 
-  void setUseSourceSort(bool b);
-  bool useSourceSort() const;
-
-  void setFilterColumn(int i);
-  int filterColumn() const;
-
 protected:
   bool filterAcceptsRow(int row, const QModelIndex& parent) const override;
   void sort(int column, Qt::SortOrder order = Qt::AscendingOrder) override;
 
 private:
   FilterWidget& m_filter;
-  bool m_useSourceSort;
-  int m_filterColumn;
 
   bool columnMatches(
     int sourceRow, const QModelIndex& sourceParent,
@@ -95,6 +87,8 @@ private:
   QString m_text;
   Compiled m_compiled;
   bool m_valid;
+  bool m_useSourceSort;
+  int m_filterColumn;
 
   void unhook();
   void createClear();
