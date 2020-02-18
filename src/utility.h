@@ -550,11 +550,14 @@ public:
   TimeThis(QString what={});
   ~TimeThis();
 
+  void stop();
+
 private:
   using Clock = std::chrono::high_resolution_clock;
 
   QString m_what;
   Clock::time_point m_start;
+  bool m_running;
 };
 
 
