@@ -6,31 +6,29 @@
 
 namespace MOBase {
 
+void setStyleProperty(QWidget* w, const char* k, const QVariant& v)
+{
+  w->setProperty(k, v);
+
+  if (auto* s=w->style()) {
+    // changing properties doesn't repolish automatically
+    s->unpolish(w);
+    s->polish(w);
+  }
+
+  // the qss will probably change the border, which requires sending a manual
+  // StyleChange because the box model has changed
+  QEvent event(QEvent::StyleChange);
+  QApplication::sendEvent(w, &event);
+  w->update();
+  w->updateGeometry();
+}
+
+
 FilterWidgetProxyModel::FilterWidgetProxyModel(FilterWidget& fw, QWidget* parent) :
-  QSortFilterProxyModel(parent), m_filter(fw), m_useSourceSort(false),
-  m_filterColumn(-1)
+  QSortFilterProxyModel(parent), m_filter(fw)
 {
   setRecursiveFilteringEnabled(true);
-}
-
-void FilterWidgetProxyModel::setUseSourceSort(bool b)
-{
-  m_useSourceSort = b;
-}
-
-bool FilterWidgetProxyModel::useSourceSort() const
-{
-  return m_useSourceSort;
-}
-
-void FilterWidgetProxyModel::setFilterColumn(int i)
-{
-  m_filterColumn = i;
-}
-
-int FilterWidgetProxyModel::filterColumn() const
-{
-  return m_filterColumn;
 }
 
 bool FilterWidgetProxyModel::filterAcceptsRow(
@@ -38,17 +36,18 @@ bool FilterWidgetProxyModel::filterAcceptsRow(
 {
   const auto cols = sourceModel()->columnCount();
 
-  const auto m = m_filter.matches([&](auto&& what) {
-    if (m_filterColumn == -1) {
+  const auto m = m_filter.matches([&](auto&& regex) {
+    if (m_filter.filterColumn() == -1) {
       for (int c=0; c<cols; ++c) {
-        if (columnMatches(sourceRow, sourceParent, c, what)) {
+        if (columnMatches(sourceRow, sourceParent, c, regex)) {
           return true;
         }
       }
 
       return false;
     } else {
-      return columnMatches(sourceRow, sourceParent, m_filterColumn, what);
+      return columnMatches(
+        sourceRow, sourceParent, m_filter.filterColumn(), regex);
     }
   });
 
@@ -57,17 +56,17 @@ bool FilterWidgetProxyModel::filterAcceptsRow(
 
 bool FilterWidgetProxyModel::columnMatches(
   int sourceRow, const QModelIndex& sourceParent,
-  int c, const QString& what) const
+  int c, const QRegularExpression& regex) const
 {
   QModelIndex index = sourceModel()->index(sourceRow, c, sourceParent);
   const auto text = sourceModel()->data(index, Qt::DisplayRole).toString();
 
-  return text.contains(what, Qt::CaseInsensitive);
+  return regex.match(text).hasMatch();
 }
 
 void FilterWidgetProxyModel::sort(int column, Qt::SortOrder order)
 {
-  if (m_useSourceSort) {
+  if (m_filter.useSourceSort()) {
     sourceModel()->sort(column, order);
   } else {
     QSortFilterProxyModel::sort(column, order);
@@ -75,10 +74,23 @@ void FilterWidgetProxyModel::sort(int column, Qt::SortOrder order)
 }
 
 
+static FilterWidget::Options s_options;
+
 FilterWidget::FilterWidget() :
   m_edit(nullptr), m_list(nullptr), m_proxy(nullptr),
-  m_eventFilter(nullptr), m_clear(nullptr)
+  m_eventFilter(nullptr), m_clear(nullptr), m_valid(true),
+  m_useSourceSort(false), m_filterColumn(-1)
 {
+}
+
+void FilterWidget::setOptions(const Options& o)
+{
+  s_options = o;
+}
+
+FilterWidget::Options FilterWidget::options()
+{
+  return s_options;
 }
 
 void FilterWidget::setEdit(QLineEdit* edit)
@@ -123,40 +135,22 @@ bool FilterWidget::empty() const
 
 void FilterWidget::setUseSourceSort(bool b)
 {
-  if (m_proxy) {
-    m_proxy->setUseSourceSort(b);
-  } else {
-    log::error("FilterWidget::setUseSourceSort() called, but proxy isn't set up");
-  }
+  m_useSourceSort = b;
 }
 
 bool FilterWidget::useSourceSort() const
 {
-  if (m_proxy) {
-    return m_proxy->useSourceSort();
-  } else {
-    log::error("FilterWidget::useSourceSort() called, but proxy isn't set up");
-    return false;
-  }
+  return m_useSourceSort;
 }
 
 void FilterWidget::setFilterColumn(int i)
 {
-  if (m_proxy) {
-    m_proxy->setFilterColumn(i);
-  } else {
-    log::error("FilterWidget::setFilterColumn() called, but proxy isn't set up");
-  }
+  m_filterColumn = i;
 }
 
 int FilterWidget::filterColumn() const
 {
-  if (m_proxy) {
-    return m_proxy->filterColumn();
-  } else {
-    log::error("FilterWidget::filterColumn() called, but proxy isn't set up");
-    return -1;
-  }
+  return m_filterColumn;
 }
 
 FilterWidgetProxyModel* FilterWidget::proxyModel()
@@ -176,21 +170,71 @@ QModelIndex FilterWidget::map(const QModelIndex& index)
 
 void FilterWidget::compile()
 {
-  m_compiled.clear();
+  Compiled compiled;
 
-  const QStringList ORList = [&] {
-    QString filterCopy = QString(m_text);
-    filterCopy.replace("||", ";").replace("OR", ";").replace("|", ";");
-    return filterCopy.split(";", QString::SkipEmptyParts);
-  }();
+  if (s_options.useRegex) {
+    QRegularExpression::PatternOptions flags =
+      QRegularExpression::DotMatchesEverythingOption;
 
-  // split in ORSegments that internally use AND logic
-  for (auto& ORSegment : ORList) {
-    m_compiled.push_back(ORSegment.split(" ", QString::SkipEmptyParts));
+    if (!s_options.regexCaseSensitive) {
+      flags |= QRegularExpression::CaseInsensitiveOption;
+    }
+
+    if (s_options.regexExtended) {
+      flags |= QRegularExpression::ExtendedPatternSyntaxOption;
+    }
+
+    compiled.push_back({QRegularExpression(m_text, flags)});
+  } else {
+    const QStringList ORList = [&] {
+      QString filterCopy = QString(m_text);
+      filterCopy.replace("||", ";").replace("OR", ";").replace("|", ";");
+      return filterCopy.split(";", QString::SkipEmptyParts);
+    }();
+
+    // split in ORSegments that internally use AND logic
+    for (const auto& ORSegment : ORList) {
+      const auto keywords = ORSegment.split(" ", QString::SkipEmptyParts);
+      QList<QRegularExpression> regexes;
+
+      for (const auto& keyword : keywords) {
+        const QString escaped = QRegularExpression::escape(keyword);
+
+        const auto flags =
+          QRegularExpression::CaseInsensitiveOption |
+          QRegularExpression::DotMatchesEverythingOption;
+
+        regexes.push_back(QRegularExpression(escaped, flags));
+      }
+
+      compiled.push_back(regexes);
+    }
+  }
+
+  bool valid = true;
+
+  for (auto&& ANDKeywords : compiled) {
+    for (auto&& keyword : ANDKeywords) {
+      if (!keyword.isValid()) {
+        valid = false;
+        break;
+      }
+    }
+
+    if (!valid) {
+      break;
+    }
+  }
+
+  m_valid = valid;
+  setStyleProperty(m_edit, "valid-filter", m_valid);
+
+  if (m_valid) {
+    m_compiled = std::move(compiled);
   }
 }
 
-bool FilterWidget::matches(std::function<bool (const QString& what)> pred) const
+bool FilterWidget::matches(predFun pred) const
 {
   if (m_compiled.isEmpty() || !pred) {
     return true;
@@ -256,9 +300,12 @@ void FilterWidget::createClear()
 
 void FilterWidget::hookEvents()
 {
-  m_eventFilter = new EventFilter(m_edit, [&](auto*, auto* e) {
+  m_eventFilter = new EventFilter(m_edit, [&](auto* w, auto* e) {
     if (e->type() == QEvent::Resize) {
       onResized();
+    } else if (e->type() == QEvent::ContextMenu) {
+      onContextMenu(w, static_cast<QContextMenuEvent*>(e));
+      return true;
     }
 
     return false;
@@ -267,31 +314,107 @@ void FilterWidget::hookEvents()
   m_edit->installEventFilter(m_eventFilter);
 }
 
+void FilterWidget::set(const QString& text)
+{
+  const QString old = m_text;
+
+  emit aboutToChange(old, text);
+
+  m_text = text;
+  compile();
+
+  if (m_proxy) {
+    m_proxy->invalidateFilter();
+  }
+
+  if (m_list) {
+    setStyleProperty(m_list, "filtered", !m_text.isEmpty());
+  }
+
+  emit changed(old, text);
+}
+
+void FilterWidget::update()
+{
+  if (!m_text.isEmpty()) {
+    set(m_text);
+  }
+}
+
 void FilterWidget::onTextChanged()
 {
   m_clear->setVisible(!m_edit->text().isEmpty());
 
   const auto text = m_edit->text();
-
-  if (text != m_text) {
-    const QString old = m_text;
-
-    emit aboutToChange(old, text);
-
-    m_text = text;
-    compile();
-
-    if (m_proxy) {
-      m_proxy->invalidateFilter();
-    }
-
-    emit changed(old, text);
+  if (text == m_text) {
+    return;
   }
+
+  set(text);
 }
 
 void FilterWidget::onResized()
 {
   repositionClearButton();
+}
+
+void FilterWidget::onContextMenu(QObject*, QContextMenuEvent* e)
+{
+  std::unique_ptr<QMenu> m(m_edit->createStandardContextMenu());
+  m->setParent(m_edit);
+
+  auto* title = new QAction(tr("Filter options"), m_edit);
+  title->setEnabled(false);
+
+  auto f = title->font();
+  f.setBold(true);
+  title->setFont(f);
+
+
+  auto* regex = new QAction(tr("Use regular expressions"), m_edit);
+  regex->setStatusTip(tr("Use regular expressions in filters"));
+  regex->setCheckable(true);
+  regex->setChecked(s_options.useRegex);
+
+  connect(regex, &QAction::triggered, [&]{
+    s_options.useRegex = regex->isChecked();
+    update();
+  });
+
+
+  auto* cs = new QAction(tr("Case sensitive"), m_edit);
+  //: leave "(/i)" verbatim
+  cs->setStatusTip(tr("Make regular expressions case sensitive (/i)"));
+  cs->setCheckable(true);
+  cs->setChecked(s_options.regexCaseSensitive);
+  cs->setEnabled(s_options.useRegex);
+
+  connect(cs, &QAction::triggered, [&]{
+    s_options.regexCaseSensitive = cs->isChecked();
+    update();
+  });
+
+
+  auto* x = new QAction(tr("Extended"), m_edit);
+  //: leave "(/x)" verbatim
+  x->setStatusTip(tr("Ignores unescaped whitespace in regular expressions (/x)"));
+  x->setCheckable(true);
+  x->setChecked(s_options.regexExtended);
+  x->setEnabled(s_options.useRegex);
+
+  connect(x, &QAction::triggered, [&]{
+    s_options.regexExtended = x->isChecked();
+    update();
+  });
+
+
+  m->insertSeparator(m->actions().first());
+  m->insertAction(m->actions().first(), x);
+  m->insertAction(m->actions().first(), cs);
+  m->insertAction(m->actions().first(), regex);
+  m->insertAction(m->actions().first(), title);
+
+  m->exec(e->globalPos());
 }
 
 void FilterWidget::repositionClearButton()

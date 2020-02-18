@@ -18,8 +18,8 @@ License along with this library; if not, write to the Free Software
 Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 */
 
-#ifndef UTILITY_H
-#define UTILITY_H
+#ifndef MO_UIBASE_UTILITY_INCLUDED
+#define MO_UIBASE_UTILITY_INCLUDED
 
 #include "dllimport.h"
 #include <vector>
@@ -543,6 +543,82 @@ private:
   bool m_call;
 };
 
+
+class QDLLEXPORT TimeThis
+{
+public:
+  TimeThis(QString what={});
+  ~TimeThis();
+
+private:
+  using Clock = std::chrono::high_resolution_clock;
+
+  QString m_what;
+  Clock::time_point m_start;
+};
+
+
+template <class F>
+bool forEachLineInFile(const QString& filePath, F&& f)
+{
+  HANDLE h = ::CreateFileW(
+    reinterpret_cast<const wchar_t*>(filePath.utf16()), GENERIC_READ,
+    FILE_SHARE_READ, nullptr, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, 0);
+
+  if (h == INVALID_HANDLE_VALUE) {
+    return false;
+  }
+
+  MOBase::Guard g([&]{ ::CloseHandle(h); });
+
+  LARGE_INTEGER fileSize;
+  if (!GetFileSizeEx(h, &fileSize)) {
+    return false;
+  }
+
+  auto buffer = std::make_unique<char[]>(fileSize.QuadPart);
+  DWORD byteCount = static_cast<DWORD>(fileSize.QuadPart);
+  if (!::ReadFile(h, buffer.get(), byteCount, &byteCount, nullptr)) {
+    return false;
+  }
+
+  const char* lineStart = buffer.get();
+  const char* p = lineStart;
+
+  while (*p) {
+    // skip all newline characters
+    while (*p && (*p == '\n' || *p == '\r')) {
+      ++p;
+    }
+
+    // line starts here
+    lineStart = p;
+
+    // find end of line
+    while (*p && *p != '\n' && *p != '\r') {
+      ++p;
+    }
+
+    if (p != lineStart && *lineStart != '#') {
+      // skip whitespace at beginning of line
+      while (std::isspace(*lineStart)) {
+        ++lineStart;
+      }
+
+      // skip white at end of line
+      const char* lineEnd = p - 1;
+      while (std::isspace(*lineEnd) && lineEnd > lineStart) {
+        --lineEnd;
+      }
+      ++lineEnd;
+
+      f(QString::fromUtf8(lineStart, lineEnd - lineStart).toLower());
+    }
+  }
+
+  return true;
+}
+
 } // namespace MOBase
 
-#endif // UTILITY_H
+#endif // MO_UIBASE_UTILITY_INCLUDED
