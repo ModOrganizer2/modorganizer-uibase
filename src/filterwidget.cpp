@@ -79,8 +79,12 @@ static FilterWidget::Options s_options;
 FilterWidget::FilterWidget() :
   m_edit(nullptr), m_list(nullptr), m_proxy(nullptr),
   m_eventFilter(nullptr), m_clear(nullptr), m_valid(true),
-  m_useSourceSort(false), m_filterColumn(-1)
+  m_useSourceSort(false), m_filterColumn(-1), m_timer(nullptr)
 {
+  m_timer = new QTimer(this);
+  m_timer->setSingleShot(true);
+  QObject::connect(m_timer, &QTimer::timeout, this,  [&] { set(); }, Qt::QueuedConnection);
+
 }
 
 void FilterWidget::setOptions(const Options& o)
@@ -138,6 +142,16 @@ void FilterWidget::scrollToSelection()
 bool FilterWidget::empty() const
 {
   return m_text.isEmpty();
+}
+
+void FilterWidget::setUpdateDelay(bool b)
+{
+  m_useDelay = b;
+}
+
+bool FilterWidget::hasUpdateDelay() const
+{
+  return m_useDelay;
 }
 
 void FilterWidget::setUseSourceSort(bool b)
@@ -321,13 +335,21 @@ void FilterWidget::hookEvents()
   m_edit->installEventFilter(m_eventFilter);
 }
 
-void FilterWidget::set(const QString& text)
+void FilterWidget::set()
 {
   const QString old = m_text;
 
-  emit aboutToChange(old, text);
+  QString currentText;
+  if (m_edit != nullptr) {
+    currentText = m_edit->text();
+  }
+  else {
+    currentText = m_text;
+  }
 
-  m_text = text;
+  emit aboutToChange(old, currentText);
+
+  m_text = currentText;
   compile();
 
   if (m_proxy) {
@@ -339,13 +361,13 @@ void FilterWidget::set(const QString& text)
     scrollToSelection();
   }
 
-  emit changed(old, text);
+  emit changed(old, currentText);
 }
 
 void FilterWidget::update()
 {
   if (!m_text.isEmpty()) {
-    set(m_text);
+    set();
   }
 }
 
@@ -358,7 +380,12 @@ void FilterWidget::onTextChanged()
     return;
   }
 
-  set(text);
+  if (m_useDelay) {
+    m_timer->start(100);
+  } 
+  else {
+    set();
+  }
 }
 
 void FilterWidget::onResized()
