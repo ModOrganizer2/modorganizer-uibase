@@ -118,9 +118,14 @@ void FilterWidget::setList(QAbstractItemView* list)
 {
   m_list = list;
 
-  m_proxy = new FilterWidgetProxyModel(*this);
-  m_proxy->setSourceModel(m_list->model());
-  m_list->setModel(m_proxy);
+  if (list == nullptr) {
+    m_proxy = nullptr;
+  }
+  else {
+    m_proxy = new FilterWidgetProxyModel(*this);
+    m_proxy->setSourceModel(m_list->model());
+    m_list->setModel(m_proxy);
+  }
 }
 
 void FilterWidget::clear()
