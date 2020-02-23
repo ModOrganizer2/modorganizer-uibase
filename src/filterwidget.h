@@ -46,6 +46,7 @@ public:
     bool useRegex = false;
     bool regexCaseSensitive = false;
     bool regexExtended = false;
+    bool scrollToSelection = false;
   };
 
   using predFun = std::function<bool (const QRegularExpression& what)>;
@@ -58,6 +59,7 @@ public:
   void setEdit(QLineEdit* edit);
   void setList(QAbstractItemView* list);
   void clear();
+  void scrollToSelection();
   bool empty() const;
 
   void setUseSourceSort(bool b);

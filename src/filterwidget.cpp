@@ -128,6 +128,13 @@ void FilterWidget::clear()
   m_edit->clear();
 }
 
+void FilterWidget::scrollToSelection()
+{
+  if (options().scrollToSelection && m_list && m_list->selectionModel()->hasSelection()) {
+    m_list->scrollTo(m_list->selectionModel()->selectedIndexes()[0]);
+  }
+}
+
 bool FilterWidget::empty() const
 {
   return m_text.isEmpty();
@@ -329,6 +336,7 @@ void FilterWidget::set(const QString& text)
 
   if (m_list) {
     setStyleProperty(m_list, "filtered", !m_text.isEmpty());
+    scrollToSelection();
   }
 
   emit changed(old, text);
@@ -407,11 +415,22 @@ void FilterWidget::onContextMenu(QObject*, QContextMenuEvent* e)
     update();
   });
 
+  auto* sts = new QAction(tr("Keep selection in view"), m_edit);
+  sts->setStatusTip(tr("Scroll to keep the current selection in view after filtering"));
+  sts->setCheckable(true);
+  sts->setChecked(s_options.scrollToSelection);
+
+  connect(sts, &QAction::triggered, [&] {
+    s_options.scrollToSelection = sts->isChecked();
+    update();
+    });
+
 
   m->insertSeparator(m->actions().first());
   m->insertAction(m->actions().first(), x);
   m->insertAction(m->actions().first(), cs);
   m->insertAction(m->actions().first(), regex);
+  m->insertAction(m->actions().first(), sts);
   m->insertAction(m->actions().first(), title);
 
   m->exec(e->globalPos());
