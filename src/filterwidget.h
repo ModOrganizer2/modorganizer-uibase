@@ -46,6 +46,7 @@ public:
     bool useRegex = false;
     bool regexCaseSensitive = false;
     bool regexExtended = false;
+    bool scrollToSelection = false;
   };
 
   using predFun = std::function<bool (const QRegularExpression& what)>;
@@ -58,7 +59,11 @@ public:
   void setEdit(QLineEdit* edit);
   void setList(QAbstractItemView* list);
   void clear();
+  void scrollToSelection();
   bool empty() const;
+
+  void setUpdateDelay(bool b);
+  bool hasUpdateDelay() const;
 
   void setUseSourceSort(bool b);
   bool useSourceSort() const;
@@ -86,6 +91,8 @@ private:
   QToolButton* m_clear;
   QString m_text;
   Compiled m_compiled;
+  QTimer* m_timer;
+  bool m_useDelay;
   bool m_valid;
   bool m_useSourceSort;
   int m_filterColumn;
@@ -99,7 +106,7 @@ private:
   void onResized();
   void onContextMenu(QObject*, QContextMenuEvent* e);
 
-  void set(const QString& text);
+  void set();
   void update();
   void compile();
 };

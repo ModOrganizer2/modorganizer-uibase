@@ -79,8 +79,12 @@ static FilterWidget::Options s_options;
 FilterWidget::FilterWidget() :
   m_edit(nullptr), m_list(nullptr), m_proxy(nullptr),
   m_eventFilter(nullptr), m_clear(nullptr), m_valid(true),
-  m_useSourceSort(false), m_filterColumn(-1)
+  m_useSourceSort(false), m_filterColumn(-1), m_timer(nullptr)
 {
+  m_timer = new QTimer(this);
+  m_timer->setSingleShot(true);
+  QObject::connect(m_timer, &QTimer::timeout, this,  [&] { set(); }, Qt::QueuedConnection);
+
 }
 
 void FilterWidget::setOptions(const Options& o)
@@ -114,9 +118,14 @@ void FilterWidget::setList(QAbstractItemView* list)
 {
   m_list = list;
 
-  m_proxy = new FilterWidgetProxyModel(*this);
-  m_proxy->setSourceModel(m_list->model());
-  m_list->setModel(m_proxy);
+  if (list == nullptr) {
+    m_proxy = nullptr;
+  }
+  else {
+    m_proxy = new FilterWidgetProxyModel(*this);
+    m_proxy->setSourceModel(m_list->model());
+    m_list->setModel(m_proxy);
+  }
 }
 
 void FilterWidget::clear()
@@ -128,9 +137,26 @@ void FilterWidget::clear()
   m_edit->clear();
 }
 
+void FilterWidget::scrollToSelection()
+{
+  if (options().scrollToSelection && m_list && m_list->selectionModel()->hasSelection()) {
+    m_list->scrollTo(m_list->selectionModel()->selectedIndexes()[0]);
+  }
+}
+
 bool FilterWidget::empty() const
 {
   return m_text.isEmpty();
+}
+
+void FilterWidget::setUpdateDelay(bool b)
+{
+  m_useDelay = b;
+}
+
+bool FilterWidget::hasUpdateDelay() const
+{
+  return m_useDelay;
 }
 
 void FilterWidget::setUseSourceSort(bool b)
@@ -314,13 +340,21 @@ void FilterWidget::hookEvents()
   m_edit->installEventFilter(m_eventFilter);
 }
 
-void FilterWidget::set(const QString& text)
+void FilterWidget::set()
 {
   const QString old = m_text;
 
-  emit aboutToChange(old, text);
+  QString currentText;
+  if (m_edit != nullptr) {
+    currentText = m_edit->text();
+  }
+  else {
+    currentText = m_text;
+  }
 
-  m_text = text;
+  emit aboutToChange(old, currentText);
+
+  m_text = currentText;
   compile();
 
   if (m_proxy) {
@@ -329,15 +363,16 @@ void FilterWidget::set(const QString& text)
 
   if (m_list) {
     setStyleProperty(m_list, "filtered", !m_text.isEmpty());
+    scrollToSelection();
   }
 
-  emit changed(old, text);
+  emit changed(old, currentText);
 }
 
 void FilterWidget::update()
 {
   if (!m_text.isEmpty()) {
-    set(m_text);
+    set();
   }
 }
 
@@ -350,7 +385,12 @@ void FilterWidget::onTextChanged()
     return;
   }
 
-  set(text);
+  if (m_useDelay) {
+    m_timer->start(100);
+  } 
+  else {
+    set();
+  }
 }
 
 void FilterWidget::onResized()
@@ -407,11 +447,22 @@ void FilterWidget::onContextMenu(QObject*, QContextMenuEvent* e)
     update();
   });
 
+  auto* sts = new QAction(tr("Keep selection in view"), m_edit);
+  sts->setStatusTip(tr("Scroll to keep the current selection in view after filtering"));
+  sts->setCheckable(true);
+  sts->setChecked(s_options.scrollToSelection);
+
+  connect(sts, &QAction::triggered, [&] {
+    s_options.scrollToSelection = sts->isChecked();
+    update();
+    });
+
 
   m->insertSeparator(m->actions().first());
   m->insertAction(m->actions().first(), x);
   m->insertAction(m->actions().first(), cs);
   m->insertAction(m->actions().first(), regex);
+  m->insertAction(m->actions().first(), sts);
   m->insertAction(m->actions().first(), title);
 
   m->exec(e->globalPos());
