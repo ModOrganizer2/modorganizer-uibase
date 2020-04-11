@@ -78,8 +78,8 @@ static FilterWidget::Options s_options;
 
 FilterWidget::FilterWidget() :
   m_edit(nullptr), m_list(nullptr), m_proxy(nullptr),
-  m_eventFilter(nullptr), m_clear(nullptr), m_valid(true),
-  m_useSourceSort(false), m_filterColumn(-1), m_timer(nullptr)
+  m_eventFilter(nullptr), m_clear(nullptr), m_timer(nullptr),
+  m_valid(true), m_useSourceSort(false), m_filterColumn(-1)
 {
   m_timer = new QTimer(this);
   m_timer->setSingleShot(true);
