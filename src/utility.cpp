@@ -369,21 +369,21 @@ void LogShellFailure(
   const wchar_t* operation, const wchar_t* file, const wchar_t* params,
   DWORD error)
 {
-  QString s;
+  QStringList s;
 
   if (operation) {
-    s += " " + QString::fromWCharArray(operation);
+    s << QString::fromWCharArray(operation);
   }
 
   if (file) {
-    s += " " + QString::fromWCharArray(file);
+    s << QString::fromWCharArray(file);
   }
 
   if (params) {
-    s += " " + QString::fromWCharArray(params);
+    s << QString::fromWCharArray(params);
   }
 
-  log::error("failed to invoke '{}': {}", s, formatSystemMessage(error));
+  log::error("failed to invoke '{}': {}", s.join(" "), formatSystemMessage(error));
 }
 
 Result ShellExecuteWrapper(
