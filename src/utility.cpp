@@ -647,6 +647,24 @@ template <class T>
 using COMMemPtr = std::unique_ptr<T, CoTaskMemFreer>;
 
 
+std::optional<QDir> getOptionalKnownFolder(KNOWNFOLDERID id)
+{
+  COMMemPtr<wchar_t> path;
+
+  {
+    wchar_t* rawPath = nullptr;
+    HRESULT res = SHGetKnownFolderPath(id, 0, nullptr, &rawPath);
+
+    if (FAILED(res)) {
+      return {};
+    }
+
+    path.reset(rawPath);
+  }
+
+  return QString::fromWCharArray(path.get());
+}
+
 QDir getKnownFolder(KNOWNFOLDERID id, const QString& what)
 {
   COMMemPtr<wchar_t> path;
