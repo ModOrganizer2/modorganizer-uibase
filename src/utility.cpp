@@ -647,7 +647,7 @@ template <class T>
 using COMMemPtr = std::unique_ptr<T, CoTaskMemFreer>;
 
 
-std::optional<QDir> getOptionalKnownFolder(KNOWNFOLDERID id)
+QString getOptionalKnownFolder(KNOWNFOLDERID id)
 {
   COMMemPtr<wchar_t> path;
 
