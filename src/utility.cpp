@@ -369,21 +369,21 @@ void LogShellFailure(
   const wchar_t* operation, const wchar_t* file, const wchar_t* params,
   DWORD error)
 {
-  QString s;
+  QStringList s;
 
   if (operation) {
-    s += " " + QString::fromWCharArray(operation);
+    s << QString::fromWCharArray(operation);
   }
 
   if (file) {
-    s += " " + QString::fromWCharArray(file);
+    s << QString::fromWCharArray(file);
   }
 
   if (params) {
-    s += " " + QString::fromWCharArray(params);
+    s << QString::fromWCharArray(params);
   }
 
-  log::error("failed to invoke '{}': {}", s, formatSystemMessage(error));
+  log::error("failed to invoke '{}': {}", s.join(" "), formatSystemMessage(error));
 }
 
 Result ShellExecuteWrapper(
@@ -646,6 +646,24 @@ struct CoTaskMemFreer
 template <class T>
 using COMMemPtr = std::unique_ptr<T, CoTaskMemFreer>;
 
+
+std::optional<QDir> getOptionalKnownFolder(KNOWNFOLDERID id)
+{
+  COMMemPtr<wchar_t> path;
+
+  {
+    wchar_t* rawPath = nullptr;
+    HRESULT res = SHGetKnownFolderPath(id, 0, nullptr, &rawPath);
+
+    if (FAILED(res)) {
+      return {};
+    }
+
+    path.reset(rawPath);
+  }
+
+  return QString::fromWCharArray(path.get());
+}
 
 QDir getKnownFolder(KNOWNFOLDERID id, const QString& what)
 {

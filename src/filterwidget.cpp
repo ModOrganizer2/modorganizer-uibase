@@ -99,32 +99,29 @@ FilterWidget::Options FilterWidget::options()
 
 void FilterWidget::setEdit(QLineEdit* edit)
 {
-  unhook();
+  unhookEdit();
 
   m_edit = edit;
 
-  if (!m_edit) {
-    return;
+  if (m_edit) {
+    m_edit->setPlaceholderText(QObject::tr("Filter"));
+
+    createClear();
+    hookEdit();
+    clear();
   }
-
-  m_edit->setPlaceholderText(QObject::tr("Filter"));
-
-  createClear();
-  hookEvents();
-  clear();
 }
 
 void FilterWidget::setList(QAbstractItemView* list)
 {
+  unhookList();
+
   m_list = list;
 
-  if (list == nullptr) {
+  if (list) {
+    hookList();
+  } else {
     m_proxy = nullptr;
-  }
-  else {
-    m_proxy = new FilterWidgetProxyModel(*this);
-    m_proxy->setSourceModel(m_list->model());
-    m_list->setModel(m_proxy);
   }
 }
 
@@ -287,7 +284,23 @@ bool FilterWidget::matches(predFun pred) const
   return false;
 }
 
-void FilterWidget::unhook()
+void FilterWidget::hookEdit()
+{
+  m_eventFilter = new EventFilter(m_edit, [&](auto* w, auto* e) {
+    if (e->type() == QEvent::Resize) {
+      onResized();
+    } else if (e->type() == QEvent::ContextMenu) {
+      onContextMenu(w, static_cast<QContextMenuEvent*>(e));
+      return true;
+    }
+
+    return false;
+  });
+
+  m_edit->installEventFilter(m_eventFilter);
+}
+
+void FilterWidget::unhookEdit()
 {
   if (m_clear) {
     delete m_clear;
@@ -297,13 +310,86 @@ void FilterWidget::unhook()
   if (m_edit) {
     m_edit->removeEventFilter(m_eventFilter);
   }
+}
 
+void FilterWidget::hookList()
+{
+  m_proxy = new FilterWidgetProxyModel(*this);
+  m_proxy->setSourceModel(m_list->model());
+  m_list->setModel(m_proxy);
+
+  setShortcuts();
+}
+
+void FilterWidget::unhookList()
+{
   if (m_proxy && m_list) {
     auto* model = m_proxy->sourceModel();
     m_proxy->setSourceModel(nullptr);
     delete m_proxy;
 
     m_list->setModel(model);
+  }
+
+  for (auto* s : m_shortcuts) {
+    delete s;
+  }
+
+  m_shortcuts.clear();
+}
+
+void FilterWidget::setShortcuts()
+{
+  auto activate = [this] {
+    onFind();
+  };
+
+  auto reset = [this] {
+    onReset();
+  };
+
+  auto hookActivate = [&](auto* w) {
+    auto* s = new QShortcut(QKeySequence::Find, w);
+    s->setAutoRepeat(false);
+    s->setContext(Qt::WidgetWithChildrenShortcut);
+    QObject::connect(s, &QShortcut::activated, activate);
+    m_shortcuts.push_back(s);
+  };
+
+  auto hookReset = [&](auto* w) {
+    auto* s = new QShortcut(QKeySequence(Qt::Key_Escape), w);
+    s->setAutoRepeat(false);
+    s->setContext(Qt::WidgetWithChildrenShortcut);
+    QObject::connect(s, &QShortcut::activated, reset);
+    m_shortcuts.push_back(s);
+  };
+
+
+  if (m_list) {
+    hookActivate(m_list);
+    hookReset(m_list);
+  }
+
+  if (m_edit) {
+    hookActivate(m_edit);
+    hookReset(m_edit);
+  }
+}
+
+void FilterWidget::onFind()
+{
+  if (m_edit) {
+    m_edit->setFocus();
+    m_edit->selectAll();
+  }
+}
+
+void FilterWidget::onReset()
+{
+  clear();
+
+  if (m_list) {
+    m_list->setFocus();
   }
 }
 
@@ -322,22 +408,6 @@ void FilterWidget::createClear()
   QObject::connect(m_edit, &QLineEdit::textChanged, [&]{ onTextChanged(); });
 
   repositionClearButton();
-}
-
-void FilterWidget::hookEvents()
-{
-  m_eventFilter = new EventFilter(m_edit, [&](auto* w, auto* e) {
-    if (e->type() == QEvent::Resize) {
-      onResized();
-    } else if (e->type() == QEvent::ContextMenu) {
-      onContextMenu(w, static_cast<QContextMenuEvent*>(e));
-      return true;
-    }
-
-    return false;
-  });
-
-  m_edit->installEventFilter(m_eventFilter);
 }
 
 void FilterWidget::set()
@@ -387,7 +457,7 @@ void FilterWidget::onTextChanged()
 
   if (m_useDelay) {
     m_timer->start(100);
-  } 
+  }
   else {
     set();
   }

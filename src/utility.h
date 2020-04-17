@@ -25,6 +25,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 #include <vector>
 #include <set>
 #include <algorithm>
+#include <optional>
 #include <QString>
 #include <QTextStream>
 #include <QDir>
@@ -426,6 +427,10 @@ QDLLEXPORT QString ToString(const SYSTEMTIME &time);
  * @return absolute path of the given known folder id
  **/
 QDLLEXPORT QDir getKnownFolder(KNOWNFOLDERID id, const QString& what={});
+
+// same as above, does not log failure
+//
+QDLLEXPORT std::optional<QDir> getOptionalKnownFolder(KNOWNFOLDERID id);
 
 /**
  * throws on failure

@@ -8,6 +8,7 @@
 #include <QAbstractItemView>
 #include <QSortFilterProxyModel>
 #include <QRegularExpression>
+#include <QShortcut>
 #include "dllimport.h"
 
 namespace MOBase {
@@ -92,17 +93,25 @@ private:
   QString m_text;
   Compiled m_compiled;
   QTimer* m_timer;
+  std::vector<QShortcut*> m_shortcuts;
   bool m_useDelay;
   bool m_valid;
   bool m_useSourceSort;
   int m_filterColumn;
 
-  void unhook();
+  void hookEdit();
+  void unhookEdit();
+
+  void hookList();
+  void setShortcuts();
+  void unhookList();
+
   void createClear();
-  void hookEvents();
   void repositionClearButton();
 
   void onTextChanged();
+  void onFind();
+  void onReset();
   void onResized();
   void onContextMenu(QObject*, QContextMenuEvent* e);
 
