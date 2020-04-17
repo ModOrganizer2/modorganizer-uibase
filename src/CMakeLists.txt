@@ -130,6 +130,7 @@ SET(uibase_HDRS
 	errorcodes.h
 	linklabel.h
 	widgetutility.h
+	moassert.h
   )
 
 SET(UIS
