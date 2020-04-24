@@ -1,21 +1,9 @@
-CMAKE_MINIMUM_REQUIRED(VERSION 2.8.12)
+cmake_minimum_required(VERSION 3.16)
 
-ADD_COMPILE_OPTIONS(
-	$<$<CXX_COMPILER_ID:MSVC>:/MP>
-	$<$<CXX_COMPILER_ID:MSVC>:/Wall>
-	$<$<CXX_COMPILER_ID:MSVC>:/permissive->
-	$<$<CXX_COMPILER_ID:MSVC>:/wd4464>  # relative path for include
-	$<$<CXX_COMPILER_ID:MSVC>:$<$<CONFIG:RELEASE>:/O2>>
-	$<$<CXX_COMPILER_ID:MSVC>:$<$<CONFIG:RELWITHDEBINFO>:/O2>>)
+project(uibase)
+set(project_type dll)
+set(create_translations OFF)
+set(enable_warnings ON)
 
-PROJECT(uibase)
-
-set(CMAKE_VS_INCLUDE_INSTALL_TO_DEFAULT_BUILD 1)
-SET(DEPENDENCIES_DIR CACHE PATH "")
-
-# hint to find dependencies path
-LIST(APPEND CMAKE_PREFIX_PATH ${QT_ROOT}/lib/cmake)
-LIST(APPEND CMAKE_PREFIX_PATH ${FMT_ROOT}/build)
-
-ADD_DEFINITIONS(-DUNICODE -D_UNICODE)
-ADD_SUBDIRECTORY(src)
+include(../cmake_common/project.cmake)
+add_subdirectory(src)

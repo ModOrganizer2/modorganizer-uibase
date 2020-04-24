@@ -22,8 +22,8 @@ along with Mod Organizer.  If not, see <http://www.gnu.org/licenses/>.
 #define SAFEWRITEFILE_H
 
 
-#include <utility.h>
-#include <dllimport.h>
+#include "utility.h"
+#include "dllimport.h"
 #include <QTemporaryFile>
 #include <QString>
 
