@@ -30,6 +30,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 #include <QDir>
 #include <QIcon>
 #include <QUrl>
+#include <QVariant>
 #include <Windows.h>
 #include <ShlObj.h>
 
@@ -381,7 +382,7 @@ template <typename T>
 QList<T> ConvertList(const QVariantList &variants)
 {
   QList<T> result;
-  foreach (QVariant var, variants) {
+  for (const QVariant& var : variants) {
     if (!var.canConvert<T>()) {
       throw MyException("invalid variant type");
     }

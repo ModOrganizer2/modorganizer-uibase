@@ -1,6 +1,6 @@
 #include "filterwidget.h"
 #include "eventfilter.h"
-#include <log.h>
+#include "log.h"
 #include <QSortFilterProxyModel>
 #include <QEvent>
 
