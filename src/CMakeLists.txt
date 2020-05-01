@@ -5,6 +5,7 @@ else()
 	include(../../cmake_common/src.cmake)
 endif()
 add_filter(NAME src/interfaces GROUPS
+	ifiletree
 	imoinfo
 	installationtester
 	iplugin
