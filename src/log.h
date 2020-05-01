@@ -3,7 +3,11 @@
 #include <string>
 #include <filesystem>
 #include <QString>
+#include <QSize>
+#include <QRect>
+#include <QColor>
 #include <fmt/format.h>
+
 #include "dllimport.h"
 
 namespace spdlog { class logger; }
