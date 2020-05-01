@@ -53,7 +53,7 @@ public:
    *         installers will work with the modified tree. This may be useful when implementing a sort
    *         of filter, but usually tree should remain unchanged in that case.
    */
-  virtual EInstallResult install(GuessedValue<QString> &modName,  DirectoryTree &tree,
+  virtual EInstallResult install(GuessedValue<QString> &modName,  std::shared_ptr<IFileTree> &tree,
                                  QString &version, int &nexusID) = 0;
 
 };

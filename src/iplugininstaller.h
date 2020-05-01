@@ -24,7 +24,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 
 
 #include "iplugin.h"
-#include "directorytree.h"
+#include "ifiletree.h"
 #include <set>
 
 namespace MOBase {
@@ -71,7 +71,7 @@ public:
    * @param tree a directory tree representing the archive
    * @return true if this installer can handle the archive
    */
-  virtual bool isArchiveSupported(const DirectoryTree &tree) const = 0;
+  virtual bool isArchiveSupported(std::shared_ptr<const IFileTree> tree) const = 0;
 
   /**
    * @brief sets the widget that the tool should use as the parent whenever
