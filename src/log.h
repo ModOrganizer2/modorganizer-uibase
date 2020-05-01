@@ -57,6 +57,13 @@ struct QDLLEXPORT converter<QString>
 };
 
 template <>
+struct QDLLEXPORT converter<QStringRef>
+{
+  static std::string convert(const QStringRef& s);
+};
+
+
+template <>
 struct QDLLEXPORT converter<QSize>
 {
   static std::string convert(const QSize& s);
