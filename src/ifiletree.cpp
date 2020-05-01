@@ -70,15 +70,17 @@ namespace MOBase {
   /**
    *
    */
-  bool IFileTree::exists(QString path, FileTypes type) const { return find(path, type) != nullptr;  }
+  bool IFileTree::exists(QString path, FileTypes type) const { return find(path, type) != nullptr; }
 
   /**
    *
    */
   std::shared_ptr<FileTreeEntry> IFileTree::find(QString path, FileTypes type) {
-    return fetchEntry(splitPath(path), type); }
+    return fetchEntry(splitPath(path), type);
+  }
   std::shared_ptr<const FileTreeEntry> IFileTree::find(QString path, FileTypes type) const {
-    return fetchEntry(splitPath(path), type); }
+    return fetchEntry(splitPath(path), type);
+  }
 
   /**
    *
@@ -147,7 +149,7 @@ namespace MOBase {
 
     // Insert in the tree:
     auto it = std::lower_bound(entries().begin(), entries().end(), entry, FileEntryComparator{});
-    bool entryWithSameName = it != entries().end() && (*it)->compare(entry->name());
+    bool entryWithSameName = it != entries().end() && (*it)->compare(entry->name()) == 0;
 
     // Already in the tree?
     if (entryWithSameName && *it == entry) {
@@ -283,9 +285,9 @@ namespace MOBase {
    */
   std::pair<IFileTree::iterator, std::shared_ptr<FileTreeEntry>> IFileTree::erase(QString name) {
     auto it = std::find_if(begin(), end(), [&name](const auto& entry) {
-      return entry->name().compare(name, Qt::CaseInsensitive) == 0;
-    });
-    
+      return entry->compare(name) == 0;
+      });
+
     if (it == end()) {
       return { it, nullptr };
     }
@@ -297,7 +299,7 @@ namespace MOBase {
     // Save the entry to return it:
     auto entry = *it;
     entry->m_Parent.reset();
-    
+
     return { entries().erase(it), entry };
   }
 
@@ -308,7 +310,7 @@ namespace MOBase {
     // Need to find the iterator up to which we should erase:
     auto& entries_ = entries();
     auto it = entries_.begin();
-    for (; it != entries_.end() && beforeRemove(this, it->get()); ++it) {      
+    for (; it != entries_.end() && beforeRemove(this, it->get()); ++it) {
       // Detach (but not remove from the vector):
       (*it)->m_Parent.reset();
     }
@@ -320,7 +322,7 @@ namespace MOBase {
    *
    */
   std::size_t IFileTree::removeAll(QStringList names) {
-    return removeIf([this, &names](auto& entry) { 
+    return removeIf([this, &names](auto& entry) {
       return names.contains(entry->name(), Qt::CaseInsensitive); });
   }
 
@@ -333,7 +335,7 @@ namespace MOBase {
     // Cannot use begin() and end() directly because those are immutable iterators:
     en.erase(std::remove_if(en.begin(), en.end(), [this, &predicate](auto& entry) {
       return beforeRemove(this, entry.get()) && predicate(entry);
-    }), en.end());
+      }), en.end());
     return osize - size();
   }
 
@@ -385,7 +387,7 @@ namespace MOBase {
     auto entryIt = std::find_if(
       std::begin(entries), std::end(entries),
       [&](const std::shared_ptr<FileTreeEntry>& fileEntry) {
-        return matchTypes.testFlag(fileEntry->fileType()) && fileEntry->compare(name);
+        return matchTypes.testFlag(fileEntry->fileType()) && fileEntry->compare(name) == 0;
       });
 
     return entryIt == std::end(entries) ? nullptr : *entryIt;
@@ -396,7 +398,7 @@ namespace MOBase {
    */
   std::size_t IFileTree::mergeTree(
     std::shared_ptr<IFileTree> destination, std::shared_ptr<IFileTree> source, OverwritesType* overwrites) {
-    
+
     const auto comp = FileEntryComparator{};
 
     // Number of overwritten entries:
@@ -410,21 +412,21 @@ namespace MOBase {
     // Note: Since entries are not sorted by name but by type (file/directory)
     // then name, there is no fast way to check for conflict.
     for (auto& srcEntry : srcEntries) {
-      
+
       // Try to find an exact match (name and type) - This iterator also
       // serve to know where the entry should be inserted:
       auto dstIt = std::lower_bound(
         dstEntries.begin(), dstEntries.end(), srcEntry, comp);
 
       // Exact match found:
-      if (dstIt != dstEntries.end() 
-        && (*dstIt)->compare(srcEntry->name())
+      if (dstIt != dstEntries.end()
+        && (*dstIt)->compare(srcEntry->name()) == 0
         && (*dstIt)->isFile() == srcEntry->isFile()) {
-          
+
         // Both directory, we merge:
         if ((*dstIt)->isDir() && srcEntry->isDir()) {
           noverwrites += mergeTree((*dstIt)->astree(), srcEntry->astree(), overwrites);
-          
+
           // Detach the entry:
           srcEntry->m_Parent.reset();
         }
@@ -453,7 +455,7 @@ namespace MOBase {
         // If we did not find a match, the only way to check is to look
         // through the vector:
         auto conflictIt = std::find_if(dstEntries.begin(), dstEntries.end(), [name = srcEntry->name()](auto const& dstEntry) {
-          return dstEntry->compare(name);
+          return dstEntry->compare(name) == 0;
         });
 
         // Conflict (note that here both entries are of different types, so no need to
@@ -480,7 +482,7 @@ namespace MOBase {
           noverwrites++;
           if (overwrites != nullptr) {
             overwrites->insert({ *conflictIt, srcEntry });
-          }          
+          }
         }
         // No conflict, we still have to check if we can insert:
         else if (!beforeInsert(destination.get(), srcEntry.get())) {
@@ -597,7 +599,7 @@ namespace MOBase {
       else if (*it == "..") {
         // Must check that we have a parent:
         if (parent() != nullptr) {
-          
+
         }
         tree = nullptr;
       }
@@ -659,31 +661,4 @@ namespace MOBase {
     std::sort(std::begin(m_Entries), std::end(m_Entries), FileEntryComparator{});
   }
 
-  // TODO: REMOVE THIS:
-  class InfiniteFileTree : public IFileTree {
-  public:
-
-    InfiniteFileTree(std::shared_ptr<IFileTree> parent, QString name, QStringList folders, QStringList files) : 
-      FileTreeEntry(parent, name), IFileTree(), folders(folders), files(files) {
-    }
-
-  protected:
-
-    QStringList folders, files;
-
-    virtual std::shared_ptr<IFileTree> makeDirectory(std::shared_ptr<IFileTree> parent, QString name) const {
-      return std::make_shared<InfiniteFileTree>(parent, name, folders, files);
-    }
-
-    virtual void doPopulate(std::shared_ptr<IFileTree> parent, std::vector<std::shared_ptr<FileTreeEntry>>& entries) const {
-      for (QString folder : folders) {
-        entries.push_back(makeDirectory(parent, folder));
-      }
-      for (QString file : files)
-        entries.push_back(makeFile(parent, file, QDateTime()));
-    }
-  };
-  std::shared_ptr<IFileTree> IFileTree::makeInfiniteTree(QStringList folder, QStringList files) {
-    return std::make_shared<InfiniteFileTree>(nullptr, "", folder, files);
-  }
 }

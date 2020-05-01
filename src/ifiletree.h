@@ -369,11 +369,6 @@ namespace MOBase {
    *
    */
   class QDLLEXPORT IFileTree : public virtual FileTreeEntry {
-  public: // Alias and iterators
-
-    // TODO: REMOVE THIS!
-    static std::shared_ptr<IFileTree> makeInfiniteTree(QStringList folder, QStringList files);
-
   public: // Enumerations and aliases:
 
     /**
