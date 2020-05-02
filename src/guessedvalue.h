@@ -177,7 +177,7 @@ GuessedValue<T>::GuessedValue()
  */
 template <typename T>
 GuessedValue<T>::GuessedValue(const T &reference, EGuessQuality quality)
-  : m_Value(reference), m_Quality(quality), m_Filter(nullFilter<T>)
+  : m_Value(reference), m_Variants{ reference }, m_Quality(quality), m_Filter(nullFilter<T>)
 {
 }
 
