@@ -12,7 +12,7 @@ namespace MOBase {
     m_Parent(parent), m_Name(name), m_Time(time) { }
 
   QString FileTreeEntry::suffix() const {
-    const int idx = m_Name.indexOf('.');
+    const int idx = m_Name.lastIndexOf(".");
     return (isDir() || idx == -1) ? "" : m_Name.mid(idx + 1);
   }
 

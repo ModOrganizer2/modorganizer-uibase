@@ -208,13 +208,12 @@ namespace MOBase {
     }
 
     /**
-     * @brief Retrieve the full extension of this entry.
+     * @brief Retrieve the "last" extension of this entry.
      *
-     * The full extension is everything after the first dot in
-     * the file name.
+     * The "last" extension is everything after the last dot in the file name.
      *
-     * @return the full extension of this entry, or an empty string
-     *   if the file has no extension or is directory.
+     * @return the last extension of this entry, or an empty string if the file has no 
+     *     extension or is directory.
      */
     QString suffix() const;
 

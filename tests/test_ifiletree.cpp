@@ -173,7 +173,7 @@ TEST(IFileTreeTest, ExtensionComputedCorrectly) {
 
   fileTree->move(a, "a.c.b");
   EXPECT_EQ(a->name(), "a.c.b");
-  EXPECT_EQ(a->suffix(), "c.b");
+  EXPECT_EQ(a->suffix(), "b");
 }
 
 TEST(IFileTreeTest, TreeIsPopulatedCorrectly) {
