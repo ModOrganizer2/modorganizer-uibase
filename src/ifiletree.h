@@ -644,7 +644,8 @@ namespace MOBase {
      *
      * The tree must not be a parent entry of this tree. Files present in both tree
      * will be replaced by files in the given tree. The overwrites parameter can
-     * be used to track the replaced files. 
+     * be used to track the replaced files. After a merge, the source tree will be
+     * empty but still attached to its parent.
      *
      * Note that the merge process makes no distinction between files and directories 
      * when merging: if a directory is present in this tree and a file from source
@@ -652,8 +653,8 @@ namespace MOBase {
      * is in this tree and a directory from source is in conflict with it, the file will
      * be replaced with the directory.
      *
-     * This method invalidates iterators to this tree and all the subtrees
-     * present in the given path.
+     * This method invalidates iterators to this tree, all the subtrees under this tree 
+     * present in the given path, and all the subtrees of the given source.
      *
      * @param source Tree to merge.
      * @param overwrites If not null, can be used to create a mapping from
@@ -916,9 +917,8 @@ namespace MOBase {
   protected: // Constructor
 
     /**
-     * @brief Create a new tree. This method takes no parameter since, due to the virtual inheritance,
+     * @brief Creates a new tree. This method takes no parameter since, due to the virtual inheritance,
      *     child classes must directly call the FileTreeEntry constructor.
-     *
      */
     IFileTree();
 
