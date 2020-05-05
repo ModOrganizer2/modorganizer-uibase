@@ -618,7 +618,7 @@ namespace MOBase {
      * @brief Insert the given entry in this tree, removing it from its
      * previouis parent.
      *
-     * The entry must not be a parent entry of this tree.
+     * The entry must not be this tree or a parent entry of this tree.
      *
      * If the insert policy if FAIL_IF_EXISTS, the call will fail if an entry
      * with the same name already exists. If the policy is REPLACE, an existing
@@ -641,7 +641,7 @@ namespace MOBase {
      * @brief Merge the given tree with this tree, i.e., insert all entries
      * of the given tree into this tree.
      *
-     * The tree must not be a parent entry of this tree. Files present in both tree
+     * The tree must not be this tree or a parent entry of this tree. Files present in both tree
      * will be replaced by files in the given tree. The overwrites parameter can
      * be used to track the replaced files. After a merge, the source tree will be
      * empty but still attached to its parent.

@@ -136,9 +136,9 @@ namespace MOBase {
    */
   IFileTree::iterator IFileTree::insert(std::shared_ptr<FileTreeEntry> entry, InsertPolicy insertPolicy) {
 
-    // Check that this is not a parent tree:
+    // Check that this is not the current tree or a parent tree:
     if (entry->isDir()) {
-      std::shared_ptr<IFileTree> tmp = parent();
+      std::shared_ptr<IFileTree> tmp = astree();
       while (tmp != nullptr) {
         if (tmp == entry->astree()) {
           return end();
@@ -252,7 +252,7 @@ namespace MOBase {
   std::size_t IFileTree::merge(std::shared_ptr<IFileTree> source, OverwritesType* overwrites) {
 
     // Check that this is not a parent tree:
-    std::shared_ptr<IFileTree> tmp = parent();
+    std::shared_ptr<IFileTree> tmp = astree();
     while (tmp != nullptr) {
       if (tmp == source) {
         return MERGE_FAILED;

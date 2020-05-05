@@ -417,8 +417,7 @@ TEST(IFileTreeTest, BasicTreeManipulation) {
 TEST(IFileTreeTest, TreeMergeOperations) {
 
   {
-    // TODO: Change this to use mappings like the second test case:
-    std::shared_ptr<IFileTree> fileTree = FileListTree::makeTree({
+    auto fileTree = FileListTree::makeTree({
       {"a/", true},
       {"b", true},
       {"c.x", false},
@@ -430,23 +429,17 @@ TEST(IFileTreeTest, TreeMergeOperations) {
     EXPECT_NE(fileTree, nullptr);
 
     // Retrieve the entry:
-    std::shared_ptr<FileTreeEntry>
-      a = fileTree->find("a"),
-      b = fileTree->find("b"),
-      cx = fileTree->find("c.x"),
-      dy = fileTree->find("d.y"),
-      e = fileTree->find("e"),
-      e_q = fileTree->find("e/q"),
-      e_q_ct = fileTree->find("e/q/c.t"),
-      e_q_p = fileTree->find("e/q/p");
+    auto map = createMapping(fileTree);
+    auto e = fileTree->findDirectory("e");
+    auto e_q = fileTree->findDirectory("e/q");
 
     // Merge e in the root:
     IFileTree::OverwritesType overwrites;
-    auto noverwrites = fileTree->merge(e->astree(), &overwrites);
+    auto noverwrites = fileTree->merge(e, &overwrites);
 
     EXPECT_EQ(noverwrites, std::size_t{ 0 });
     EXPECT_TRUE(overwrites.empty());
-    EXPECT_EQ(e->astree()->size(), std::size_t{ 0 });
+    EXPECT_EQ(e->size(), std::size_t{ 0 });
     assertTreeEquals(fileTree, {
       {"a", true},
       {"b", true},
@@ -463,10 +456,10 @@ TEST(IFileTreeTest, TreeMergeOperations) {
 
     // Not: e/q is not q
     overwrites.clear();
-    noverwrites = fileTree->merge(e_q->astree(), &overwrites);
+    noverwrites = fileTree->merge(e_q, &overwrites);
     EXPECT_EQ(noverwrites, std::size_t{ 1 });
     EXPECT_EQ(overwrites.size(), std::size_t{ 1 });
-    EXPECT_EQ(overwrites[p], e_q_p);
+    EXPECT_EQ(overwrites[p], map["e/q/p"]);
     assertTreeEquals(fileTree, {
       {"a", true},
       {"b", true},
@@ -478,8 +471,28 @@ TEST(IFileTreeTest, TreeMergeOperations) {
       {"p", true}
       });
     // Note: the "p" at the root should be the one under q initially.
-    EXPECT_EQ(fileTree->find("p"), e_q_p);
+    EXPECT_EQ(fileTree->find("p"), map["e/q/p"]);
+  }
 
+  // Merge failure:
+  {
+    auto tree1 = FileListTree::makeTree({
+      {"a/", true},
+      {"b", true},
+      {"c.x", false},
+      {"d.y", false},
+      {"e/q/c.t", false},
+      {"e/q/p", true}
+    });
+
+    std::size_t noverwrites = tree1->findDirectory("e")->merge(tree1);
+    EXPECT_EQ(noverwrites, IFileTree::MERGE_FAILED);
+
+    noverwrites = tree1->findDirectory("e/q")->merge(tree1);
+    EXPECT_EQ(noverwrites, IFileTree::MERGE_FAILED);
+
+    noverwrites = tree1->merge(tree1);
+    EXPECT_EQ(noverwrites, IFileTree::MERGE_FAILED);
   }
 
   //
