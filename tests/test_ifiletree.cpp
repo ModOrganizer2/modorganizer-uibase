@@ -413,7 +413,45 @@ TEST(IFileTreeTest, BasicTreeManipulation) {
   EXPECT_EQ(a->astree()->size(), std::size_t{ 1 });
   EXPECT_EQ(a->astree()->at(0), b);
 }
-  
+
+TEST(IFileTreeTest, IterOperations) {
+  auto tree = FileListTree::makeTree({
+    {"a", true},
+    {"c", true},
+    {"b", false},
+    {"d", false}
+  });
+
+  // Order should be a -> c -> b -> d
+  std::vector expected{ tree->find("a"), tree->find("c"), tree->find("b"), tree->find("d") };
+  std::vector entries(std::begin(*tree), std::end(*tree));
+  EXPECT_EQ(entries, expected);
+
+  // Order should be reversed:
+  expected = std::vector(expected.rbegin(), expected.rend());
+  entries = std::vector(std::rbegin(*tree), std::rend(*tree));
+  EXPECT_EQ(entries, expected);
+
+  // We can erasae in the middle:
+  for (auto it = tree->begin(); it != tree->end();) {
+    if ((*it)->name() == "b") {
+      it = tree->erase(*it);
+      // Check that the returned iterator is valid (it should be the iterator
+      // to d):
+      EXPECT_EQ(it, tree->end() - 1);
+      EXPECT_EQ(*it, tree->find("d"));
+    }
+    else {
+      ++it;
+    }
+  }
+  assertTreeEquals(tree, {
+    {"a", true},
+    {"c", true},
+    {"d", false}
+  });
+}
+
 TEST(IFileTreeTest, TreeMergeOperations) {
 
   {
@@ -449,7 +487,7 @@ TEST(IFileTreeTest, TreeMergeOperations) {
       {"q", true},
       {"q/c.t", false},
       {"q/p", true}
-      });
+    });
 
     auto p = fileTree->addFile("p");
     EXPECT_NE(p, nullptr);
