@@ -157,25 +157,23 @@ namespace MOBase {
     }
 
     /**
-     * @brief Retrieve the tree corresponding to this entry. Returns a null pointer
+     * @brief Convert this entry to a tree. This method returns a null pointer
      * if this entry corresponds to a file.
      *
-     * @return the tree corresponding to this entry, or a null pointer if
-     *     isDir() is false.
+     * @return this entry as a tree, or a null pointer if isDir() is false.
      */
-    std::shared_ptr<IFileTree> astree() {
-      return std::dynamic_pointer_cast<IFileTree>(shared_from_this());
+    virtual std::shared_ptr<IFileTree> astree() {
+      return nullptr;
     }
 
     /**
-     * @brief Retrieve the tree corresponding to this entry. Returns a null pointer
+     * @brief Convert this entry to a tree. This method returns a null pointer
      * if this entry corresponds to a file.
      *
-     * @return the tree corresponding to this entry, or a null pointer if
-     *     isDir() is false.
+     * @return this entry as a tree, or a null pointer if isDir() is false.
      */
-    std::shared_ptr<const IFileTree> astree() const {
-      return std::dynamic_pointer_cast<const IFileTree>(shared_from_this());
+    virtual std::shared_ptr<const IFileTree> astree() const {
+      return nullptr;
     }
 
     /**
@@ -749,6 +747,30 @@ namespace MOBase {
      * @return the number of deleted entry.
      */
     virtual std::size_t removeIf(std::function<bool(std::shared_ptr<FileTreeEntry> const& entry)> predicate);
+
+  public: // Inherited methods:
+
+    /**
+     * @brief Retrieve the tree corresponding to this entry. Returns a null pointer
+     * if this entry corresponds to a file.
+     *
+     * @return the tree corresponding to this entry, or a null pointer if
+     *     isDir() is false.
+     */
+    virtual std::shared_ptr<IFileTree> astree() override {
+      return std::dynamic_pointer_cast<IFileTree>(shared_from_this());
+    }
+
+    /**
+     * @brief Retrieve the tree corresponding to this entry. Returns a null pointer
+     * if this entry corresponds to a file.
+     *
+     * @return the tree corresponding to this entry, or a null pointer if
+     *     isDir() is false.
+     */
+    virtual std::shared_ptr<const IFileTree> astree() const override {
+      return std::dynamic_pointer_cast<const IFileTree>(shared_from_this());
+    }
 
   protected: // Destructor:
 
