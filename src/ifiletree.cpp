@@ -45,6 +45,10 @@ namespace MOBase {
   bool FileTreeEntry::moveTo(std::shared_ptr<IFileTree> tree) {
     return tree->insert(shared_from_this()) != tree->end();
   }
+
+  std::shared_ptr<FileTreeEntry> FileTreeEntry::createFileEntry(std::shared_ptr<IFileTree> parent, QString name, QDateTime time) {
+    return std::shared_ptr<FileTreeEntry>(new FileTreeEntry(parent, name, time));
+  }
 }
 
 // IFileTree:
@@ -113,6 +117,11 @@ namespace MOBase {
     }
 
     std::shared_ptr<FileTreeEntry> entry = tree->makeFile(this->astree(), parts[parts.size() - 1], time);
+
+    // If makeFile returns a null pointer, it means we cannot create file:
+    if (entry == nullptr) {
+      return nullptr;
+    }
 
     // Insert in the tree:
     tree->entries().insert(
@@ -513,7 +522,9 @@ namespace MOBase {
    */
   std::shared_ptr<IFileTree> IFileTree::createOrphanTree(QString name) const {
     auto directory = makeDirectory(nullptr, name);
-    directory->m_Populated = true;
+    if (directory != nullptr) {
+      directory->m_Populated = true;
+    }
     return directory;
   }
 
@@ -576,7 +587,7 @@ namespace MOBase {
    * @return the created file.
    */
   std::shared_ptr<FileTreeEntry> IFileTree::makeFile(std::shared_ptr<IFileTree> parent, QString name, QDateTime time) const {
-    return std::shared_ptr<FileTreeEntry>(new FileTreeEntry(parent, name, time));
+    return createFileEntry(parent, name, time);
   }
 
   /**
@@ -612,6 +623,11 @@ namespace MOBase {
         // Create if it does not:
         if (entry == nullptr) {
           entry = tree->makeDirectory(tree, *it);
+
+          // If makeDirectory returns a null pointer, it means we cannot create tree.
+          if (entry == nullptr) {
+            break;
+          }
 
           // The tree is empty so already populated:
           entry->astree()->m_Populated = true;

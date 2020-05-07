@@ -324,6 +324,18 @@ namespace MOBase {
      */
     FileTreeEntry(std::shared_ptr<IFileTree> parent, QString name);
 
+    /**
+     * @brief Creates a new FileTreeEntry corresponding to a file with the given parameters.
+     *
+     * The purpose of this methods is to allow child classes corresponding to tree (i.e., that do
+     * not inherit directly FileTreeEntry) to create FileTreeEntry.
+     *
+     * @param parent The tree containing this file.
+     * @param name The name of this file.
+     * @param time The modification time of this file.
+     */
+    static std::shared_ptr<FileTreeEntry> createFileEntry(std::shared_ptr<IFileTree> parent, QString name, QDateTime time);
+
     std::weak_ptr<IFileTree> m_Parent;
 
     QString m_Name;
@@ -790,11 +802,11 @@ namespace MOBase {
    * virtual public methods, most implementation should not have to re-implement them.
    *
    * There are two pure virtual methods that needs to be implemented by any child class:
-   *   - makeDirectory(): used to create directory - this is were the creation of the
-   *       directory should be reflected to the underlying source if needed (e.g., actual
-   *       creation of the directory on the disk), but note that this method is also 
-   *       called for existing directories, to obtain corresponding C++ object, so it should
-   *       not fail if there directory exists;
+   *   - makeDirectory(): used to create directories - this method serves to create directory
+   *         that may or may not existing in the underlying source. Implementing class do not
+   *         have to rely on this for `doPopulate()`. This method is also called when new 
+   *         directory needs to be created (addDirectory, insert, merge, etc.), and may return
+   *         a null pointer to indicate that the operations failed or is not permitted.
    *   - doPopulate(): called when a tree have to be populated.
    *
    * The other commons methods that can be re-implemented are:
@@ -802,9 +814,6 @@ namespace MOBase {
    *       except that it has a default implementation that simply creates a FileTreeEntry.
    *   - beforeInsert(), beforeReplace() and beforeRemove(): these can be implemented to 1) prevent 
    *       some operations, 2) perform operations on the actual tree (e.g., move a file on the disk).
-   *
-   * The addFile() and addDirectory() methods can also be re-implemented to prevent operations
-   * by throw UnsupportedOperationException if needed.
    */
   protected:
 
