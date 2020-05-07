@@ -222,21 +222,45 @@ TEST(IFileTreeTest, TreeIsPopulatedCorrectly) {
       e_q_ct = fileTree->find("e/q/c.t"),
       e_q_p = fileTree->find("e/q/p");
 
-    ASSERT_TRUE((a != nullptr && a->isDir() && a->name() == "a"));
+    EXPECT_NE(a, nullptr);
+    EXPECT_TRUE(a->isDir());
+    EXPECT_EQ(a->astree(), a);
+    EXPECT_EQ(a->name(), "a");
     EXPECT_EQ(a->path("/"), "a");
-    ASSERT_TRUE((b != nullptr && b->isDir() && b->name() == "b"));
+    EXPECT_NE(b, nullptr);
+    EXPECT_TRUE(b->isDir());
+    EXPECT_EQ(b->astree(), b);
+    EXPECT_EQ(b->name(), "b");
     EXPECT_EQ(b->path("/"), "b");
-    ASSERT_TRUE((cx != nullptr && cx->isFile() && cx->name() == "c.x"));
+    EXPECT_NE(cx, nullptr);
+    EXPECT_TRUE(cx->isFile());
+    EXPECT_EQ(cx->astree(), nullptr);
+    EXPECT_EQ(cx->name(), "c.x");
     EXPECT_EQ(cx->path("/"), "c.x");
-    ASSERT_TRUE((dy != nullptr && dy->isFile() && dy->name() == "d.y"));
+    EXPECT_NE(dy, nullptr);
+    EXPECT_TRUE(dy->isFile());
+    EXPECT_EQ(dy->astree(), nullptr);
+    EXPECT_EQ(dy->name(), "d.y");
     EXPECT_EQ(dy->path("/"), "d.y");
-    ASSERT_TRUE((e != nullptr && e->isDir() && e->name() == "e"));
+    EXPECT_NE(e, nullptr);
+    EXPECT_TRUE(e->isDir());
+    EXPECT_EQ(e->astree(), e);
+    EXPECT_EQ(e->name(), "e");
     EXPECT_EQ(e->path("/"), "e");
-    ASSERT_TRUE((e_q != nullptr && e_q->isDir() && e_q->name() == "q"));
+    EXPECT_NE(e_q, nullptr);
+    EXPECT_TRUE(e_q->isDir());
+    EXPECT_EQ(e_q->astree(), e_q);
+    EXPECT_EQ(e_q->name(), "q");
     EXPECT_EQ(e_q->path("/"), "e/q");
-    ASSERT_TRUE((e_q_ct != nullptr && e_q_ct->isFile() && e_q_ct->name() == "c.t"));
+    EXPECT_NE(e_q_ct, nullptr);
+    EXPECT_TRUE(e_q_ct->isFile());
+    EXPECT_EQ(e_q_ct->astree(), nullptr);
+    EXPECT_EQ(e_q_ct->name(), "c.t");
     EXPECT_EQ(e_q_ct->path("/"), "e/q/c.t");
-    ASSERT_TRUE((e_q_p != nullptr && e_q_p->isDir() && e_q_p->name() == "p"));
+    EXPECT_NE(e_q_p, nullptr);
+    EXPECT_TRUE(e_q_p->isDir());
+    EXPECT_EQ(e_q_p->astree(), e_q_p);
+    EXPECT_EQ(e_q_p->name(), "p");
     EXPECT_EQ(e_q_p->path("/"), "e/q/p");
 
     // Some relation check:
