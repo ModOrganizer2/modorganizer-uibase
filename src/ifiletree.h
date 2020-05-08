@@ -504,20 +504,21 @@ namespace MOBase {
      *
      * @param i Index of the entry to retrieve.
      *
-     * @return the file entry at the given index, or a null pointer if
-     *    the index is invalid.
+     * @return the file entry at the given index.
+     *
+     * @throw std::out_of_range if the index is invalid.
      */
     std::shared_ptr<FileTreeEntry> at(std::size_t i) {
       if (i < size()) {
         return entries()[i];
       }
-      return nullptr;
+      throw std::out_of_range("IFileTree::at");
     }
     std::shared_ptr<const FileTreeEntry> at(std::size_t i) const {
       if (i < size()) {
         return entries()[i];
       }
-      return nullptr;
+      throw std::out_of_range("IFileTree::at");
     }
 
     /**
