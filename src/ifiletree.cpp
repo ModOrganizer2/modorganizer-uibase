@@ -214,7 +214,7 @@ namespace MOBase {
     }
 
     // Insert in folder or replace:
-    const bool insertFolder = path.endsWith("/") || path.endsWith("\\");
+    const bool insertFolder = path.isEmpty() || path.endsWith("/") || path.endsWith("\\");
 
     // Retrieve the path:
     QStringList parts = splitPath(path);
