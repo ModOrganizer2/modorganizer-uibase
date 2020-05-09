@@ -602,17 +602,15 @@ namespace MOBase {
     // The current tree and entry:
     std::shared_ptr<FileTreeEntry> entry = nullptr;
     std::shared_ptr<IFileTree> tree = astree();
-    for (auto it = begin; it != end; ++it) {
+    for (auto it = begin; tree != nullptr && it != end; ++it) {
       // Special cases:
       if (*it == ".") {
         continue;
       }
       else if (*it == "..") {
-        // Must check that we have a parent:
-        if (parent() != nullptr) {
-
-        }
-        tree = nullptr;
+        // parent() returns nullptr if it does not exist, so no
+        // check required:
+        tree = parent();
       }
       else {
 
@@ -644,10 +642,6 @@ namespace MOBase {
         else { // Cannot go further:
           tree = nullptr;
         }
-      }
-
-      if (tree == nullptr) {
-        break;
       }
     }
 
