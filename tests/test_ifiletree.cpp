@@ -21,15 +21,15 @@ using namespace MOBase;
 struct FileListTree : public IFileTree {
   using File = std::pair<QStringList, bool>;
 
-  std::shared_ptr<IFileTree> makeDirectory(std::shared_ptr<IFileTree> parent, QString name, std::vector<File> &&files) const {
+  std::shared_ptr<IFileTree> makeDirectory(std::shared_ptr<const IFileTree> parent, QString name, std::vector<File> &&files) const {
     return std::shared_ptr<FileListTree>(new FileListTree(parent, name, std::move(files)));
   }
 
-  std::shared_ptr<IFileTree> makeDirectory(std::shared_ptr<IFileTree> parent, QString name) const {
+  std::shared_ptr<IFileTree> makeDirectory(std::shared_ptr<const IFileTree> parent, QString name) const {
     return std::shared_ptr<FileListTree>(new FileListTree(parent, name));
   }
 
-  virtual void doPopulate(std::shared_ptr<IFileTree> parent, std::vector<std::shared_ptr<FileTreeEntry>>& entries) const {
+  virtual void doPopulate(std::shared_ptr<const IFileTree> parent, std::vector<std::shared_ptr<FileTreeEntry>>& entries) const {
     // We know that the files are sorted:
     QString currentName = "";
     std::vector<File> currentFiles;
@@ -84,10 +84,10 @@ public:
 
 protected:
 
-  FileListTree(std::shared_ptr<IFileTree> parent, QString name) : FileTreeEntry(parent, name), IFileTree() { }
-  FileListTree(std::shared_ptr<IFileTree> parent, QString name, std::vector<File> const& files) 
+  FileListTree(std::shared_ptr<const IFileTree> parent, QString name) : FileTreeEntry(parent, name), IFileTree() { }
+  FileListTree(std::shared_ptr<const IFileTree> parent, QString name, std::vector<File> const& files)
     : FileTreeEntry(parent, name), IFileTree(), m_Files(files) { }
-  FileListTree(std::shared_ptr<IFileTree> parent, QString name, std::vector<File>&& files) 
+  FileListTree(std::shared_ptr<const IFileTree> parent, QString name, std::vector<File>&& files)
     : FileTreeEntry(parent, name), IFileTree(), m_Files(std::move(files)) { }
 
   std::vector<File> m_Files;
