@@ -165,18 +165,15 @@ namespace MOBase {
       return it;
     }
 
-    // Remove the tree from its parent (parent() can be null
-    // if we are inserting a new tree):
-    if (entry->parent() != nullptr) {
-      entry->parent()->erase(entry);
-    }
-
     if (entryWithSameName) {
       if (insertPolicy == InsertPolicy::FAIL_IF_EXISTS) {
         return end();
       }
       if (insertPolicy == InsertPolicy::REPLACE || entry->isFile()) {
         if (beforeReplace(this, it->get(), entry.get())) {
+          // Detach the old entry from its parent (not using .detach()
+          // to remove the entry since we are replacing it):
+          (*it)->m_Parent.reset();
           *it = entry;
         }
         else {
@@ -191,8 +188,20 @@ namespace MOBase {
       it = entries().insert(it, entry);
     }
 
-    // Update the parent of the tree:
-    entry->m_Parent = astree();
+    // Remove the tree from its parent (parent() can be null if we are inserting 
+    // a new tree):
+    if (entry->parent() != nullptr) {
+      entry->parent()->erase(entry);
+    }
+
+    // If the entry was actually inserted, we update its parent:
+    if (*it == entry) {
+      entry->m_Parent = astree();
+    }
+    // Otherwize, we reset it (if this was a merge operation):
+    else {
+      entry->m_Parent.reset();
+    }
 
     return it;
   }

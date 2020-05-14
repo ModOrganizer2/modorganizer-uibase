@@ -48,11 +48,8 @@ struct FileListTree : public IFileTree {
       if (p.first.size() == 1) {
         if (!p.second) {
           entries.push_back(makeFile(parent, currentName, QDateTime()));
+          currentName = "";
         }
-        else {
-          entries.push_back(makeDirectory(parent, currentName));
-        }
-        currentName = "";
       }
       else {
         currentFiles.push_back({
@@ -135,7 +132,7 @@ void assertTreeEquals(std::shared_ptr<const IFileTree> fileTree, std::vector<std
   // Check that all entries in the tree are in the vector:
   auto treeEntries = getAllEntries(fileTree);
   for (auto& entry : treeEntries) {
-    auto path = entry->path("/");
+    auto path = entry->pathFrom(fileTree, "/");
     auto it = std::find_if(entries.begin(), entries.end(), [&path](auto const& p) {
       return p.first.compare(path, Qt::CaseInsensitive) == 0;
     });
@@ -474,6 +471,120 @@ TEST(IFileTreeTest, IterOperations) {
     {"c", true},
     {"d", false}
   });
+}
+
+TEST(IFileTreeTest, TreeInsertOperations) {
+
+  // Test failure:
+  {
+    auto fileTree = FileListTree::makeTree({
+      {"a/", true},
+      {"b", true},
+      {"c.x", false},
+      {"d.y", false},
+      {"e/q/c.t", false},
+      {"e/q/p", true},
+      {"e/q/z/", true},
+      {"e/q/z/a.t", false},
+      {"e/q/z/b", true},
+      {"f/q/c.t", false},
+      {"f/q/o", true},
+      {"f/q/z/b", false},
+      {"f/q/z/c.t", false}
+      });
+
+    EXPECT_NE(fileTree, nullptr);
+
+    // Retrieve the entry:
+    auto map = createMapping(fileTree);
+    auto e = fileTree->findDirectory("e");
+    auto f_q = fileTree->findDirectory("f/q");
+
+    auto it = e->insert(f_q, IFileTree::InsertPolicy::FAIL_IF_EXISTS);
+    EXPECT_EQ(it, e->end());
+    EXPECT_EQ(f_q->parent(), fileTree->find("f"));
+  }
+
+  // Test replace:
+  {
+    auto fileTree = FileListTree::makeTree({
+      {"a/", true},
+      {"b", true},
+      {"c.x", false},
+      {"d.y", false},
+      {"e/q/c.t", false},
+      {"e/q/p", true},
+      {"e/q/z/", true},
+      {"e/q/z/a.t", false},
+      {"e/q/z/b", true},
+      {"f/q/c.t", false},
+      {"f/q/o", true},
+      {"f/q/z/b", false},
+      {"f/q/z/c.t", false}
+      });
+
+    EXPECT_NE(fileTree, nullptr);
+
+    // Retrieve the entry:
+    auto map = createMapping(fileTree);
+    auto e = fileTree->findDirectory("e");
+    auto f_q = fileTree->findDirectory("f/q");
+
+    auto it = e->insert(f_q, IFileTree::InsertPolicy::REPLACE);
+    EXPECT_NE(it, e->end());
+    EXPECT_EQ(f_q->parent(), e);
+    EXPECT_EQ(map["e/q"]->parent(), nullptr);
+    EXPECT_EQ(e->find("q"), map["f/q"]);
+    EXPECT_TRUE(fileTree->findDirectory("f")->empty());
+    EXPECT_EQ(e->find("q/c.t"), map["f/q/c.t"]);
+    EXPECT_EQ(e->find("q/o"), map["f/q/o"]);
+    EXPECT_EQ(e->find("q/z"), map["f/q/z"]);
+    EXPECT_EQ(e->find("q/z/b"), map["f/q/z/b"]);
+    EXPECT_EQ(e->find("q/z/c.t"), map["f/q/z/c.t"]);
+  }
+
+  // Test merge:
+  {
+    auto fileTree = FileListTree::makeTree({
+      {"a/", true},
+      {"b", true},
+      {"c.x", false},
+      {"d.y", false},
+      {"e/q/c.t", false},
+      {"e/q/p", true},
+      {"e/q/z", true},
+      {"e/q/z/a.t", false},
+      {"e/q/z/b", true},
+      {"f/q/c.t", false},
+      {"f/q/o", true},
+      {"f/q/z", true},
+      {"f/q/z/b", false},
+      {"f/q/z/c.t", false}
+      });
+
+    EXPECT_NE(fileTree, nullptr);
+
+    // Retrieve the entry:
+    auto map = createMapping(fileTree);
+    auto e = fileTree->findDirectory("e");
+    auto f_q = fileTree->findDirectory("f/q");
+
+    auto it = e->insert(f_q, IFileTree::InsertPolicy::MERGE);
+    assertTreeEquals(e, {
+      {"q", true},
+      {"q/o", true},
+      {"q/p", true},
+      {"q/z", true},
+      {"q/c.t", false},
+      {"q/z/a.t", false},
+      {"q/z/c.t", false},
+      {"q/z/b", false}
+    });
+    EXPECT_EQ(e->find("q/z/b"), map["f/q/z/b"]);
+    EXPECT_EQ(fileTree->findDirectory("f")->size(), std::size_t{ 0 });
+    EXPECT_EQ(map["f/q"]->parent(), nullptr);
+    EXPECT_EQ(map["f/q/z"]->parent(), nullptr);
+  }
 }
 
 TEST(IFileTreeTest, TreeMergeOperations) {
