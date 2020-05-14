@@ -419,7 +419,7 @@ namespace MOBase {
       using pointer = U;
       using iterator_category = typename V::iterator_category;
 
-      friend bool operator==(convert_iterator a, convert_iterator b) { return a.v != b.v; }
+      friend bool operator==(convert_iterator a, convert_iterator b) { return a.v == b.v; }
       friend bool operator!=(convert_iterator a, convert_iterator b) { return a.v != b.v; }
 
       reference operator*() const { return U(*v); }
@@ -633,10 +633,15 @@ namespace MOBase {
      *
      * The entry must not be this tree or a parent entry of this tree.
      *
-     * If the insert policy if FAIL_IF_EXISTS, the call will fail if an entry
-     * with the same name already exists. If the policy is REPLACE, an existing
-     * entry will be replaced. If MERGE, the entry will be merged with the existing
-     * one (if the entry is a file, and a file exists, the file will be replaced).
+     * - If the insert policy if FAIL_IF_EXISTS, the call will fail if an entry
+     * with the same name already exists. 
+     * - If the policy is REPLACE, an existing entry will be replaced by the given entry.
+     * - If MERGE:
+     *   - If there is no entry with the same name, the new entry is inserted.
+     *   - If there is an entry with the same name: 
+     *     - If both entries are files, the old file is replaced by the given entry.
+     *     - If both entries are directories, a merge is performed as if using merge().
+     *     - Otherwize the insertion fails (two entries with different types).
      *
      * This method invalidates iterator to this tree, to the parent tree of the given
      * entry, and to subtrees of this tree if the insert policy is MERGE.
@@ -970,18 +975,6 @@ namespace MOBase {
      */
     std::shared_ptr<IFileTree> createTree(QStringList::const_iterator begin, QStringList::const_iterator end);
     
-    /**
-   * @brief Retrieve the given entry from the given array.
-   *
-   * @param entries List of entries to search. Must be sorted according to entry_comparator.
-   * @param name Name of the entry to find.
-   * @param matchTypes Type of file to check.
-   *
-   * @return the found entry, or a null pointer if the entry was not found.
-   */
-    static const std::shared_ptr<FileTreeEntry> findEntry(
-      std::vector<std::shared_ptr<FileTreeEntry>> const& entries, QString name, FileTypes matchTypes);
-
     // Indicate if this tree has been populated:
     mutable bool m_Populated = false;
     mutable std::vector<std::shared_ptr<FileTreeEntry>> m_Entries;

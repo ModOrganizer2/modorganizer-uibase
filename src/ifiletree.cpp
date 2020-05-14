@@ -53,6 +53,7 @@ namespace MOBase {
 
 // IFileTree:
 namespace MOBase {
+
   /**
    * Comparator for file entries.
    */
@@ -68,6 +69,28 @@ namespace MOBase {
         return FileNameComparator::compare(a->name(), b->name()) < 0;
       }
     }
+  };
+
+  /**
+   * @brief Comparator that can be used to find entry matching the given name and 
+   *     file type.
+   */
+  struct MatchEntryComparator {
+
+    MatchEntryComparator(QString const& name, FileTreeEntry::FileTypes matchTypes) :
+      m_Name(name), m_MatchTypes(matchTypes) { }
+
+    bool operator()(const std::shared_ptr<const FileTreeEntry>& fileEntry) const {
+      return m_MatchTypes.testFlag(fileEntry->fileType()) && fileEntry->compare(m_Name) == 0;
+    }
+
+    bool operator()(const std::shared_ptr<FileTreeEntry>& fileEntry) const {
+      return m_MatchTypes.testFlag(fileEntry->fileType()) && fileEntry->compare(m_Name) == 0;
+    }
+
+  private:
+    QString const& m_Name;
+    FileTreeEntry::FileTypes m_MatchTypes;
   };
 
 
@@ -156,36 +179,50 @@ namespace MOBase {
       }
     }
 
-    // Insert in the tree:
-    auto it = std::lower_bound(entries().begin(), entries().end(), entry, FileEntryComparator{});
-    bool entryWithSameName = it != entries().end() && (*it)->compare(entry->name()) == 0;
+    // Check if there exists an entry with the same name:
+    auto existingIt = std::find_if(begin(), end(), MatchEntryComparator{ entry->name(), FILE_OR_DIRECTORY });
 
     // Already in the tree?
-    if (entryWithSameName && *it == entry) {
-      return it;
+    if (existingIt != end() && *existingIt == entry) {
+      return existingIt;
     }
 
-    if (entryWithSameName) {
+    // Find the insertion iterator:
+    auto insertionIt = std::lower_bound(begin(), end(), entry, FileEntryComparator{});
+
+    if (existingIt != end()) {
       if (insertPolicy == InsertPolicy::FAIL_IF_EXISTS) {
         return end();
       }
-      if (insertPolicy == InsertPolicy::REPLACE || entry->isFile()) {
-        if (beforeReplace(this, it->get(), entry.get())) {
+
+      // We replace if the policy is REPLACE or if the new and old entry are
+      // both files:
+      if (insertPolicy == InsertPolicy::REPLACE
+        || ((*existingIt)->isFile() && entry->isFile())) {
+        if (beforeReplace(this, existingIt->get(), entry.get())) {
           // Detach the old entry from its parent (not using .detach()
           // to remove the entry since we are replacing it):
-          (*it)->m_Parent.reset();
-          *it = entry;
+          (*existingIt)->m_Parent.reset();
+          entries().erase(existingIt);
+          insertionIt = entries().insert(insertionIt, entry);
         }
         else {
           return end();
         }
       }
+      // If we arrive here and one of the entry is a file, we fail:
+      else if ((*existingIt)->isFile() || entry->isFile()) {
+        return end();
+      }
       else {
-        mergeTree((*it)->astree(), entry->astree(), nullptr);
+        // If we end up here, we know that the policy is MERGE and that both
+        // are directory that can be merged:
+        mergeTree((*existingIt)->astree(), entry->astree(), nullptr);
+        insertionIt = existingIt;
       }
     }
     else if (beforeInsert(this, entry.get())) {
-      it = entries().insert(it, entry);
+      insertionIt = entries().insert(insertionIt, entry);
     }
 
     // Remove the tree from its parent (parent() can be null if we are inserting 
@@ -195,7 +232,7 @@ namespace MOBase {
     }
 
     // If the entry was actually inserted, we update its parent:
-    if (*it == entry) {
+    if (*insertionIt == entry) {
       entry->m_Parent = astree();
     }
     // Otherwize, we reset it (if this was a merge operation):
@@ -203,7 +240,7 @@ namespace MOBase {
       entry->m_Parent.reset();
     }
 
-    return it;
+    return insertionIt;
   }
 
   /**
@@ -389,29 +426,6 @@ namespace MOBase {
   }
 
   /**
-   * @brief Retrieve the given entry from the given array.
-   *
-   * @param entries List of entries to search. Must be sorted
-   *     according to entry_comparator.
-   * @param name Name of the entry to find.
-   * @param matchTypes Type of file to check.
-   *
-   * @return the found entry, or a null pointer if the entry was not found.
-   */
-  const std::shared_ptr<FileTreeEntry> IFileTree::findEntry(
-    std::vector<std::shared_ptr<FileTreeEntry>> const& entries, QString name, FileTypes matchTypes) {
-    // Note: Could use the fact that the vector is "sorted". Unfortunately, we don't know what name is
-    // (directory or file), so we cannot use FileEntryComparator.
-    auto entryIt = std::find_if(
-      std::begin(entries), std::end(entries),
-      [&](const std::shared_ptr<FileTreeEntry>& fileEntry) {
-        return matchTypes.testFlag(fileEntry->fileType()) && fileEntry->compare(name) == 0;
-      });
-
-    return entryIt == std::end(entries) ? nullptr : *entryIt;
-  }
-
-  /**
    *
    */
   std::size_t IFileTree::mergeTree(
@@ -566,14 +580,14 @@ namespace MOBase {
       }
       else {
         // Find the entry at the current level:
-        std::shared_ptr<FileTreeEntry> entry = findEntry(tree->entries(), *it, IFileTree::DIRECTORY);
+        auto entryIt = std::find_if(tree->begin(), tree->end(), MatchEntryComparator{ *it, IFileTree::DIRECTORY });
 
         // Early exists if the entry does not exist or is not a directory:
-        if (entry == nullptr) {
+        if (entryIt == tree->end()) {
           tree = nullptr;
         }
         else {
-          tree = entry->astree().get();
+          tree = (*entryIt)->astree().get();
         }
       }
     }
@@ -583,7 +597,9 @@ namespace MOBase {
     }
 
     // We have the final tree:
-    return findEntry(tree->entries(), *it, matchTypes);
+    auto entryIt = std::find_if(tree->begin(), tree->end(), MatchEntryComparator{ *it, matchTypes });
+    auto bIt = tree->end();
+    return entryIt == bIt ? nullptr : *entryIt;
   }
 
   /**
@@ -609,7 +625,6 @@ namespace MOBase {
    */
   std::shared_ptr<IFileTree> IFileTree::createTree(QStringList::const_iterator begin, QStringList::const_iterator end) {
     // The current tree and entry:
-    std::shared_ptr<FileTreeEntry> entry = nullptr;
     std::shared_ptr<IFileTree> tree = astree();
     for (auto it = begin; tree != nullptr && it != end; ++it) {
       // Special cases:
@@ -625,28 +640,29 @@ namespace MOBase {
 
         // Check if the entry exists (looking for both files and directories
         // because we don't want to override a file):
-        entry = findEntry(tree->entries(), *it, IFileTree::FILE_OR_DIRECTORY);
+        auto entryIt = std::find_if(tree->begin(), tree->end(), MatchEntryComparator{ *it, IFileTree::FILE_OR_DIRECTORY });
 
         // Create if it does not:
-        if (entry == nullptr) {
-          entry = tree->makeDirectory(tree, *it);
+        if (entryIt == tree->end()) {
+          auto newTree = tree->makeDirectory(tree, *it);
 
           // If makeDirectory returns a null pointer, it means we cannot create tree.
-          if (entry == nullptr) {
+          if (newTree == nullptr) {
+            tree = nullptr;
             break;
           }
 
           // The tree is empty so already populated:
-          entry->astree()->m_Populated = true;
+          newTree->m_Populated = true;
 
           tree->entries().insert(
-            std::upper_bound(tree->begin(), tree->end(), entry, FileEntryComparator{}),
-            entry
+            std::upper_bound(tree->begin(), tree->end(), newTree, FileEntryComparator{}),
+            newTree
           );
-          tree = entry->astree();
+          tree = newTree;
         }
-        else if (entry->isDir()) {
-          tree = entry->astree();
+        else if ((*entryIt)->isDir()) {
+          tree = (*entryIt)->astree();
         }
         else { // Cannot go further:
           tree = nullptr;
