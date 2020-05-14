@@ -112,6 +112,35 @@ namespace MOBase {
   /**
    *
    */
+  void IFileTree::walk(std::function<bool(QString const&, std::shared_ptr<const FileTreeEntry>)> callback, QString sep) const {
+
+
+    std::stack<std::pair<QString, std::shared_ptr<const FileTreeEntry>>> stack;
+    
+    // We start by pushing all the entries in this tree, this avoid having to do extra check later
+    // for avoid leading separator:
+    for (auto rit = rbegin(); rit != rend(); ++rit) {
+      stack.push({ "", *rit });
+    }
+
+    while (!stack.empty()) {
+      auto [path, entry] = stack.top();
+      stack.pop();
+      if (!callback(path, entry)) {
+        break;
+      }
+      if (entry->isDir()) {
+        auto tree = entry->astree();
+        for (auto rit = tree->rbegin(); rit != tree->rend(); ++rit) {
+          stack.push({ path + tree->name() + sep, *rit });
+        }
+      }
+    }
+  }
+
+  /**
+   *
+   */
   std::shared_ptr<FileTreeEntry> IFileTree::addFile(QString path, QDateTime time) {
     QStringList parts = splitPath(path);
 

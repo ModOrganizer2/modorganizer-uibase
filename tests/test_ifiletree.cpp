@@ -725,3 +725,64 @@ TEST(IFileTreeTest, TreeMergeOperations) {
   }
 
 }
+
+TEST(IFileTreeTest, TreeWalkOperations) {
+
+  // Note: Testing specific order here, while in reality user should not rely
+  // on it (and it is not specified, on purpose). Only guarantee is that a folder
+  // is visited before its children.
+  {
+    auto fileTree = FileListTree::makeTree({
+      {"a/", true},
+      {"b", true},
+      {"b/u", false},
+      {"b/v", false},
+      {"c.x", false},
+      {"d.y", false},
+      {"e/q/c.t", false},
+      {"e/q/p", true}
+      });
+    
+    auto map = createMapping(fileTree);
+
+    // Populate the vector:
+    std::vector<std::pair<QString, std::shared_ptr<const FileTreeEntry>>> entries;
+    fileTree->walk([&entries](auto path, auto entry) {
+      entries.push_back({ path, entry });
+      return true;
+    }, "/");
+
+    decltype(entries) expected{
+      { "", map["a"] },
+      { "", map["b"] },
+      { "b/", map["b/u"] },
+      { "b/", map["b/v"] },
+      { "", map["e"] },
+      { "e/", map["e/q"] },
+      { "e/q/", map["e/q/p"] },
+      { "e/q/", map["e/q/c.t"] },
+      { "", map["c.x"] },
+      { "", map["d.y"] }
+    };
+    EXPECT_EQ(entries, expected);
+
+    entries.clear();
+    fileTree->walk([&entries](auto path, auto entry) {
+      if (entry->name() == "e") {
+        return false;
+      }
+      entries.push_back({ path, entry });
+      }, "/");
+
+    // Note: This assumes a given order, while in reality it is not specified.
+    expected = {
+      { "", map["a"] },
+      { "", map["b"] },
+      { "b/", map["b/u"] },
+      { "b/", map["b/v"] },
+    };
+    EXPECT_EQ(entries, expected);
+
+  }
+
+}
