@@ -29,6 +29,8 @@ struct FileListTree : public IFileTree {
     return std::shared_ptr<FileListTree>(new FileListTree(parent, name));
   }
 
+  bool populated() const { return m_Populated; }
+
   virtual void doPopulate(std::shared_ptr<const IFileTree> parent, std::vector<std::shared_ptr<FileTreeEntry>>& entries) const {
     // We know that the files are sorted:
     QString currentName = "";
@@ -61,6 +63,8 @@ struct FileListTree : public IFileTree {
     if (currentName != "") {
       entries.push_back(makeDirectory(parent, currentName, std::move(currentFiles)));
     }
+
+    m_Populated = true;
   }
 
   virtual std::shared_ptr<IFileTree> doClone() const override {
@@ -91,8 +95,23 @@ protected:
   FileListTree(std::shared_ptr<const IFileTree> parent, QString name, std::vector<File>&& files)
     : FileTreeEntry(parent, name), IFileTree(), m_Files(std::move(files)) { }
 
+  mutable bool m_Populated = false;
   std::vector<File> m_Files;
 };
+
+/**
+ * @brief Check if the given tree has been populated.
+ *
+ * Since IFileTree does not expose the "populated" flag, this is a convenient
+ * method that simply downcast to `FileListTree` and check `populated()` on it.
+ *
+ * @param tree The tree to check.
+ *
+ * @return true if the tree has been populated, false otherwize.
+ */
+bool populated(std::shared_ptr<const IFileTree> tree) {
+  return std::dynamic_pointer_cast<const FileListTree>(tree)->populated();
+}
 
 /**
  * @brief Retrieve all the entry in the given tree.
@@ -599,14 +618,22 @@ TEST(IFileTreeTest, TreeMoveAndCopyOperations) {
       {"b/", true},
       {"c", false}
       });
-    auto map1 = createMapping(tree1);
+    auto a = tree1->findDirectory("a");
+    EXPECT_FALSE(populated(a));
 
     tree1->move(tree1->find("a"), "a1");
+
+    // Moving the tree should not have populated it:
     EXPECT_EQ(tree1->find("a"), nullptr);
-    EXPECT_EQ(tree1->find("a1"), map1["a"]);
+    EXPECT_EQ(tree1->find("a1"), a);
+    EXPECT_FALSE(populated(a));
 
     tree1->copy(tree1->find("a1"), "a2");
-    EXPECT_EQ(tree1->find("a1"), map1["a"]);
+
+    // Copying the tree should not have populated it:
+    EXPECT_FALSE(populated(a));
+    EXPECT_FALSE(populated(tree1->findDirectory("a2")));
+    EXPECT_EQ(tree1->find("a1"), a);
     EXPECT_NE(tree1->find("a1"), tree1->find("a2"));
 
     assertTreeEquals(tree1, {
@@ -621,6 +648,10 @@ TEST(IFileTreeTest, TreeMoveAndCopyOperations) {
       {"b", true},
       {"c", false},
     });
+
+    // Everything should be populated now:
+    EXPECT_TRUE(populated(tree1->findDirectory("a1")));
+    EXPECT_TRUE(populated(tree1->findDirectory("a2")));
 
     QString a1("a1/"), a2("a2/");
     for (auto p : { "b", "b/c", "b/m.y" }) {
