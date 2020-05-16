@@ -325,6 +325,12 @@ namespace MOBase {
     FileTreeEntry(std::shared_ptr<const IFileTree> parent, QString name);
 
     /**
+     * @brief Creates a new orphan entry identical to this entry.
+     *
+     */
+    virtual std::shared_ptr<FileTreeEntry> clone() const;
+
+    /**
      * @brief Creates a new FileTreeEntry corresponding to a file with the given parameters.
      *
      * The purpose of this methods is to allow child classes corresponding to tree (i.e., that do
@@ -335,6 +341,8 @@ namespace MOBase {
      * @param time The modification time of this file.
      */
     static std::shared_ptr<FileTreeEntry> createFileEntry(std::shared_ptr<const IFileTree> parent, QString name, QDateTime time);
+
+  private:
 
     std::weak_ptr<const IFileTree> m_Parent;
 
@@ -399,7 +407,7 @@ namespace MOBase {
     /**
      *
      */
-    using OverwritesType = std::map <std::shared_ptr<const FileTreeEntry>, std::shared_ptr<const FileTreeEntry>> ;
+    using OverwritesType = std::map<std::shared_ptr<const FileTreeEntry>, std::shared_ptr<const FileTreeEntry>>;
 
   public: // Iterators:
 
@@ -409,6 +417,10 @@ namespace MOBase {
      * wrapper to create iterators to shared pointer of const-object to have proper
      * immutability when IFileTree is const-qualified.
      *
+     * Note: convert_iterator satisfies InputIterator but not ForwardIterator since
+     * dereferencing it does not return a reference, even if it can likely be used 
+     * exactly in the same way since it returns a pointer-like type (U is a shared
+     * pointer).
      */
     template <class U, class V>
     struct convert_iterator {
@@ -606,7 +618,7 @@ namespace MOBase {
      *
      * @return a new tree without any parent.
      */
-    virtual std::shared_ptr<IFileTree> createOrphanTree(QString name = "") const;
+    std::shared_ptr<IFileTree> createOrphanTree(QString name = "") const;
 
   public: // Mutable operations:
 
@@ -667,7 +679,7 @@ namespace MOBase {
      *     already existed, or the end iterator if insertPolicy is FAIL_IF_EXISTS
      *     and an entry with the same name already exists.
      */
-    virtual iterator insert(std::shared_ptr<FileTreeEntry> entry, InsertPolicy insertPolicy = InsertPolicy::FAIL_IF_EXISTS);
+    iterator insert(std::shared_ptr<FileTreeEntry> entry, InsertPolicy insertPolicy = InsertPolicy::FAIL_IF_EXISTS);
 
     /**
      * @brief Merge the given tree with this tree, i.e., insert all entries
@@ -694,8 +706,7 @@ namespace MOBase {
      * @return the number of overwritten entries, or MERGE_FAILED if the merge
      *     failed (e.g. because the source is a parent of this tree).
      */
-    virtual std::size_t merge(
-      std::shared_ptr<IFileTree> source, OverwritesType *overwrites = nullptr);
+    std::size_t merge(std::shared_ptr<IFileTree> source, OverwritesType *overwrites = nullptr);
 
     /**
      * @brief Move the given entry to the given path under this tree.
@@ -714,12 +725,35 @@ namespace MOBase {
      * @param entry Entry to insert.
      * @param path The path to move the entry to. If the path ends with / or \,
      *     the entry will be inserted in the corresponding directory instead of replacing
-     *     it.
+     *     it. If the given path is empty (`""`), this is equivalent to `insert()`.
      * @param insertPolicy Policy to use on conflict.
      *
      * @return true if the entry was moved correctly, false otherwize.
      */
-    virtual bool move(std::shared_ptr<FileTreeEntry> entry, QString path, InsertPolicy insertPolicy = InsertPolicy::FAIL_IF_EXISTS);
+    bool move(std::shared_ptr<FileTreeEntry> entry, QString path = "", InsertPolicy insertPolicy = InsertPolicy::FAIL_IF_EXISTS);
+
+    /**
+     * @brief Copy the given entry to the given path under this tree.
+     *
+     * The entry must not be a parent tree of this tree.
+     *
+     * If the insert policy if FAIL_IF_EXISTS, the call will fail if an entry
+     * at the same location already exists. If the policy is REPLACE, an existing
+     * entry will be replaced. If MERGE, the entry will be merged with the existing
+     * one (if the entry is a file, and a file exists, the file will be replaced).
+     *
+     * This method invalidates iterator to this tree and to subtrees of this tree if
+     * the insert policy is MERGE. The given entry is left untouched
+     *
+     * @param entry Entry to copy.
+     * @param path The path to copy the entry to. If the path ends with / or \,
+     *     the entry will be inserted in the corresponding directory instead of replacing
+     *     it.
+     * @param insertPolicy Policy to use on conflict.
+     *
+     * @return true if the entry was copied correctly, false otherwize.
+     */
+    bool copy(std::shared_ptr<const FileTreeEntry> entry, QString path = "", InsertPolicy insertPolicy = InsertPolicy::FAIL_IF_EXISTS);
 
     /**
      * @brief Delete the given entry.
@@ -730,7 +764,7 @@ namespace MOBase {
      * @return an iterator following the removed entry (might be the end 
      *     iterator if the entry was not found or was the last).
      */
-    virtual iterator erase(std::shared_ptr<FileTreeEntry> entry);    
+    iterator erase(std::shared_ptr<FileTreeEntry> entry);    
     
     /**
      * @brief Delete the entry with the given name.
@@ -744,7 +778,7 @@ namespace MOBase {
      *     be the end iterator if the entry was not found or was the last) and
      *     the removed entry (or a null pointer if the entry was not found).
      */
-    virtual std::pair<iterator, std::shared_ptr<FileTreeEntry>> erase(QString name);
+    std::pair<iterator, std::shared_ptr<FileTreeEntry>> erase(QString name);
 
     /**
      * @brief Delete (detach) all the entries from this tree
@@ -754,7 +788,7 @@ namespace MOBase {
      *
      * @return true if all entries could be deleted, false otherwize.
      */
-    virtual bool clear();
+    bool clear();
     
     /**
      * @brief Delete the entries with the given names from the tree.
@@ -766,7 +800,7 @@ namespace MOBase {
      *
      * @return the number of deleted entry.
      */
-    virtual std::size_t removeAll(QStringList names);
+    std::size_t removeAll(QStringList names);
 
     /**
      * @brief Delete the entries that match the given predicate from the tree.
@@ -778,7 +812,7 @@ namespace MOBase {
      *
      * @return the number of deleted entry.
      */
-    virtual std::size_t removeIf(std::function<bool(std::shared_ptr<FileTreeEntry> const& entry)> predicate);
+    std::size_t removeIf(std::function<bool(std::shared_ptr<FileTreeEntry> const& entry)> predicate);
 
   public: // Inherited methods:
 
@@ -821,12 +855,14 @@ namespace MOBase {
    * A few implementation details here for implementing classes. While there are multiple
    * virtual public methods, most implementation should not have to re-implement them.
    *
-   * There are two pure virtual methods that needs to be implemented by any child class:
+   * There are three pure virtual methods that needs to be implemented by any child class:
    *   - makeDirectory(): used to create directories - this method serves to create directory
    *         that may or may not existing in the underlying source. Implementing class do not
    *         have to rely on this for `doPopulate()`. This method is also called when new 
-   *         directory needs to be created (addDirectory, insert, merge, etc.), and may return
-   *         a null pointer to indicate that the operations failed or is not permitted.
+   *         directory needs to be created (addDirectory, insert, createOrphanTree, merge, etc.), 
+   *         and may return a null pointer to indicate that the operations failed or is not permitted.
+   *   - doClone(): called when a tree needs to be cloned (e.g., for a copy) - this methods does
+   *         not copy the subtrees, it should only create an empty tree equivalent to the current tree.
    *   - doPopulate(): called when a tree have to be populated.
    *
    * The other commons methods that can be re-implemented are:
@@ -942,6 +978,16 @@ namespace MOBase {
      */
     virtual void doPopulate(std::shared_ptr<const IFileTree> parent, std::vector<std::shared_ptr<FileTreeEntry>>& entries) const = 0;
 
+    /**
+     * @brief Creates a copy of this file tree.
+     *
+     * This methods is called by clone() in order to copy child class attributes. This method should basically
+     * returns a new copy of the tree with the attributes added by the implementation copied (and nothing else).
+     *
+     * @return the cloned tree.
+     */
+    virtual std::shared_ptr<IFileTree> doClone() const = 0;
+
   protected: // Constructor
 
     /**
@@ -949,6 +995,11 @@ namespace MOBase {
      *     child classes must directly call the FileTreeEntry constructor.
      */
     IFileTree();
+
+    /**
+     *
+     */
+    std::shared_ptr<FileTreeEntry> clone() const override;
 
   /**
    *

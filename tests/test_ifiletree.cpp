@@ -63,6 +63,10 @@ struct FileListTree : public IFileTree {
     }
   }
 
+  virtual std::shared_ptr<IFileTree> doClone() const override {
+    return std::shared_ptr<FileListTree>(new FileListTree(nullptr, name(), m_Files));
+  }
+
 public:
 
   static std::shared_ptr<IFileTree> makeTree(std::vector<std::pair<QString, bool>> &&files) {
@@ -136,8 +140,8 @@ void assertTreeEquals(std::shared_ptr<const IFileTree> fileTree, std::vector<std
     auto it = std::find_if(entries.begin(), entries.end(), [&path](auto const& p) {
       return p.first.compare(path, Qt::CaseInsensitive) == 0;
     });
-    ASSERT_NE(it, entries.end()) << "Entry " << path << " not expected in the tree.";
-    ASSERT_EQ(it->second, entry->isDir()) << "Entry " << path << " is not of the right type.";
+    ASSERT_NE(it, entries.end()) << "Entry '" << path << "' not expected in the tree.";
+    ASSERT_EQ(it->second, entry->isDir()) << "Entry '" << path << "' is not of the right type.";
   }
 }
 
@@ -587,6 +591,44 @@ TEST(IFileTreeTest, TreeInsertOperations) {
   }
 }
 
+TEST(IFileTreeTest, TreeMoveAndCopyOperations) {
+  {
+    auto tree1 = FileListTree::makeTree({
+      {"a/b/m.y", false},
+      {"a/b/c", true},
+      {"b/", true},
+      {"c", false}
+      });
+    auto map1 = createMapping(tree1);
+
+    tree1->move(tree1->find("a"), "a1");
+    EXPECT_EQ(tree1->find("a"), nullptr);
+    EXPECT_EQ(tree1->find("a1"), map1["a"]);
+
+    tree1->copy(tree1->find("a1"), "a2");
+    EXPECT_EQ(tree1->find("a1"), map1["a"]);
+    EXPECT_NE(tree1->find("a1"), tree1->find("a2"));
+
+    assertTreeEquals(tree1, {
+      {"a1", true},
+      {"a1/b", true},
+      {"a1/b/c", true},
+      {"a1/b/m.y", false},
+      {"a2", true},
+      {"a2/b", true},
+      {"a2/b/c", true},
+      {"a2/b/m.y", false},
+      {"b", true},
+      {"c", false},
+    });
+
+    QString a1("a1/"), a2("a2/");
+    for (auto p : { "b", "b/c", "b/m.y" }) {
+      EXPECT_NE(tree1->find(a1 + p), tree1->find(a2 + p)) << "Entry '" << (a1 + p) << "' and '" << (a2 + p) << "' should be different.";
+    }
+  }
+}
+
 TEST(IFileTreeTest, TreeMergeOperations) {
 
   {
@@ -772,7 +814,8 @@ TEST(IFileTreeTest, TreeWalkOperations) {
         return false;
       }
       entries.push_back({ path, entry });
-      }, "/");
+      return true;
+    }, "/");
 
     // Note: This assumes a given order, while in reality it is not specified.
     expected = {

@@ -46,6 +46,10 @@ namespace MOBase {
     return tree->insert(shared_from_this()) != tree->end();
   }
 
+  std::shared_ptr<FileTreeEntry> FileTreeEntry::clone() const {
+    return createFileEntry(nullptr, name(), time());
+  }
+
   std::shared_ptr<FileTreeEntry> FileTreeEntry::createFileEntry(std::shared_ptr<const IFileTree> parent, QString name, QDateTime time) {
     return std::shared_ptr<FileTreeEntry>(new FileTreeEntry(parent, name, time));
   }
@@ -328,6 +332,16 @@ namespace MOBase {
     }
 
     return true;
+  }  
+  
+  /**
+   *
+   */
+  bool IFileTree::copy(std::shared_ptr<const FileTreeEntry> entry, QString path, InsertPolicy insertPolicy) {
+    // Note: If a conflict exists, the tree is cloned before checking the conflict, so this is not the
+    // most efficient way but copying tree should be pretty rare (and probably avoided anyway), and this 
+    // allow us to use `move()` to do all the complex operations.
+    return move(entry->clone(), path, insertPolicy);
   }
 
   /**
@@ -648,6 +662,26 @@ namespace MOBase {
    *
    */
   IFileTree::IFileTree() { }
+
+  /**
+   *
+   */
+  std::shared_ptr<FileTreeEntry> IFileTree::clone() const {
+    std::shared_ptr<IFileTree> tree = doClone();
+    
+    // Don't copy not populated tree, it is not useful:
+    if (m_Populated) {
+      tree->m_Populated = true;
+      auto& tentries = tree->m_Entries;
+      for (auto e : entries()) {
+        auto ce = e->clone();
+        ce->m_Parent = tree;
+        tentries.push_back(ce);
+      }
+    }
+
+    return tree;
+  }
 
   /**
    *
