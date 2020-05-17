@@ -1,6 +1,7 @@
 #include "ifiletree.h"
 
 #include <algorithm>
+#include <stack>
 
 // FileTreeEntry:
 namespace MOBase {
