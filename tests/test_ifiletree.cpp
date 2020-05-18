@@ -822,7 +822,7 @@ TEST(IFileTreeTest, TreeWalkOperations) {
     std::vector<std::pair<QString, std::shared_ptr<const FileTreeEntry>>> entries;
     fileTree->walk([&entries](auto path, auto entry) {
       entries.push_back({ path, entry });
-      return true;
+      return IFileTree::WalkReturn::CONTINUE;
     }, "/");
 
     decltype(entries) expected{
@@ -842,10 +842,10 @@ TEST(IFileTreeTest, TreeWalkOperations) {
     entries.clear();
     fileTree->walk([&entries](auto path, auto entry) {
       if (entry->name() == "e") {
-        return false;
+        return IFileTree::WalkReturn::STOP;
       }
       entries.push_back({ path, entry });
-      return true;
+      return IFileTree::WalkReturn::CONTINUE;
     }, "/");
 
     // Note: This assumes a given order, while in reality it is not specified.
@@ -854,6 +854,26 @@ TEST(IFileTreeTest, TreeWalkOperations) {
       { "", map["b"] },
       { "b/", map["b/u"] },
       { "b/", map["b/v"] },
+    };
+    EXPECT_EQ(entries, expected);
+
+    entries.clear();
+    fileTree->walk([&entries](auto path, auto entry) {
+      if (entry->name() == "e") {
+        return IFileTree::WalkReturn::SKIP;
+      }
+      entries.push_back({ path, entry });
+      return IFileTree::WalkReturn::CONTINUE;
+      }, "/");
+
+    // Note: This assumes a given order, while in reality it is not specified.
+    expected = {
+      { "", map["a"] },
+      { "", map["b"] },
+      { "b/", map["b/u"] },
+      { "b/", map["b/v"] },
+      { "", map["c.x"] },
+      { "", map["d.y"] }
     };
     EXPECT_EQ(entries, expected);
 

@@ -595,19 +595,40 @@ namespace MOBase {
       return entry->pathFrom(astree());
     }
 
+  public: // Walk operations
+
+    enum class WalkReturn {
+
+      /**
+       * @brief Continue walking normally.
+       */
+      CONTINUE,
+
+      /**
+       * @brief Stop walking normally.
+       */
+      STOP,
+
+      /**
+       * @brief Skip this folder (no effect if the entry is a file).
+       */
+      SKIP
+
+    };
+
     /**
      * @brief Walk this tree, calling the given function for each entry in it.
      *
      * The given callback will be called with two parameters: the path from this tree to the given entry 
-     * (with a trailing separator, not including the entry name), and the actual entry. The method can 
-     * return false to stop walking early.
+     * (with a trailing separator, not including the entry name), and the actual entry. The method returns
+     * a `WalkReturn` object to indicates what to do.
      *
      * During the walk, parent tree are guaranteed to be visited before their childrens. The given function
      * is never called with the current tree.
      *     
      * @param callback Method to call for each entry in the tree.
      */
-    void walk(std::function<bool(QString const&, std::shared_ptr<const FileTreeEntry>)> callback, QString sep = "\\") const;
+    void walk(std::function<WalkReturn(QString const&, std::shared_ptr<const FileTreeEntry>)> callback, QString sep = "\\") const;
 
   public: // Utility functions:
 

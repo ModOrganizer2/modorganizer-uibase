@@ -117,7 +117,7 @@ namespace MOBase {
   /**
    *
    */
-  void IFileTree::walk(std::function<bool(QString const&, std::shared_ptr<const FileTreeEntry>)> callback, QString sep) const {
+  void IFileTree::walk(std::function<WalkReturn(QString const&, std::shared_ptr<const FileTreeEntry>)> callback, QString sep) const {
 
 
     std::stack<std::pair<QString, std::shared_ptr<const FileTreeEntry>>> stack;
@@ -131,10 +131,12 @@ namespace MOBase {
     while (!stack.empty()) {
       auto [path, entry] = stack.top();
       stack.pop();
-      if (!callback(path, entry)) {
+
+      auto res = callback(path, entry);
+      if (res == WalkReturn::STOP) {
         break;
       }
-      if (entry->isDir()) {
+      if (entry->isDir() && res != WalkReturn::SKIP) {
         auto tree = entry->astree();
         for (auto rit = tree->rbegin(); rit != tree->rend(); ++rit) {
           stack.push({ path + tree->name() + sep, *rit });
