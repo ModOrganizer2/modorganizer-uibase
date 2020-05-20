@@ -21,6 +21,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 #ifndef IFILETREE_H
 #define IFILETREE_H
 
+#include <stdexcept>
 #include <map>
 #include <memory>
 #include <vector>
