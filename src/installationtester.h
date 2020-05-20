@@ -28,7 +28,6 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 
 namespace MOBase {
 
-class FileNameString;
 
 /**
  * @brief Various convenience functions used to determine if a mod directory fulfills certain criteria
@@ -47,19 +46,7 @@ public:
    * @param dirName the directory name to test
    * @return true if the specified directory is a top-level directory
    **/
-  QDLLEXPORT static bool isTopLevelDirectory(const FileNameString &dirName);
-
-  /**
-   * test if the specified directory qualifies as a top-level directory. A top-level directory
-   * is one that contains data used by the game and goes directly below the "data" directory.
-   * The most common examples are "textures" and "meshes"
-   * On top of these, this function will also accept directories that are not used by the
-   * game itself but by the BAIN installer ("ini tweaks" and docs)
-   *
-   * @param dirName the directory name to test
-   * @return true if the specified directory is a top-level directory
-   **/
-  QDLLEXPORT static bool isTopLevelDirectoryBain(const FileNameString &dirName);
+  QDLLEXPORT static bool isTopLevelDirectory(const QString &dirName);
 
   /**
    * test if the specified file qualifies as a top-level file. A top-level file is one
@@ -69,7 +56,7 @@ public:
    * @param fileName name of the file to test. It doesn't matter if this is an absolute file name or relative since only the extension is interpreted
    * @return bool
    **/
-  QDLLEXPORT static bool isTopLevelSuffix(const FileNameString &fileName);
+  QDLLEXPORT static bool isTopLevelSuffix(const QString&fileName);
 
 private:
 

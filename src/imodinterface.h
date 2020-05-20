@@ -22,6 +22,8 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 #ifndef IMODINTERFACE_H
 #define IMODINTERFACE_H
 
+#include "iplugingame.h"
+
 class QString;
 class QStringList;
 
@@ -99,13 +101,13 @@ public:
   /**
    * @return list of categories assigned to this mod
    */
-  virtual QStringList categories() = 0;
+  virtual QStringList categories() const = 0;
 
   /**
-  * @brief set/change the source game of this mod
-  *
-  * @param gameName the source game shortName
-  */
+   * @brief set/change the source game of this mod
+   *
+   * @param gameName the source game shortName
+   */
   virtual void setGameName(const QString &gameName) = 0;
 
   /**

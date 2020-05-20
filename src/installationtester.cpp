@@ -18,7 +18,8 @@ along with Mod Organizer.  If not, see <http://www.gnu.org/licenses/>.
 */
 
 #include "installationtester.h"
-#include "filenamestring.h"
+
+#include "ifiletree.h"
 
 #include <QFileInfo>
 #include <set>
@@ -31,9 +32,9 @@ InstallationTester::InstallationTester()
 }
 
 
-bool InstallationTester::isTopLevelDirectory(const FileNameString &dirName)
+bool InstallationTester::isTopLevelDirectory(const QString&dirName)
 {
-  static std::set<FileNameString> tlDirectoryNames = {
+  static std::set<QString, FileNameComparator> tlDirectoryNames = {
     "fonts", "interface", "menus", "meshes", "music", "scripts", "shaders",
     "sound", "strings", "textures", "trees", "video", "facegen", "materials",
     "skse", "obse", "mwse", "nvse", "fose", "f4se", "distantlod", "asi",
@@ -45,26 +46,10 @@ bool InstallationTester::isTopLevelDirectory(const FileNameString &dirName)
   return tlDirectoryNames.count(dirName) != 0;
 }
 
-
-bool InstallationTester::isTopLevelDirectoryBain(const FileNameString &dirName)
+bool InstallationTester::isTopLevelSuffix(const QString&fileName)
 {
-  static std::set<FileNameString> tlDirectoryNames = {
-    "fonts", "interface", "menus", "meshes", "music", "scripts", "shaders",
-    "sound", "strings", "textures", "trees", "video", "facegen", "materials",
-    "skse", "obse", "mwse", "nvse", "fose", "f4se", "distantlod", "asi",
-    "SkyProc Patchers", "Tools", "MCM", "icons", "bookart", "distantland",
-    "mits", "splash", "dllplugins", "Docs", "INITweaks", "CalienteTools",
-    "NetScriptFramework", "shadersfx"
-  };
-
-  return tlDirectoryNames.count(dirName) != 0;
-}
-
-
-bool InstallationTester::isTopLevelSuffix(const FileNameString &fileName)
-{
-  static std::set<FileNameString> tlSuffixes = { "esp", "esm", "esl", "bsa", "ba2", ".modgroups" };
-  return tlSuffixes.count(QFileInfo(fileName.toQString()).suffix()) != 0;
+  static std::set<QString, FileNameComparator> tlSuffixes = { "esp", "esm", "esl", "bsa", "ba2", ".modgroups" };
+  return tlSuffixes.count(QFileInfo(fileName).suffix()) != 0;
 }
 
 } // namespace MOBase

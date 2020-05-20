@@ -22,8 +22,10 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 #ifndef IINSTALLATIONMANAGER_H
 #define IINSTALLATIONMANAGER_H
 
+#include <QString>
 
-#include <iplugininstaller.h>
+#include "iplugininstaller.h"
+#include "ifiletree.h"
 
 namespace MOBase {
 
@@ -32,7 +34,7 @@ template <typename T> class GuessedValue;
 
 
 /**
- * @brief The IInstallationManager class
+ * @brief The IInstallationManager class.
  */
 class IInstallationManager {
 
@@ -41,38 +43,60 @@ public:
   virtual ~IInstallationManager() {}
 
   /**
-   * @brief extract the specified file from the currently open archive to a temporary location
-   * @param (relative) name of the file within the archive
-   * @return the absolute name of the temporary file
-   * @note the call will fail with an exception if no archive is open (plugins deriving
-   *       from IPluginInstallerSimple can rely on that, custom installers shouldn't)
-   * @note the temporary file is automatically cleaned up after the installation
-   * @note This call can be very slow if the archive is large and "solid"
+   * @brief Extract the specified file from the currently opened archive to a temporary
+   * location.
+   *
+   * This method cannot be used to extract directory.
+   *
+   * @param entry Entry corresponding to the file to extract.
+   *
+   * @return the absolute path to the temporary file, or an empty string if the
+   *     file was not extracted.
+   *
+   * @note The call will fail with an exception if no archive is open (plugins deriving
+   *       from IPluginInstallerSimple can rely on that, custom installers should not).
+   * @note The temporary file is automatically cleaned up after the installation.
+   * @note This call can be very slow if the archive is large and "solid".
    */
-  virtual QString extractFile(const QString &fileName) = 0;
+  virtual QString extractFile(std::shared_ptr<const FileTreeEntry> entry) = 0;
 
   /**
-   * @brief extract the specified files from the currently open archive to a temporary location
-   * @param files (relative) names of files within the archive
-   * @param flatten if true (default) all files go to the same same directory, no subdirectories.
-   * @return the absolute names of the temporary files
-   * @note the call will fail with an exception if no archive is open (plugins deriving
-   *       from IPluginInstallerSimple can rely on that, custom installers shouldn't)
-   * @note the temporary file is automatically cleaned up after the installation
-   * @note This call can be very slow if the archive is large and "solid"
+   * @brief Extract the specified files from the currently opened archive to a temporary location.
+   *
+   * @param entres Entries corresponding to the files to extract.
+   *
+   * This method cannot be used to extract directory.
+   *
+   * @return the list of absolute paths to the temporary files.
+   *
+   * @note The call will fail with an exception if no archive is open (plugins deriving
+   *       from IPluginInstallerSimple can rely on that, custom installers should not).
+   * @note The temporary file is automatically cleaned up after the installation.
+   * @note This call can be very slow if the archive is large and "solid".
+   *
+   * The flatten argument is not present here while it is present in the deprecated QStringList
+   * version for multiple reasons: 1) it was never used, 2) it is kind of fishy because there
+   * is no way to know if a file is going to be overriden, 3) it is quite easy to flatten a 
+   * IFileTree and thus to given a list of entries flattened (this was not possible with the
+   * QStringList version since these were based on the name of the file inside the archive).
    */
-  virtual QStringList extractFiles(const QStringList &files, bool flatten) = 0;
+  virtual QStringList extractFiles(std::vector<std::shared_ptr<const FileTreeEntry>> const& entries) = 0;
 
   /**
-   * @brief installs an archive
-   * @param modName suggested name of the mod
-   * @param archiveFile path to the archive to install
-   * @return the installation result
+   * @brief Installs the given archive.
+   *
+   * @param modName Suggested name of the mod.
+   * @param archiveFile Path to the archive to install.
+   * @param modId ID of the mod, if available.
+   *
+   * @return the installation result.
    */
-  virtual IPluginInstaller::EInstallResult installArchive(MOBase::GuessedValue<QString> &modName, const QString &archiveFile, const int &modID = 0) = 0;
+  virtual IPluginInstaller::EInstallResult installArchive(MOBase::GuessedValue<QString> &modName, const QString &archiveFile, int modID = 0) = 0;
 
   /**
-   * @brief set the url associated with a mod
+   * @brief Set the url associated with a mod.
+   *
+   * @param url Url to set.
    */
   virtual void setURL(QString const &url) = 0;
 

@@ -3,7 +3,11 @@
 #include <string>
 #include <filesystem>
 #include <QString>
+#include <QSize>
+#include <QRect>
+#include <QColor>
 #include <fmt/format.h>
+
 #include "dllimport.h"
 
 namespace spdlog { class logger; }
@@ -51,6 +55,13 @@ struct QDLLEXPORT converter<QString>
 {
   static std::string convert(const QString& s);
 };
+
+template <>
+struct QDLLEXPORT converter<QStringRef>
+{
+  static std::string convert(const QStringRef& s);
+};
+
 
 template <>
 struct QDLLEXPORT converter<QSize>
