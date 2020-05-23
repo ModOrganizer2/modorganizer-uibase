@@ -753,9 +753,10 @@ namespace MOBase {
    * @brief Populate the internal vectors and update the flag.
    */
   void IFileTree::populate() const {
-    doPopulate(astree(), m_Entries);
+    if (!doPopulate(astree(), m_Entries)) {
+      std::sort(std::begin(m_Entries), std::end(m_Entries), FileEntryComparator{});
+    }
     m_Populated = true;
-    std::sort(std::begin(m_Entries), std::end(m_Entries), FileEntryComparator{});
   }
 
 }

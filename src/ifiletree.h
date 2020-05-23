@@ -968,15 +968,21 @@ namespace MOBase {
     virtual std::shared_ptr<IFileTree> makeDirectory(std::shared_ptr<const IFileTree> parent, QString name) const = 0;
 
     /**
-     * @brief Method that subclass should implement.
+     * @brief Method that child classes should implement.
      *
      * This method should populate the given entries of this tree by using the makeFile and makeTree method. The
      * usage of the makeFile and makeTree method is not mandatory here.
      *
+     * If the implementation can populate the vector of entries in order, it is possible to return false to
+     * tell IFileTree not to re-sort the vector. If sorted, directories should be before files, and both directories
+     * and files should be sorted by name in a case-insensitive way.
+     *
      * @param parent The current tree, without const-qualification.
      * @param entries Vector of entries to populate.
+     *
+     * @return true if the vector of entries is already sorted, false if it must be sorted.
      */
-    virtual void doPopulate(std::shared_ptr<const IFileTree> parent, std::vector<std::shared_ptr<FileTreeEntry>>& entries) const = 0;
+    virtual bool doPopulate(std::shared_ptr<const IFileTree> parent, std::vector<std::shared_ptr<FileTreeEntry>>& entries) const = 0;
 
     /**
      * @brief Creates a copy of this file tree.
