@@ -219,27 +219,6 @@ namespace MOBase {
     QString suffix() const;
 
     /**
-     * @brief Retrieve the modification time of this entry.
-     *
-     * If this entry corresponds to a directory, or if the modification
-     * time is unknown, returns an invalid QDateTime.
-     *
-     * @return the modification time of this file.
-     */
-    QDateTime time() const {
-      return m_Time;
-    }
-
-    /**
-     * @brief Set the modification time of this entry.
-     *
-     * @param time New modification time for this entry.
-     */
-    void setTime(QDateTime time) {
-      m_Time = time;
-    }
-
-    /**
      * @brief Retrieve the path from this entry up to the root of the tree.
      *
      * This method propagate up the tree so is not constant complexity as
@@ -286,7 +265,7 @@ namespace MOBase {
      * @brief Retrieve the immediate parent tree of this entry.
      *
      * @return the parent tree containing this entry, or a null pointer
-     * if this entry is the root or the parent tree is unreachable.
+     *     if this entry is the root or the parent tree is unreachable.
      */
     std::shared_ptr<IFileTree> parent() {
       return std::const_pointer_cast<IFileTree>(const_cast<const FileTreeEntry*>(this)->parent());
@@ -309,19 +288,10 @@ namespace MOBase {
   protected: // Constructors:
 
     /**
-     * @brief Create a new entry corresponding to a file.
+     * @brief Create a new entry corresponding.
      *
-     * @param parent The tree containing this file.
-     * @param name The name of this file.
-     * @param time The modification time of this file.
-     */
-    FileTreeEntry(std::shared_ptr<const IFileTree> parent, QString name, QDateTime time);
-
-    /**
-     * @brief Create a new entry corresponding to a directory.
-     *
-     * @param parent The tree containing this directory.
-     * @param name The name of this directory.
+     * @param parent The tree containing this entry.
+     * @param name The name of this entry.
      */
     FileTreeEntry(std::shared_ptr<const IFileTree> parent, QString name);
 
@@ -339,16 +309,14 @@ namespace MOBase {
      *
      * @param parent The tree containing this file.
      * @param name The name of this file.
-     * @param time The modification time of this file.
      */
-    static std::shared_ptr<FileTreeEntry> createFileEntry(std::shared_ptr<const IFileTree> parent, QString name, QDateTime time);
+    static std::shared_ptr<FileTreeEntry> createFileEntry(std::shared_ptr<const IFileTree> parent, QString name);
 
   private:
 
     std::weak_ptr<const IFileTree> m_Parent;
 
     QString m_Name;
-    QDateTime m_Time;
 
     friend class IFileTree;
   };
@@ -652,12 +620,11 @@ namespace MOBase {
      * given path.
      *
      * @param name Name of the file.
-     * @param time Modification time of the file.
      *
      * @return the entry corresponding to the create file, or a null
      *     pointer if the file was not created.
      */
-    virtual std::shared_ptr<FileTreeEntry> addFile(QString path, QDateTime time = QDateTime());
+    virtual std::shared_ptr<FileTreeEntry> addFile(QString path);
 
     /**
      * @brief Create a new directory tree under this tree.
@@ -973,11 +940,10 @@ namespace MOBase {
      *
      * @param parent The current tree, without const-qualification.
      * @param name Name of the file.
-     * @param time Modification time of the file.
      *
      * @return the created file.
      */
-    virtual std::shared_ptr<FileTreeEntry> makeFile(std::shared_ptr<const IFileTree> parent, QString name, QDateTime time) const;
+    virtual std::shared_ptr<FileTreeEntry> makeFile(std::shared_ptr<const IFileTree> parent, QString name) const;
 
     /**
      * @brief Create a new entry corresponding to a subtree under this tree.
@@ -990,15 +956,21 @@ namespace MOBase {
     virtual std::shared_ptr<IFileTree> makeDirectory(std::shared_ptr<const IFileTree> parent, QString name) const = 0;
 
     /**
-     * @brief Method that subclass should implement.
+     * @brief Method that child classes should implement.
      *
      * This method should populate the given entries of this tree by using the makeFile and makeTree method. The
      * usage of the makeFile and makeTree method is not mandatory here.
      *
+     * If the implementation can populate the vector of entries in order, it is possible to return false to
+     * tell IFileTree not to re-sort the vector. If sorted, directories should be before files, and both directories
+     * and files should be sorted by name in a case-insensitive way.
+     *
      * @param parent The current tree, without const-qualification.
      * @param entries Vector of entries to populate.
+     *
+     * @return true if the vector of entries is already sorted, false if it must be sorted.
      */
-    virtual void doPopulate(std::shared_ptr<const IFileTree> parent, std::vector<std::shared_ptr<FileTreeEntry>>& entries) const = 0;
+    virtual bool doPopulate(std::shared_ptr<const IFileTree> parent, std::vector<std::shared_ptr<FileTreeEntry>>& entries) const = 0;
 
     /**
      * @brief Creates a copy of this file tree.

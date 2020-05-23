@@ -31,7 +31,7 @@ struct FileListTree : public IFileTree {
 
   bool populated() const { return m_Populated; }
 
-  virtual void doPopulate(std::shared_ptr<const IFileTree> parent, std::vector<std::shared_ptr<FileTreeEntry>>& entries) const {
+  virtual bool doPopulate(std::shared_ptr<const IFileTree> parent, std::vector<std::shared_ptr<FileTreeEntry>>& entries) const {
     // We know that the files are sorted:
     QString currentName = "";
     std::vector<File> currentFiles;
@@ -49,7 +49,7 @@ struct FileListTree : public IFileTree {
 
       if (p.first.size() == 1) {
         if (!p.second) {
-          entries.push_back(makeFile(parent, currentName, QDateTime()));
+          entries.push_back(makeFile(parent, currentName));
           currentName = "";
         }
       }
@@ -65,6 +65,8 @@ struct FileListTree : public IFileTree {
     }
 
     m_Populated = true;
+
+    return false;
   }
 
   virtual std::shared_ptr<IFileTree> doClone() const override {

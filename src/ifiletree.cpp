@@ -6,11 +6,7 @@
 // FileTreeEntry:
 namespace MOBase {
   FileTreeEntry::FileTreeEntry(std::shared_ptr<const IFileTree> parent, QString name) :
-    m_Parent(parent), m_Name(name), m_Time() {
-  }
-
-  FileTreeEntry::FileTreeEntry(std::shared_ptr<const IFileTree> parent, QString name, QDateTime time) :
-    m_Parent(parent), m_Name(name), m_Time(time) { }
+    m_Parent(parent), m_Name(name) { }
   
   QString FileTreeEntry::suffix() const {
     const int idx = m_Name.lastIndexOf(".");
@@ -48,11 +44,11 @@ namespace MOBase {
   }
 
   std::shared_ptr<FileTreeEntry> FileTreeEntry::clone() const {
-    return createFileEntry(nullptr, name(), time());
+    return createFileEntry(nullptr, name());
   }
 
-  std::shared_ptr<FileTreeEntry> FileTreeEntry::createFileEntry(std::shared_ptr<const IFileTree> parent, QString name, QDateTime time) {
-    return std::shared_ptr<FileTreeEntry>(new FileTreeEntry(parent, name, time));
+  std::shared_ptr<FileTreeEntry> FileTreeEntry::createFileEntry(std::shared_ptr<const IFileTree> parent, QString name) {
+    return std::shared_ptr<FileTreeEntry>(new FileTreeEntry(parent, name));
   }
 }
 
@@ -148,7 +144,7 @@ namespace MOBase {
   /**
    *
    */
-  std::shared_ptr<FileTreeEntry> IFileTree::addFile(QString path, QDateTime time) {
+  std::shared_ptr<FileTreeEntry> IFileTree::addFile(QString path) {
     QStringList parts = splitPath(path);
 
     // Check if the file already exists:
@@ -175,7 +171,7 @@ namespace MOBase {
       tree = this;
     }
 
-    std::shared_ptr<FileTreeEntry> entry = tree->makeFile(this->astree(), parts[parts.size() - 1], time);
+    std::shared_ptr<FileTreeEntry> entry = tree->makeFile(this->astree(), parts[parts.size() - 1]);
 
     // If makeFile returns a null pointer, it means we cannot create file:
     if (entry == nullptr) {
@@ -657,8 +653,8 @@ namespace MOBase {
    *
    * @return the created file.
    */
-  std::shared_ptr<FileTreeEntry> IFileTree::makeFile(std::shared_ptr<const IFileTree> parent, QString name, QDateTime time) const {
-    return createFileEntry(parent, name, time);
+  std::shared_ptr<FileTreeEntry> IFileTree::makeFile(std::shared_ptr<const IFileTree> parent, QString name) const {
+    return createFileEntry(parent, name);
   }
 
   /**
@@ -757,9 +753,10 @@ namespace MOBase {
    * @brief Populate the internal vectors and update the flag.
    */
   void IFileTree::populate() const {
-    doPopulate(astree(), m_Entries);
+    if (!doPopulate(astree(), m_Entries)) {
+      std::sort(std::begin(m_Entries), std::end(m_Entries), FileEntryComparator{});
+    }
     m_Populated = true;
-    std::sort(std::begin(m_Entries), std::end(m_Entries), FileEntryComparator{});
   }
 
 }
