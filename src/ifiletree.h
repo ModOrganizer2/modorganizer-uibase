@@ -219,18 +219,6 @@ namespace MOBase {
     QString suffix() const;
 
     /**
-     * @brief Retrieve the modification time of this entry.
-     *
-     * If this entry corresponds to a directory, or if the modification
-     * time is unknown, returns an invalid QDateTime.
-     *
-     * @return the modification time of this file.
-     */
-    virtual QDateTime time() const {
-      return QDateTime();
-    }
-
-    /**
      * @brief Retrieve the path from this entry up to the root of the tree.
      *
      * This method propagate up the tree so is not constant complexity as
