@@ -49,7 +49,7 @@ struct FileListTree : public IFileTree {
 
       if (p.first.size() == 1) {
         if (!p.second) {
-          entries.push_back(makeFile(parent, currentName, QDateTime()));
+          entries.push_back(makeFile(parent, currentName));
           currentName = "";
         }
       }
