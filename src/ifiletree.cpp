@@ -741,11 +741,19 @@ namespace MOBase {
    * @return the vector of entries.
    */
   std::vector<std::shared_ptr<FileTreeEntry>>& IFileTree::entries() {
-    if (!m_Populated) { populate(); }
+    // Use this "weird" order for atomic:
+    if (m_Populated) {
+      return m_Entries;
+    }
+    populate();
     return m_Entries;
   }
   const std::vector<std::shared_ptr<FileTreeEntry>>& IFileTree::entries() const {
-    if (!m_Populated) { populate(); }
+    // Use this "weird" order for atomic:
+    if (m_Populated) {
+      return m_Entries;
+    }
+    populate();
     return m_Entries;
   }
 
@@ -753,6 +761,12 @@ namespace MOBase {
    * @brief Populate the internal vectors and update the flag.
    */
   void IFileTree::populate() const {
+    std::unique_lock lock(m_Mutex);
+
+    // Check that the tree was not being populated while waiting on the lock:
+    if (m_Populated) return;
+
+    // Populate:
     if (!doPopulate(astree(), m_Entries)) {
       std::sort(std::begin(m_Entries), std::end(m_Entries), FileEntryComparator{});
     }

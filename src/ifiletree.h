@@ -21,9 +21,11 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 #ifndef IFILETREE_H
 #define IFILETREE_H
 
+#include <atomic>
 #include <stdexcept>
 #include <map>
 #include <memory>
+#include <mutex>
 #include <vector>
 
 #include <QFlags>
@@ -1035,7 +1037,8 @@ namespace MOBase {
     std::shared_ptr<IFileTree> createTree(QStringList::const_iterator begin, QStringList::const_iterator end);
     
     // Indicate if this tree has been populated:
-    mutable bool m_Populated = false;
+    mutable std::mutex m_Mutex;
+    mutable std::atomic<bool> m_Populated = false;
     mutable std::vector<std::shared_ptr<FileTreeEntry>> m_Entries;
 
     /**
