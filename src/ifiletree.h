@@ -334,6 +334,9 @@ namespace MOBase {
    * classes only have to implement methods to populate the tree and to create child tree
    * object.
    *
+   * Read-only operations on the tree are thread-safe, even when the tree has not been populated
+   * yet.
+   *
    * In order to prevent wrong usage of the tree, implementing classes may throw 
    * UnsupportedOperationException if an operation is not supported. By default, all operations
    * are supported, but some may not make sense in many situations.
