@@ -1037,8 +1037,8 @@ namespace MOBase {
     std::shared_ptr<IFileTree> createTree(QStringList::const_iterator begin, QStringList::const_iterator end);
     
     // Indicate if this tree has been populated:
-    mutable std::mutex m_Mutex;
-    mutable std::atomic<bool> m_Populated = false;
+    mutable std::atomic<bool> m_Populated{ false };
+    mutable std::once_flag m_OnceFlag;
     mutable std::vector<std::shared_ptr<FileTreeEntry>> m_Entries;
 
     /**
