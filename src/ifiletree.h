@@ -85,7 +85,7 @@ namespace MOBase {
      * @return -1, 0 or 1 if the first one is less, equal or greater than the second one.
      */
     static int compare(QString const& lhs, QString const& rhs) {
-      return lhs.compare(rhs, Qt::CaseInsensitive);
+      return lhs.compare(rhs, CaseSensitivity);
     }
 
     /**
@@ -219,6 +219,24 @@ namespace MOBase {
      *     extension or is directory.
      */
     QString suffix() const;
+
+    /**
+     * @brief Check if this entry has the given suffix.
+     *
+     * @param suffix Suffix of to check.
+     *
+     * @return true if this entry is a file and has the given suffix.
+     */
+    bool hasSuffix(QString suffix) const;
+
+    /**
+     * @brief Check if this entry has one of the given suffixes.
+     *
+     * @param suffixes Suffixes of to check.
+     *
+     * @return true if this entry is a file and has the given suffix.
+     */
+    bool hasSuffix(QStringList suffixes) const;
 
     /**
      * @brief Retrieve the path from this entry up to the root of the tree.

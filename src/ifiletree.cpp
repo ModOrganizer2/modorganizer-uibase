@@ -13,6 +13,14 @@ namespace MOBase {
     return (isDir() || idx == -1) ? "" : m_Name.mid(idx + 1);
   }
 
+  bool FileTreeEntry::hasSuffix(QString suffix) const {
+    return this->suffix().compare(suffix, FileNameComparator::CaseSensitivity) == 0;
+  }
+
+  bool FileTreeEntry::hasSuffix(QStringList suffixes) const {
+    return suffixes.contains(suffix(), FileNameComparator::CaseSensitivity);
+  }
+
   QString FileTreeEntry::pathFrom(std::shared_ptr<const IFileTree> tree, QString sep) const {
 
     // We will construct the path from right to left:
