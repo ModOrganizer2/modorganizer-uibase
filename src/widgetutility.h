@@ -7,7 +7,9 @@
 namespace MOBase
 {
 
-QDLLEXPORT void setCustomizableColumns(QTreeView* view);
+  constexpr auto EnabledColumnRole = Qt::UserRole + 1;
+
+  QDLLEXPORT void setCustomizableColumns(QTreeView* view);
 
 } // namespace
 
