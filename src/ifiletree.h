@@ -21,9 +21,11 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 #ifndef IFILETREE_H
 #define IFILETREE_H
 
+#include <atomic>
 #include <stdexcept>
 #include <map>
 #include <memory>
+#include <mutex>
 #include <vector>
 
 #include <QFlags>
@@ -331,6 +333,9 @@ namespace MOBase {
    * This interface already implements most of the usual methods for a file tree. Child
    * classes only have to implement methods to populate the tree and to create child tree
    * object.
+   *
+   * Read-only operations on the tree are thread-safe, even when the tree has not been populated
+   * yet.
    *
    * In order to prevent wrong usage of the tree, implementing classes may throw 
    * UnsupportedOperationException if an operation is not supported. By default, all operations
@@ -1035,7 +1040,8 @@ namespace MOBase {
     std::shared_ptr<IFileTree> createTree(QStringList::const_iterator begin, QStringList::const_iterator end);
     
     // Indicate if this tree has been populated:
-    mutable bool m_Populated = false;
+    mutable std::atomic<bool> m_Populated{ false };
+    mutable std::once_flag m_OnceFlag;
     mutable std::vector<std::shared_ptr<FileTreeEntry>> m_Entries;
 
     /**

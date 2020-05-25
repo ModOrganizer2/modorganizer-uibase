@@ -741,11 +741,11 @@ namespace MOBase {
    * @return the vector of entries.
    */
   std::vector<std::shared_ptr<FileTreeEntry>>& IFileTree::entries() {
-    if (!m_Populated) { populate(); }
+    std::call_once(m_OnceFlag, [this]() { populate(); });
     return m_Entries;
   }
   const std::vector<std::shared_ptr<FileTreeEntry>>& IFileTree::entries() const {
-    if (!m_Populated) { populate(); }
+    std::call_once(m_OnceFlag, [this]() { populate(); });
     return m_Entries;
   }
 
@@ -753,6 +753,7 @@ namespace MOBase {
    * @brief Populate the internal vectors and update the flag.
    */
   void IFileTree::populate() const {
+    // Populate:
     if (!doPopulate(astree(), m_Entries)) {
       std::sort(std::begin(m_Entries), std::end(m_Entries), FileEntryComparator{});
     }
