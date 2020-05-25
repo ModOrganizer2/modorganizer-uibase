@@ -85,7 +85,7 @@ namespace MOBase {
      * @return -1, 0 or 1 if the first one is less, equal or greater than the second one.
      */
     static int compare(QString const& lhs, QString const& rhs) {
-      return lhs.compare(rhs, Qt::CaseInsensitive);
+      return lhs.compare(rhs, CaseSensitivity);
     }
 
     /**
