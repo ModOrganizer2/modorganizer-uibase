@@ -221,6 +221,24 @@ namespace MOBase {
     QString suffix() const;
 
     /**
+     * @brief Check if this entry has the given suffix.
+     *
+     * @param suffix Suffix of to check.
+     *
+     * @return true if this entry is a file and has the given suffix.
+     */
+    bool hasSuffix(QString suffix) const;
+
+    /**
+     * @brief Check if this entry has one of the given suffixes.
+     *
+     * @param suffixes Suffixes of to check.
+     *
+     * @return true if this entry is a file and has the given suffix.
+     */
+    bool hasSuffix(QStringList suffixes) const;
+
+    /**
      * @brief Retrieve the path from this entry up to the root of the tree.
      *
      * This method propagate up the tree so is not constant complexity as
