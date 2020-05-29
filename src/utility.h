@@ -357,27 +357,6 @@ public:
   IncompatibilityException(const QString &text) : MyException(text) {}
 };
 
-
-/**
- * @brief convenience template to create a vector in a single call using vararg semantic
- *
- * @param count number of elements
- * @param  ... parameters (should be exactly "count" elements)
- * @return the constructed vector
- **/
-template <typename T>
-std::vector<T> MakeVector(int count, ...)
-{
-  std::vector<T> result;
-  va_list argList;
-  va_start(argList, count);
-  for (int i = 0; i < count; ++i) {
-    result.push_back(va_arg(argList, int));
-  }
-  va_end(argList);
-  return result;
-}
-
 template <typename T>
 QList<T> ConvertList(const QVariantList &variants)
 {

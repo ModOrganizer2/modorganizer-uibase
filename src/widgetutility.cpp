@@ -25,6 +25,14 @@ void onHeaderContextMenu(QTreeView* view, const QPoint& pos)
     checkBox->setText(columnName);
     checkBox->setChecked(!header->isSectionHidden(i));
 
+    // Enable the checkbox if 1) the section is visible, or 2) the
+    // EnabledColumnRole is not found, or 3) the value for the role is true.
+    auto display = model->headerData(i, Qt::Horizontal, EnabledColumnRole);
+    checkBox->setEnabled(
+      !header->isSectionHidden(i)
+      || !display.isValid()
+      || display.toBool());
+
     auto* checkableAction = new QWidgetAction(&menu);
     checkableAction->setDefaultWidget(checkBox);
 
