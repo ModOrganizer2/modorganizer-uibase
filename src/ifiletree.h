@@ -638,16 +638,19 @@ namespace MOBase {
     /**
      * @brief Create a new file directly under this tree.
      *
-     * This method will return a null pointer if the file already exists. This method
-     * invalidates iterators to this tree and all the subtrees present in the
-     * given path.
+     * This method will return a null pointer if the file already exists and if 
+     * replaceIfExists is false. This method invalidates iterators to this tree and 
+     * all the subtrees present in the given path.
      *
      * @param name Name of the file.
+     * @param replaceIfExists If true and an entry already exists at the given path,
+     *     it will be replaced by a new entry. This will replace both files and
+     *     directories.
      *
      * @return the entry corresponding to the create file, or a null
      *     pointer if the file was not created.
      */
-    virtual std::shared_ptr<FileTreeEntry> addFile(QString path);
+    virtual std::shared_ptr<FileTreeEntry> addFile(QString path, bool replaceIfExists = false);
 
     /**
      * @brief Create a new directory tree under this tree.

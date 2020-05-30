@@ -152,11 +152,12 @@ namespace MOBase {
   /**
    *
    */
-  std::shared_ptr<FileTreeEntry> IFileTree::addFile(QString path) {
+  std::shared_ptr<FileTreeEntry> IFileTree::addFile(QString path, bool replaceIfExists) {
     QStringList parts = splitPath(path);
 
     // Check if the file already exists:
-    if (fetchEntry(parts, IFileTree::FILE_OR_DIRECTORY) != nullptr) {
+    auto existingEntry = fetchEntry(parts, IFileTree::FILE_OR_DIRECTORY);
+    if (!replaceIfExists && existingEntry != nullptr) {
       return nullptr;
     }
 
@@ -184,6 +185,11 @@ namespace MOBase {
     // If makeFile returns a null pointer, it means we cannot create file:
     if (entry == nullptr) {
       return nullptr;
+    }
+
+    // Remove the existing files if there was one:
+    if (existingEntry) {
+      existingEntry->detach();
     }
 
     // Insert in the tree:
