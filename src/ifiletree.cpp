@@ -179,7 +179,7 @@ namespace MOBase {
       tree = this;
     }
 
-    std::shared_ptr<FileTreeEntry> entry = tree->makeFile(this->astree(), parts[parts.size() - 1]);
+    std::shared_ptr<FileTreeEntry> entry = tree->makeFile(tree->astree(), parts[parts.size() - 1]);
 
     // If makeFile returns a null pointer, it means we cannot create file:
     if (entry == nullptr) {
