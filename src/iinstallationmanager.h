@@ -83,6 +83,19 @@ public:
   virtual QStringList extractFiles(std::vector<std::shared_ptr<const FileTreeEntry>> const& entries) = 0;
 
   /**
+   * @brief Create a new file on the disk corresponding to the given entry.
+   *
+   * This method can be used by installer that needs to create files that are not in the original
+   * archive. At the end of the installation, if there are entries in the final tree that were used
+   * to create files, the corresponding files will be moved to the mod folder.
+   *
+   * @param entry The entry for which a temporary file should be created.
+   *
+   * @return the path to the created file, or an empty QString() if the file could not be created.
+   */
+  virtual QString createFile(std::shared_ptr<const MOBase::FileTreeEntry> entry) = 0;
+
+  /**
    * @brief Installs the given archive.
    *
    * @param modName Suggested name of the mod.
