@@ -43,6 +43,11 @@ public:
   virtual ~IInstallationManager() {}
 
   /**
+   * @return the extensions of archives supported by this installation manager.
+   */
+  virtual QStringList getSupportedExtensions() const = 0;
+
+  /**
    * @brief Extract the specified file from the currently opened archive to a temporary
    * location.
    *
