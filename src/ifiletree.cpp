@@ -767,11 +767,14 @@ namespace MOBase {
    * @brief Populate the internal vectors and update the flag.
    */
   void IFileTree::populate() const {
-    // Populate:
-    if (!doPopulate(astree(), m_Entries)) {
-      std::sort(std::begin(m_Entries), std::end(m_Entries), FileEntryComparator{});
+    // Need to check m_Populated again here since the tree can be populated without
+    // a call to entries() (e.g., on copy/orphanTree):
+    if (!m_Populated) {
+      if (!doPopulate(astree(), m_Entries)) {
+        std::sort(std::begin(m_Entries), std::end(m_Entries), FileEntryComparator{});
+      }
+      m_Populated = true;
     }
-    m_Populated = true;
   }
 
 }
