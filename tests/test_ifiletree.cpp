@@ -498,6 +498,43 @@ TEST(IFileTreeTest, IterOperations) {
   });
 }
 
+TEST(IFileTreeTest, AddOperations) {
+  {
+    auto fileTree = FileListTree::makeTree({
+      {"a", true},
+      {"c.x", false},
+      {"e/q/c.t", false},
+      {"e/q/p", true}
+    });
+    auto map = createMapping(fileTree);
+
+    EXPECT_EQ(fileTree->addFile("a"), nullptr);
+    EXPECT_EQ(fileTree->addFile("c.x"), nullptr);
+    EXPECT_EQ(fileTree->addFile("e"), nullptr);
+    EXPECT_EQ(fileTree->addFile("e/q"), nullptr);
+    EXPECT_EQ(fileTree->addFile("e/q/c.t"), nullptr);
+    EXPECT_EQ(fileTree->addFile("e/q/p"), nullptr);
+
+    auto a_p = fileTree->addFile("a/p");
+    EXPECT_NE(a_p, nullptr);
+    EXPECT_EQ(a_p->parent(), map["a"]);
+    
+    auto e_q_ct = fileTree->addFile("e/q/c.t", true);
+    EXPECT_NE(e_q_ct, nullptr);
+    EXPECT_EQ(e_q_ct->parent(), map["e/q"]);
+    EXPECT_EQ(map["e/q/c.t"]->parent(), nullptr);
+    EXPECT_EQ(map["e/q"]->astree()->size(), std::size_t{ 2 });
+
+    // Directory are replaced with addFile():
+    auto e_q = fileTree->addFile("e/q", true);
+    EXPECT_NE(e_q, nullptr);
+    EXPECT_EQ(e_q->parent(), map["e"]);
+    EXPECT_EQ(map["e/q"]->parent(), nullptr);
+    EXPECT_EQ(map["e"]->astree()->size(), std::size_t{ 1 });
+  }
+
+}
+
 TEST(IFileTreeTest, TreeInsertOperations) {
 
   // Test failure:

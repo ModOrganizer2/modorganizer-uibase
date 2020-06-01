@@ -152,11 +152,12 @@ namespace MOBase {
   /**
    *
    */
-  std::shared_ptr<FileTreeEntry> IFileTree::addFile(QString path) {
+  std::shared_ptr<FileTreeEntry> IFileTree::addFile(QString path, bool replaceIfExists) {
     QStringList parts = splitPath(path);
 
     // Check if the file already exists:
-    if (fetchEntry(parts, IFileTree::FILE_OR_DIRECTORY) != nullptr) {
+    auto existingEntry = fetchEntry(parts, IFileTree::FILE_OR_DIRECTORY);
+    if (!replaceIfExists && existingEntry != nullptr) {
       return nullptr;
     }
 
@@ -179,11 +180,16 @@ namespace MOBase {
       tree = this;
     }
 
-    std::shared_ptr<FileTreeEntry> entry = tree->makeFile(this->astree(), parts[parts.size() - 1]);
+    std::shared_ptr<FileTreeEntry> entry = tree->makeFile(tree->astree(), parts[parts.size() - 1]);
 
     // If makeFile returns a null pointer, it means we cannot create file:
     if (entry == nullptr) {
       return nullptr;
+    }
+
+    // Remove the existing files if there was one:
+    if (existingEntry) {
+      existingEntry->detach();
     }
 
     // Insert in the tree:
@@ -761,11 +767,14 @@ namespace MOBase {
    * @brief Populate the internal vectors and update the flag.
    */
   void IFileTree::populate() const {
-    // Populate:
-    if (!doPopulate(astree(), m_Entries)) {
-      std::sort(std::begin(m_Entries), std::end(m_Entries), FileEntryComparator{});
+    // Need to check m_Populated again here since the tree can be populated without
+    // a call to entries() (e.g., on copy/orphanTree):
+    if (!m_Populated) {
+      if (!doPopulate(astree(), m_Entries)) {
+        std::sort(std::begin(m_Entries), std::end(m_Entries), FileEntryComparator{});
+      }
+      m_Populated = true;
     }
-    m_Populated = true;
   }
 
 }
