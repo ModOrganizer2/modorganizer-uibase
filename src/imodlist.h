@@ -22,6 +22,8 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 #ifndef IMODLIST_H
 #define IMODLIST_H
 
+#include <functional>
+
 #include <QString>
 
 namespace MOBase {
