@@ -45,8 +45,8 @@ class IPluginGame;
  * @brief Interface to class that provides information about the running session
  *        of Mod Organizer to be used by plugins
  */
-class IOrganizer {
-
+class QDLLEXPORT IOrganizer: public QObject {
+  Q_OBJECT
 public:
 
   /**
@@ -149,12 +149,16 @@ public:
   virtual QVariant pluginSetting(const QString &pluginName, const QString &key) const = 0;
 
   /**
-   * @brief set the specified setting for a plugin
-   * @param pluginName name of the plugin for which to change a value. This should always be IPlugin::name() unless you have a really good reason
-   *                   to access data of another mod AND if you can verify that plugin is actually installed
-   * @param key identifier of the setting
-   * @param value value to set
-   * @throw an exception is thrown if pluginName doesn't refer to an installed plugin
+   * @brief Set the specified setting for a plugin.
+   *
+   * This automatically emit pluginSettingChanged(), so you do not have to do it yourself.
+   *
+   * @param pluginName Name of the plugin for which to change a value. This should always be IPlugin::name() unless you have a really good reason
+   *                   to access data of another mod AND if you can verify that plugin is actually installed.
+   * @param key Identifier of the setting.
+   * @param value Value to set.
+   *
+   * @throw an exception is thrown if pluginName doesn't refer to an installed plugin.
    */
   virtual void setPluginSetting(const QString &pluginName, const QString &key, const QVariant &value) = 0;
 
@@ -311,6 +315,25 @@ public:
    * @brief Get the mod list, sorted by current profile priority
    */
   virtual QStringList modsSortedByProfilePriority() const = 0;
+
+Q_SIGNALS:
+
+  /**
+   * Signal emitted when a setting for a plugin change.
+   *
+   * @param pluginName Name of the plugin.
+   * @param key Name of the setting.
+   * @param oldValue Old value of the setting. Can be a default-constructed QVariant if the setting did not
+   *   exist before.
+   * @param newValue New value of the setting. Can be a default-constructed QVariant if the setting has been
+   *   removed for the plugin.
+   */
+  void pluginSettingChanged(QString const& pluginName, const QString& key, const QVariant& oldValue, const QVariant& newValue);
+
+protected:
+
+  IOrganizer(QObject *parent = nullptr) : QObject(parent) { }
+
 };
 
 } // namespace MOBase
