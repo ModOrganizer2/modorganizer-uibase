@@ -221,6 +221,14 @@ public:
   virtual QStringList findFiles(const QString &path, const std::function<bool(const QString&)> &filter) const = 0;
 
   /**
+   * @brief find files in the virtual directory matching the filename filter
+   * @param path the path to search in
+   * @param filters list of glob filters to match against
+   * @return a list of matching files
+   */
+  virtual QStringList findFiles(const QString& path, const QStringList& filters) const = 0;
+
+  /**
    * @brief retrieve the file origins for the speicified file. The origins are listed with their internal name
    * @return list of origins that contain the specified file, sorted by their priority
    * @note the internal name of a mod can differ from the display name for disambiguation
