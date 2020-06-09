@@ -54,6 +54,7 @@ public:
    * This method cannot be used to extract directory.
    *
    * @param entry Entry corresponding to the file to extract.
+   * @param silent If true, the dialog showing extraction progress will not be shown.
    *
    * @return the absolute path to the temporary file, or an empty string if the
    *     file was not extracted.
@@ -63,12 +64,13 @@ public:
    * @note The temporary file is automatically cleaned up after the installation.
    * @note This call can be very slow if the archive is large and "solid".
    */
-  virtual QString extractFile(std::shared_ptr<const FileTreeEntry> entry) = 0;
+  virtual QString extractFile(std::shared_ptr<const FileTreeEntry> entry, bool silent = false) = 0;
 
   /**
    * @brief Extract the specified files from the currently opened archive to a temporary location.
    *
    * @param entres Entries corresponding to the files to extract.
+   * @param silent If true, the dialog showing extraction progress will not be shown.
    *
    * This method cannot be used to extract directory.
    *
@@ -85,7 +87,7 @@ public:
    * IFileTree and thus to given a list of entries flattened (this was not possible with the
    * QStringList version since these were based on the name of the file inside the archive).
    */
-  virtual QStringList extractFiles(std::vector<std::shared_ptr<const FileTreeEntry>> const& entries) = 0;
+  virtual QStringList extractFiles(std::vector<std::shared_ptr<const FileTreeEntry>> const& entries, bool silent = false) = 0;
 
   /**
    * @brief Create a new file on the disk corresponding to the given entry.
