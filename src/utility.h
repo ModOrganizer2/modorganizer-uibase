@@ -454,6 +454,26 @@ QDLLEXPORT void removeOldFiles(const QString &path, const QString &pattern, int 
  **/
 QDLLEXPORT QIcon iconForExecutable(const QString &filePath);
 
+/**
+ * @brief Retrieve the file version of the given executable.
+ *
+ * @param filepath Absolute path to the executable.
+ *
+ * @return the file version, or an empty string if the file
+ *   version could not be retrieved.
+ */
+QDLLEXPORT QString getFileVersion(QString const& filepath);
+
+/**
+ * @brief Retrieve the product version of the given executable.
+ *
+ * @param filepath Absolute path to the executable.
+ *
+ * @return the file version, or an empty string if the product
+ *   version could not be retrieved.
+ */
+QDLLEXPORT QString getProductVersion(QString const& program);
+
 // removes and deletes all the children of the given widget
 //
 QDLLEXPORT void deleteChildWidgets(QWidget* w);
