@@ -767,6 +767,71 @@ QIcon iconForExecutable(const QString &filePath)
   }
 }
 
+
+QString getFileVersion(QString const& filepath)
+{
+  //This *really* needs to be factored out
+  std::wstring app_name = L"\\\\?\\" + QDir::toNativeSeparators(QDir(filepath).absolutePath()).toStdWString();
+  DWORD handle;
+  DWORD info_len = ::GetFileVersionInfoSizeW(app_name.c_str(), &handle);
+  if (info_len == 0) {
+    log::debug("GetFileVersionInfoSizeW Error %d", ::GetLastError());
+    return "";
+  }
+
+  std::vector<char> buff(info_len);
+  if (!::GetFileVersionInfoW(app_name.c_str(), handle, info_len, buff.data())) {
+    log::debug("GetFileVersionInfoW Error %d", ::GetLastError());
+    return "";
+  }
+
+  VS_FIXEDFILEINFO* pFileInfo;
+  UINT buf_len;
+  if (!::VerQueryValueW(buff.data(), L"\\", reinterpret_cast<LPVOID*>(&pFileInfo), &buf_len)) {
+    log::debug("VerQueryValueW Error %d", ::GetLastError());
+    return "";
+  }
+  return QString("%1.%2.%3.%4").arg(HIWORD(pFileInfo->dwFileVersionMS))
+    .arg(LOWORD(pFileInfo->dwFileVersionMS))
+    .arg(HIWORD(pFileInfo->dwFileVersionLS))
+    .arg(LOWORD(pFileInfo->dwFileVersionLS));
+}
+
+QString getProductVersion(QString const& filepath) {
+  //This *really* needs to be factored out
+  std::wstring app_name = L"\\\\?\\" + QDir::toNativeSeparators(QDir(filepath).absolutePath()).toStdWString();
+  DWORD handle;
+  DWORD info_len = ::GetFileVersionInfoSizeW(app_name.c_str(), &handle);
+  if (info_len == 0) {
+    log::debug("GetFileVersionInfoSizeW Error %d", ::GetLastError());
+    return "";
+  }
+
+  std::vector<char> buff(info_len);
+  if (!::GetFileVersionInfoW(app_name.c_str(), handle, info_len, buff.data())) {
+    log::debug("GetFileVersionInfoW Error %d", ::GetLastError());
+    return "";
+  }
+
+  // The following is from https://stackoverflow.com/a/12408544/2666289
+
+  UINT uiSize;
+  BYTE* lpb;
+  if (!::VerQueryValueW(buff.data(), TEXT("\\VarFileInfo\\Translation"), (void**)&lpb, &uiSize)) {
+    log::debug("VerQueryValue Error %d", ::GetLastError());
+    return "";
+  }
+
+  WORD* lpw = (WORD*)lpb;
+  auto query = fmt::format(L"\\StringFileInfo\\{:04x}{:04x}\\ProductVersion", lpw[0], lpw[1]);
+  if (!::VerQueryValueW(buff.data(), query.data(), (void**)&lpb, &uiSize) && uiSize > 0) {
+    log::debug("VerQueryValue Error %d", ::GetLastError());
+    return "";
+  }
+
+  return QString::fromWCharArray((LPCWSTR)lpb);
+}
+
 void deleteChildWidgets(QWidget* w)
 {
   auto* ly = w->layout();
