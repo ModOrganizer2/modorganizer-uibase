@@ -766,9 +766,9 @@ namespace MOBase {
      *     it.
      * @param insertPolicy Policy to use on conflict.
      *
-     * @return true if the entry was copied correctly, false otherwize.
+     * @return the copy of the entry if it was copied correctly, a null pointer otherwise.
      */
-    bool copy(std::shared_ptr<const FileTreeEntry> entry, QString path = "", InsertPolicy insertPolicy = InsertPolicy::FAIL_IF_EXISTS);
+    std::shared_ptr<FileTreeEntry> copy(std::shared_ptr<const FileTreeEntry> entry, QString path = "", InsertPolicy insertPolicy = InsertPolicy::FAIL_IF_EXISTS);
 
     /**
      * @brief Delete the given entry.

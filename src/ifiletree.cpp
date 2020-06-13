@@ -350,11 +350,15 @@ namespace MOBase {
   /**
    *
    */
-  bool IFileTree::copy(std::shared_ptr<const FileTreeEntry> entry, QString path, InsertPolicy insertPolicy) {
+  std::shared_ptr<FileTreeEntry> IFileTree::copy(std::shared_ptr<const FileTreeEntry> entry, QString path, InsertPolicy insertPolicy) {
     // Note: If a conflict exists, the tree is cloned before checking the conflict, so this is not the
     // most efficient way but copying tree should be pretty rare (and probably avoided anyway), and this 
     // allow us to use `move()` to do all the complex operations.
-    return move(entry->clone(), path, insertPolicy);
+    auto clone = entry->clone();
+    if (move(clone, path, insertPolicy)) {
+      return clone;
+    }
+    return nullptr;
   }
 
   /**
