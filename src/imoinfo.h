@@ -29,6 +29,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 #include <QString>
 #include <QStringList>
 #include <QVariant>
+#include <QMainWindow>
 #include <Windows.h>
 #include <functional>
 
@@ -294,21 +295,6 @@ public:
   virtual bool waitForApplication(HANDLE handle, LPDWORD exitCode = nullptr) const = 0;
 
   /**
-   * @return signal called when a mod has been installed. the parameter to the callback is the mod name
-   */
-  virtual bool onModInstalled(const std::function<void (const QString &)> &func) = 0;
-
-  /**
-   * @param func function to be called when an application is run
-   */
-  virtual bool onAboutToRun(const std::function<bool(const QString&)> &func) = 0;
-
-  /**
-   * @param func function to be called when an application is run
-   */
-  virtual bool onFinishedRun(const std::function<void(const QString&, unsigned int)> &func) = 0;
-
-  /**
    * @brief refresh the mod list
    * @param saveChanges if true, the relevant profile information is saved first (enabled mods and the ordering)
    */
@@ -324,23 +310,44 @@ public:
    */
   virtual QStringList modsSortedByProfilePriority() const = 0;
 
-Q_SIGNALS:
+  /**
+   * @param func Function to called when a mod has been installed. The parameter to the callback is the mod name.
+   */
+  virtual bool onModInstalled(const std::function<void(const QString&)>& func) = 0;
 
   /**
-   * Signal emitted when a setting for a plugin change.
+   * @param func Function to be called when an application is run.
+   */
+  virtual bool onAboutToRun(const std::function<bool(const QString&)>& func) = 0;
+
+  /**
+   * @param func Function to be called when an application is run.
+   */
+  virtual bool onFinishedRun(const std::function<void(const QString&, unsigned int)>& func) = 0;
+
+  /**
+   * @param func Function to be called when the user interface has been initialized.
+   */
+  virtual bool onUserInterfaceInitialized(std::function<void(QMainWindow*)> const& func) = 0;
+
+  /**
+   * @param func Function to be called when the current profile change. The first argument is the old
+   *   profile, which can be null, and the second one the new profile (cannot be null).
    *
-   * @param pluginName Name of the plugin.
-   * @param key Name of the setting.
-   * @param oldValue Old value of the setting. Can be a default-constructed QVariant if the setting did not
+   */
+  virtual bool onProfileChanged(std::function<void(IProfile*, IProfile*)> const& func) = 0;
+
+  /**
+   * @param func Function to be called when a plugin setting is changed. 
+   *
+   * @fparam pluginName Name of the plugin.
+   * @fparam key Name of the setting.
+   * @fparam oldValue Old value of the setting. Can be a default-constructed QVariant if the setting did not
    *   exist before.
-   * @param newValue New value of the setting. Can be a default-constructed QVariant if the setting has been
+   * @fparam newValue New value of the setting. Can be a default-constructed QVariant if the setting has been
    *   removed for the plugin.
    */
-  void pluginSettingChanged(QString const& pluginName, const QString& key, const QVariant& oldValue, const QVariant& newValue);
-
-protected:
-
-  IOrganizer(QObject *parent = nullptr) : QObject(parent) { }
+  virtual bool onPluginSettingChanged(std::function<void(QString const&, const QString& key, const QVariant&, const QVariant&)> const& func) = 0;
 
 };
 
