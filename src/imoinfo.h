@@ -29,6 +29,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 #include <QString>
 #include <QStringList>
 #include <QVariant>
+#include <QMainWindow>
 #include <Windows.h>
 #include <functional>
 
@@ -294,21 +295,6 @@ public:
   virtual bool waitForApplication(HANDLE handle, LPDWORD exitCode = nullptr) const = 0;
 
   /**
-   * @return signal called when a mod has been installed. the parameter to the callback is the mod name
-   */
-  virtual bool onModInstalled(const std::function<void (const QString &)> &func) = 0;
-
-  /**
-   * @param func function to be called when an application is run
-   */
-  virtual bool onAboutToRun(const std::function<bool(const QString&)> &func) = 0;
-
-  /**
-   * @param func function to be called when an application is run
-   */
-  virtual bool onFinishedRun(const std::function<void(const QString&, unsigned int)> &func) = 0;
-
-  /**
    * @brief refresh the mod list
    * @param saveChanges if true, the relevant profile information is saved first (enabled mods and the ordering)
    */
@@ -324,23 +310,80 @@ public:
    */
   virtual QStringList modsSortedByProfilePriority() const = 0;
 
-Q_SIGNALS:
+  /**
+   * @brief Add a new callback to be called when a new mod is installed.
+   *
+   * Parameters of the callback:
+   *   - The name of the mod installed.
+   *
+   * @param func Function to called when a mod has been installed.
+   */
+  virtual bool onModInstalled(const std::function<void(const QString&)>& func) = 0;
 
   /**
-   * Signal emitted when a setting for a plugin change.
+   * @brief Add a new callback to be called when an application is about to be run.
    *
-   * @param pluginName Name of the plugin.
-   * @param key Name of the setting.
-   * @param oldValue Old value of the setting. Can be a default-constructed QVariant if the setting did not
-   *   exist before.
-   * @param newValue New value of the setting. Can be a default-constructed QVariant if the setting has been
-   *   removed for the plugin.
+   * Parameters of the callback:
+   *   - Path (absolute) to the application to be run.
+   *
+   * The callback can return false to prevent the application from being launched.
+   *
+   * @param func Function to be called when an application is run.
    */
-  void pluginSettingChanged(QString const& pluginName, const QString& key, const QVariant& oldValue, const QVariant& newValue);
+  virtual bool onAboutToRun(const std::function<bool(const QString&)>& func) = 0;
 
-protected:
+  /**
+   * @brief Add a new callback to be called when an has finished running.
+   *
+   * Parameters of the callback:
+   *   - Path (absolute) to the application that has finished running.
+   *   - Exit code of the application.
+   *
+   *
+   * @param func Function to be called when an application is run.
+   */
+  virtual bool onFinishedRun(const std::function<void(const QString&, unsigned int)>& func) = 0;
 
-  IOrganizer(QObject *parent = nullptr) : QObject(parent) { }
+  /**
+   * @brief Add a new callback to be called when the user interface has been initialized.
+   *
+   * Parameters of the callback:
+   *   - The  main window of the application.
+   *
+   * @param func Function to be called when the user interface has been initialized.
+   */
+  virtual bool onUserInterfaceInitialized(std::function<void(QMainWindow*)> const& func) = 0;
+
+  /**
+   * @brief Add a new callback to be called when the current profile is changed.
+   *
+   * Parameters of the callback:
+   *   - The old profile. Can be a null pointer if no profile was set (e.g. at startup).
+   *   - The new profile, cannot be null.
+   *
+   * The function is called when the profile is changed but some operations related to
+   * the profile might not be finished when this is called (e.g., the virtual file system
+   * might not be up-to-date).
+   *
+   * @param func Function to be called when the current profile change.
+   *
+   */
+  virtual bool onProfileChanged(std::function<void(IProfile*, IProfile*)> const& func) = 0;
+
+  /**
+   * @brief Add a new callback to be called when a plugin setting is changed. 
+   *
+   * Parameters of the callback:
+   *   - Name of the plugin.
+   *   - Name of the setting.
+   *   - Old value of the setting. Can be a default-constructed (invalid) QVariant if the setting 
+   *     did not exist before.
+   *   - New value of the setting. Can be a default-constructed (invalid) QVariant if the setting
+   *     has been removed.
+   *
+   * @param func Function to be called when a plugin setting is changed.
+   */
+  virtual bool onPluginSettingChanged(std::function<void(QString const&, const QString& key, const QVariant&, const QVariant&)> const& func) = 0;
 
 };
 
