@@ -311,41 +311,77 @@ public:
   virtual QStringList modsSortedByProfilePriority() const = 0;
 
   /**
-   * @param func Function to called when a mod has been installed. The parameter to the callback is the mod name.
+   * @brief Add a new callback to be called when a new mod is installed.
+   *
+   * Parameters of the callback:
+   *   - The name of the mod installed.
+   *
+   * @param func Function to called when a mod has been installed.
    */
   virtual bool onModInstalled(const std::function<void(const QString&)>& func) = 0;
 
   /**
+   * @brief Add a new callback to be called when an application is about to be run.
+   *
+   * Parameters of the callback:
+   *   - Path (absolute) to the application to be run.
+   *
+   * The callback can return false to prevent the application from being launched.
+   *
    * @param func Function to be called when an application is run.
    */
   virtual bool onAboutToRun(const std::function<bool(const QString&)>& func) = 0;
 
   /**
+   * @brief Add a new callback to be called when an has finished running.
+   *
+   * Parameters of the callback:
+   *   - Path (absolute) to the application that has finished running.
+   *   - Exit code of the application.
+   *
+   *
    * @param func Function to be called when an application is run.
    */
   virtual bool onFinishedRun(const std::function<void(const QString&, unsigned int)>& func) = 0;
 
   /**
+   * @brief Add a new callback to be called when the user interface has been initialized.
+   *
+   * Parameters of the callback:
+   *   - The  main window of the application.
+   *
    * @param func Function to be called when the user interface has been initialized.
    */
   virtual bool onUserInterfaceInitialized(std::function<void(QMainWindow*)> const& func) = 0;
 
   /**
-   * @param func Function to be called when the current profile change. The first argument is the old
-   *   profile, which can be null, and the second one the new profile (cannot be null).
+   * @brief Add a new callback to be called when the current profile is changed.
+   *
+   * Parameters of the callback:
+   *   - The old profile. Can be a null pointer if no profile was set (e.g. at startup).
+   *   - The new profile, cannot be null.
+   *
+   * The function is called when the profile is changed but some operations related to
+   * the profile might not be finished when this is called (e.g., the virtual file system
+   * might not be up-to-date).
+   *
+   * @param func Function to be called when the current profile change.
    *
    */
   virtual bool onProfileChanged(std::function<void(IProfile*, IProfile*)> const& func) = 0;
 
   /**
-   * @param func Function to be called when a plugin setting is changed. 
+   * @brief Add a new callback to be called when a plugin setting is changed. 
    *
-   * @fparam pluginName Name of the plugin.
-   * @fparam key Name of the setting.
-   * @fparam oldValue Old value of the setting. Can be a default-constructed QVariant if the setting did not
-   *   exist before.
-   * @fparam newValue New value of the setting. Can be a default-constructed QVariant if the setting has been
-   *   removed for the plugin.
+   * Parameters of the callback:
+   *   - Name of the plugin.
+   *   - Name of the setting.
+   *   - Old value of the setting. Can be a default-constructed (invalid) QVariant if the setting 
+   *     did not exist before.
+   *   - New value of the setting. Can be a default-constructed (invalid) QVariant if the setting
+   *     has been removed.
+   *
+   * @param func Function to be called when a plugin setting is changed.
    */
   virtual bool onPluginSettingChanged(std::function<void(QString const&, const QString& key, const QVariant&, const QVariant&)> const& func) = 0;
 
