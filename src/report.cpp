@@ -34,6 +34,7 @@ namespace MOBase
 
 void reportError(const QString &message)
 {
+  log::error("{}", message);
   if (QApplication::topLevelWidgets().count() != 0) {
     QMessageBox messageBox(QMessageBox::Warning, QObject::tr("Error"), message, QMessageBox::Ok);
     messageBox.exec();
