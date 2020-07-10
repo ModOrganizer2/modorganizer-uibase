@@ -456,7 +456,7 @@ void FilterWidget::onTextChanged()
   }
 
   if (m_useDelay) {
-    m_timer->start(100);
+    m_timer->start(500);
   }
   else {
     set();
