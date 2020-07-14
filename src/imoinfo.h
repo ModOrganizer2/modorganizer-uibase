@@ -266,33 +266,58 @@ public:
   virtual MOBase::IProfile *profile() const = 0;
 
   /**
-   * @brief starts an application with virtual filesystem active
-   * @param executable name or path of the executable. If this is only a filename it will only work if it has been configured in MO as an executable.
-   *        if it is a relative path it is expected to be relative to the game directory.
-   * @param args arguments to pass to the executable. If this is empty and executable refers to a configured exe the configured arguments are used
-   * @param cwd working directory for the executable. If this is empty the path to the executable is used unless executable referred to a configured
-   *        MO executable. In that case the configured cwd is used
-   * @param profile profile to use. If this is empty (the default) the current profile is used
-   * @param forcedCustomOverwrite the mod to set as the custom overwrite, regardless of what the profile has configured
-   * @param ignoreCustomOverwrite set to true to ignore the profile's configured custom overwrite
-   * @return a handle or INVALID_HANDLE_VALUE if the application failed to start.
-   * @note the returned handle is usually a job handle but under some situations MO may not be able to create a job and then the handle is a process handle.
-   *       Use waitForApplication to wait for completion on this handle, it works for both process and job. If you want to write waiting code yourself, be aware
-   *       that you can't WaitForSingleObject on a job object. There is no single windows api call that works for both
+   * @brief runs a program using the virtual filesystem
+   *
+   * @param executable  either the name of an executable configured in MO, or
+   *                    a path to an executable; if relative, it is resolved
+   *                    against the game directory
+   *
+   * @param args        arguments to pass to the executable; if this is empty
+   *                    and `executable` refers to a configured executable,
+   *                    its arguments are used
+   *
+   * @param cwd         working directory for the executable; if this is empty,
+   *                    it is set to either the cwd set by the user in the
+   *                    configured executable (if any) or the directory of the
+   *                    executable
+   *
+   * @param profile     name of the profile to use; defaults to the active
+   *                    profile
+   *
+   * @param forcedCustomOverwrite  the name of the mod to set as the custom
+   *                               overwrite directory, regardless of what the
+   *                               profile has configured
+   *
+   * @param ignoreCustomOverwrite  if `executable` is the name of a configured
+   *                               executable, ignores the executable's custom
+   *                               overwrite
+   *
+   * @return a handle to the process that was started or INVALID_HANDLE_VALUE
+   *         if the application failed to start.
    */
-  virtual HANDLE startApplication(const QString &executable, const QStringList &args = QStringList(), const QString &cwd = "",
-                                  const QString &profile = "", const QString &forcedCustomOverwrite = "", bool ignoreCustomOverwrite = false) = 0;
+  virtual HANDLE startApplication(
+      const QString &executable,
+      const QStringList &args = QStringList(),
+      const QString &cwd = "",
+      const QString &profile = "",
+      const QString &forcedCustomOverwrite = "",
+      bool ignoreCustomOverwrite = false) = 0;
 
   /**
-   * @brief wait for completion of an application
-   * @param handle a process or job handle
-   * @param exitCode the exit code of the process after it ended
-   * @return true if the application completed, false if waiting failed
-   * @note the exit code is slightly fickle if handle is a job handle since there is no reliable way to know for which process the exitcode was returned.
-   *       If, at the end of the jobs lifetime only one process was left (for at least 500ms) that processes exitcode will be returned. If there is only
-   *       one process, again, the expected exit code is returned. Otherwise,
+   * @brief blocks until the given process has completed
+   *
+   * @param handle     the process to wait for
+   * @param exitCode   the exit code of the process after it ended
+   *
+   * @return true if the process completed successfully
+   *
+   * @note this will always show the lock overlay, regardless of whether the
+   *       user has disabled locking in the setting, so use this with care;
+   *       note that the lock overlay will always allow the user to unlock, in
+   *       which case this will return false
    */
-  virtual bool waitForApplication(HANDLE handle, LPDWORD exitCode = nullptr) const = 0;
+  virtual bool waitForApplication(
+      HANDLE handle, LPDWORD exitCode = nullptr) const = 0;
 
   /**
    * @brief refresh the mod list
@@ -371,12 +396,12 @@ public:
   virtual bool onProfileChanged(std::function<void(IProfile*, IProfile*)> const& func) = 0;
 
   /**
-   * @brief Add a new callback to be called when a plugin setting is changed. 
+   * @brief Add a new callback to be called when a plugin setting is changed.
    *
    * Parameters of the callback:
    *   - Name of the plugin.
    *   - Name of the setting.
-   *   - Old value of the setting. Can be a default-constructed (invalid) QVariant if the setting 
+   *   - Old value of the setting. Can be a default-constructed (invalid) QVariant if the setting
    *     did not exist before.
    *   - New value of the setting. Can be a default-constructed (invalid) QVariant if the setting
    *     has been removed.
