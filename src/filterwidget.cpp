@@ -34,6 +34,10 @@ FilterWidgetProxyModel::FilterWidgetProxyModel(FilterWidget& fw, QWidget* parent
 bool FilterWidgetProxyModel::filterAcceptsRow(
   int sourceRow, const QModelIndex& sourceParent) const
 {
+  if (!m_filter.filteringEnabled()) {
+    return true;
+  }
+
   const auto cols = sourceModel()->columnCount();
 
   const auto m = m_filter.matches([&](auto&& regex) {
@@ -79,7 +83,8 @@ static FilterWidget::Options s_options;
 FilterWidget::FilterWidget() :
   m_edit(nullptr), m_list(nullptr), m_proxy(nullptr),
   m_eventFilter(nullptr), m_clear(nullptr), m_timer(nullptr),
-  m_valid(true), m_useSourceSort(false), m_filterColumn(-1)
+  m_valid(true), m_useSourceSort(false), m_filterColumn(-1),
+  m_filteringEnabled(true)
 {
   m_timer = new QTimer(this);
   m_timer->setSingleShot(true);
@@ -174,6 +179,16 @@ void FilterWidget::setFilterColumn(int i)
 int FilterWidget::filterColumn() const
 {
   return m_filterColumn;
+}
+
+void FilterWidget::setFilteringEnabled(bool b)
+{
+  m_filteringEnabled = b;
+}
+
+bool FilterWidget::filteringEnabled() const
+{
+  return m_filteringEnabled;
 }
 
 FilterWidgetProxyModel* FilterWidget::proxyModel()
