@@ -72,6 +72,9 @@ public:
   void setFilterColumn(int i);
   int filterColumn() const;
 
+  void setFilteringEnabled(bool b);
+  bool filteringEnabled() const;
+
   FilterWidgetProxyModel* proxyModel();
 
   QModelIndex map(const QModelIndex& index);
@@ -98,6 +101,7 @@ private:
   bool m_valid;
   bool m_useSourceSort;
   int m_filterColumn;
+  bool m_filteringEnabled;
 
   void hookEdit();
   void unhookEdit();
