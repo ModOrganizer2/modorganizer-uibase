@@ -114,8 +114,9 @@ public:
    * @brief create a new mod with the specified name
    * @param name name of the new mod
    * @return an interface that can be used to modify the mod. nullptr if the user canceled
-   * @note an exception is thrown if the mod already exists. Use "getMod" to verify
-   *       the mod-name is unused first
+   * @note a popup asking the user to merge, rename or replace the mod is displayed if the mod already exists.
+   *       That has to happen on the main thread and MO2 will deadlock if it happens on any other.
+   *       If this needs to be called from another thread, use "getMod" to verify the mod-name is unused first
    */
   virtual IModInterface *createMod(GuessedValue<QString> &name) = 0;
 
