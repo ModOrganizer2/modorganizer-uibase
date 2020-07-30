@@ -509,10 +509,21 @@ Result Delete(const QFileInfo& path)
 
 Result Rename(const QFileInfo& src, const QFileInfo& dest)
 {
+  return Rename(src, dest, true);
+}
+
+Result Rename(const QFileInfo& src, const QFileInfo& dest, bool copyAllowed)
+{
   const auto wsrc = toUNC(src);
   const auto wdest = toUNC(dest);
 
-  if (!::MoveFileEx(wsrc.c_str(), wdest.c_str(), MOVEFILE_COPY_ALLOWED)) {
+  DWORD flags = 0;
+
+  if (copyAllowed) {
+    flags |= MOVEFILE_COPY_ALLOWED;
+  }
+
+  if (!::MoveFileEx(wsrc.c_str(), wdest.c_str(), flags)) {
     const auto e = ::GetLastError();
     return Result::makeFailure(e);
   }

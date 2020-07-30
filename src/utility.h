@@ -267,6 +267,7 @@ namespace shell
   // across volumes
   //
   QDLLEXPORT Result Rename(const QFileInfo& src, const QFileInfo& dest);
+  QDLLEXPORT Result Rename(const QFileInfo& src, const QFileInfo& dest, bool copyAllowed);
 
   QDLLEXPORT Result CreateDirectories(const QDir& dir);
   QDLLEXPORT Result DeleteDirectoryRecursive(const QDir& dir);
