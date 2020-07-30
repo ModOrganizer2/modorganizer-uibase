@@ -147,7 +147,9 @@ static DWORD TranslateError(int error)
 }
 
 
-static bool shellOp(const QStringList &sourceNames, const QStringList &destinationNames, QWidget *dialog, UINT operation, bool yesToAll)
+static bool shellOp(
+  const QStringList &sourceNames, const QStringList &destinationNames,
+  QWidget *dialog, UINT operation, bool yesToAll, bool silent=false)
 {
   std::vector<wchar_t> fromBuffer;
   std::vector<wchar_t> toBuffer;
@@ -208,6 +210,10 @@ static bool shellOp(const QStringList &sourceNames, const QStringList &destinati
     if (destinationNames.count() == sourceNames.count()) {
       op.fFlags |= FOF_MULTIDESTFILES;
     }
+  }
+
+  if (silent) {
+    op.fFlags |= FOF_NO_UI;
   }
 
   int res = ::SHFileOperationW(&op);
@@ -509,6 +515,31 @@ Result Rename(const QFileInfo& src, const QFileInfo& dest)
   if (!::MoveFileEx(wsrc.c_str(), wdest.c_str(), MOVEFILE_COPY_ALLOWED)) {
     const auto e = ::GetLastError();
     return Result::makeFailure(e);
+  }
+
+  return Result::makeSuccess();
+}
+
+Result CreateDirectories(const QDir& dir)
+{
+  const DWORD e = static_cast<DWORD>(
+    ::SHCreateDirectory(0, dir.path().toStdWString().c_str()));
+
+  if (e != ERROR_SUCCESS) {
+    return Result::makeFailure(
+      e, QString::fromStdWString(formatSystemMessage(e)));
+  }
+
+  return Result::makeSuccess();
+}
+
+Result DeleteDirectoryRecursive(const QDir& dir)
+{
+  if (!shellOp({dir.path()}, QStringList(), nullptr, FO_DELETE, true)) {
+    const auto e = GetLastError();
+
+    return Result::makeFailure(
+      e, QString::fromStdWString(formatSystemMessage(e)));
   }
 
   return Result::makeSuccess();
@@ -894,10 +925,11 @@ QString localizedSize(
   constexpr unsigned long long OneTB = 1024ull * 1024 * 1024 * 1024;
 
   auto makeNum = [&](int factor) {
-    const double n = bytes / std::pow(1024.0, factor);
+    const double n = static_cast<double>(bytes) / std::pow(1024.0, factor);
 
     // avoids rounding something like "1.999" to "2.00 KB"
-    const double truncated = static_cast<unsigned long long>(n * 100) / 100.0;
+    const double truncated =
+      static_cast<double>(static_cast<unsigned long long>(n * 100)) / 100.0;
 
     return QString().setNum(truncated, 'f', 2);
   };
