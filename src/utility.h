@@ -591,10 +591,11 @@ bool forEachLineInFile(const QString& filePath, F&& f)
 
   const char* lineStart = buffer.get();
   const char* p = lineStart;
+  const char* end = buffer.get() + byteCount;
 
-  while (*p) {
+  while (p < end) {
     // skip all newline characters
-    while (*p && (*p == '\n' || *p == '\r')) {
+    while ((p < end) && (*p == '\n' || *p == '\r')) {
       ++p;
     }
 
@@ -602,24 +603,30 @@ bool forEachLineInFile(const QString& filePath, F&& f)
     lineStart = p;
 
     // find end of line
-    while (*p && *p != '\n' && *p != '\r') {
+    while ((p < end) && *p != '\n' && *p != '\r') {
       ++p;
     }
 
-    if (p != lineStart && *lineStart != '#') {
-      // skip whitespace at beginning of line
-      while (std::isspace(*lineStart)) {
+    if (p != lineStart) {
+      // skip whitespace at beginning of line, don't go past end of line
+      while (std::isspace(*lineStart) && lineStart < p) {
         ++lineStart;
       }
 
-      // skip white at end of line
-      const char* lineEnd = p - 1;
-      while (std::isspace(*lineEnd) && lineEnd > lineStart) {
-        --lineEnd;
-      }
-      ++lineEnd;
+      // skip comments
+      if (*lineStart != '#') {
+        // skip line if it only had whitespace
+        if (lineStart < p) {
+          // skip white at end of line
+          const char* lineEnd = p - 1;
+          while (std::isspace(*lineEnd) && lineEnd > lineStart) {
+            --lineEnd;
+          }
+          ++lineEnd;
 
-      f(QString::fromUtf8(lineStart, lineEnd - lineStart).toLower());
+          f(QString::fromUtf8(lineStart, lineEnd - lineStart).toLower());
+        }
+      }
     }
   }
 
