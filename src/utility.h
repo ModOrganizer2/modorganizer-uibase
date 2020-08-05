@@ -624,7 +624,7 @@ bool forEachLineInFile(const QString& filePath, F&& f)
           }
           ++lineEnd;
 
-          f(QString::fromUtf8(lineStart, lineEnd - lineStart).toLower());
+          f(QString::fromUtf8(lineStart, lineEnd - lineStart));
         }
       }
     }
