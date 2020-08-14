@@ -420,6 +420,26 @@ void FilterWidget::unhookList()
   m_shortcuts.clear();
 }
 
+// walks up the parents of `w`, returns true if one of them is a QDialog
+//
+bool topLevelIsDialog(QWidget* w)
+{
+  if (!w) {
+    return false;
+  }
+
+  auto* p = w->parentWidget();
+  while (p) {
+    if (dynamic_cast<QDialog*>(p)) {
+      return true;
+    }
+
+    p = p->parentWidget();
+  }
+
+  return false;
+}
+
 void FilterWidget::setShortcuts()
 {
   auto activate = [this] {
@@ -447,14 +467,26 @@ void FilterWidget::setShortcuts()
   };
 
 
+  // don't hook the escape key for reset when the filter is in a dialog, the
+  // standard behaviour is to close the dialog
+  const bool inDialog = topLevelIsDialog(
+    m_list ? static_cast<QWidget*>(m_list) : m_edit);
+
+
   if (m_list) {
     hookActivate(m_list);
-    hookReset(m_list);
+
+    if (!inDialog) {
+      hookReset(m_list);
+    }
   }
 
   if (m_edit) {
     hookActivate(m_edit);
-    hookReset(m_edit);
+
+    if (!inDialog) {
+      hookReset(m_edit);
+    }
   }
 }
 
