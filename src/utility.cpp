@@ -33,6 +33,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 #include <QTextCodec>
 #include <QtDebug>
 #include <QUuid>
+#include <QCollator>
 #include <QtWinExtras/QtWin>
 #define WIN32_LEAN_AND_MEAN
 #include <Windows.h>
@@ -649,6 +650,33 @@ QString ToString(const SYSTEMTIME &time)
   GetDateFormatA(LOCALE_USER_DEFAULT, LOCALE_USE_CP_ACP, &time, nullptr, dateBuffer, size);
   GetTimeFormatA(LOCALE_USER_DEFAULT, LOCALE_USE_CP_ACP, &time, nullptr, timeBuffer, size);
   return QString::fromLocal8Bit(dateBuffer) + " " + QString::fromLocal8Bit(timeBuffer);
+}
+
+static int naturalCompareI(const QString& a, const QString& b)
+{
+  static QCollator c = []{
+    QCollator temp;
+    temp.setNumericMode(true);
+    temp.setCaseSensitivity(Qt::CaseInsensitive);
+    return temp;
+  }();
+
+  return c.compare(a, b);
+}
+
+int naturalCompare(const QString& a, const QString& b, Qt::CaseSensitivity cs)
+{
+  if (cs == Qt::CaseInsensitive) {
+    return naturalCompareI(a, b);
+  }
+
+  static QCollator c = []{
+    QCollator temp;
+    temp.setNumericMode(true);
+    return temp;
+  }();
+
+  return c.compare(a, b);
 }
 
 bool fixDirectoryName(QString &name)

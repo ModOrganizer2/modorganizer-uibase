@@ -403,6 +403,34 @@ QDLLEXPORT QString ToQString(const std::wstring &source);
  **/
 QDLLEXPORT QString ToString(const SYSTEMTIME &time);
 
+
+// three-way compare for natural sorting (case insensitive default, 10 comes
+// after 2)
+//
+QDLLEXPORT int naturalCompare(
+  const QString& a, const QString& b,
+  Qt::CaseSensitivity cs=Qt::CaseInsensitive);
+
+
+// calls naturalCompare()
+//
+class QDLLEXPORT NaturalSort
+{
+public:
+  NaturalSort(Qt::CaseSensitivity cs=Qt::CaseInsensitive)
+    : m_cs(cs)
+  {
+  }
+
+  bool operator()(const QString& a, const QString& b)
+  {
+    return (naturalCompare(a, b, m_cs) < 0);
+  }
+
+private:
+  Qt::CaseSensitivity m_cs;
+};
+
 /**
  * throws on failure
  * @param id    the folder id
