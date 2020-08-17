@@ -66,6 +66,8 @@ public:
   TaskDialog& button(TaskDialogButton b);
   TaskDialog& remember(const QString& action, const QString& file={});
 
+  void addContent(QWidget* w);
+
   QMessageBox::StandardButton exec();
 
 private:

@@ -109,6 +109,14 @@ TaskDialog& TaskDialog::remember(const QString& action, const QString& file)
   return *this;
 }
 
+void TaskDialog::addContent(QWidget* w)
+{
+  auto* ly = static_cast<QVBoxLayout*>(ui->contentPanel->layout());
+
+  // add before spacer
+  ly->insertWidget(ly->count() - 1, w);
+}
+
 QMessageBox::StandardButton TaskDialog::exec()
 {
   const auto b = checkMemory();
@@ -265,7 +273,9 @@ void TaskDialog::setWidgets()
 {
   ui->main->setText(m_main);
   setFontPercent(ui->main, 1.5);
+
   ui->content->setText(m_content);
+  ui->content->setVisible(!m_content.isEmpty());
 
   auto icon = standardIcon(m_icon);
 
