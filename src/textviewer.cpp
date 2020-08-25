@@ -99,7 +99,28 @@ void TextViewer::findNext()
   QWidget* currentPage = m_EditorTabs->currentWidget();
   QTextEdit *editor = currentPage->findChild<QTextEdit*>("editorView");
 
-  editor->find(m_FindPattern);
+  if (editor->find(m_FindPattern)) {
+    // found text
+    return;
+  } else {
+    // reached the bottom and no text found,
+    // we wrap around once.
+
+    // save current cursor
+    auto oldCursor = editor->textCursor();
+
+    editor->moveCursor(QTextCursor::Start);
+    
+    // search again from the top
+    if (editor->find(m_FindPattern)) {
+      // found something, keep new cursor position.
+      return;
+    } else {
+      // there are no matches in the document,
+      // restore previous cursor.
+      editor->setTextCursor(oldCursor);
+    }
+  }
 }
 
 
