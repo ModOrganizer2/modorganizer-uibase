@@ -126,7 +126,7 @@ public:
    * @brief Installs a handler for the event that the state of mods changed (enabled/disabled, endorsed, ...).
    *
    * Parameters of the callback:
-   *   - List of pair (name, state) for each mod that has changed.
+   *   - Map containing the mods whose states have changed. Keys are mod names and values are mod states.
    *
    * @param func The signal to be called when the state of any mod changes.
    *
