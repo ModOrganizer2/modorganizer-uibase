@@ -23,6 +23,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 #define IMODLIST_H
 
 #include <functional>
+#include <map>
 
 #include <QString>
 
@@ -122,11 +123,16 @@ public:
   virtual bool setPriority(const QString &name, int newPriority) = 0;
 
   /**
-   * installs a handler for the event that the state of a mod changed (enabled/disabled, endorsed, ...)
-   * @param func the signal to be called when the state of any mod changes
-   * @return true if the handler was successfully installed (there is as of now no known reason this should fail)
+   * @brief Installs a handler for the event that the state of mods changed (enabled/disabled, endorsed, ...).
+   *
+   * Parameters of the callback:
+   *   - List of pair (name, state) for each mod that has changed.
+   *
+   * @param func The signal to be called when the state of any mod changes.
+   *
+   * @return true if the handler was successfully installed, false otherwise (there is as of now no known reason this should fail).
    */
-  virtual bool onModStateChanged(const std::function<void(const QString&, ModStates)> &func) = 0;
+  virtual bool onModStateChanged(const std::function<void(const std::map<QString, ModStates>&)> &func) = 0;
 
   /**
    * installs a handler for the event that a mod changes priority
