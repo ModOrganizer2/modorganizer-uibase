@@ -79,13 +79,30 @@ public:
 
   /**
    * @brief enable or disable a mod
+   * 
    * @param name name of the mod
    * @param active if true the mod is enabled, otherwise it's disabled
+   * 
    * @return true on success, false if the mod name is not valid
+   * 
    * @note calling this will cause MO to re-evaluate its virtual file system so this is fairly
    *       expensive
    */
   virtual bool setActive(const QString &name, bool active) = 0;
+
+  /**
+   * @brief enable or disable a list of mod
+   * 
+   * @param names names of the mod
+   * @param active if true mods are enabled, otherwise they are disabled
+   * 
+   * @return the number of mods successfully enabled or disabled
+   * 
+   * @note calling this will cause MO to re-evaluate its virtual file system so this is fairly
+   *       expensive
+   */
+  virtual int setActive(const QStringList& names, bool active) = 0;
+
 
   /**
    * @brief retrieve the priority of a mod
