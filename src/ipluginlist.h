@@ -73,6 +73,18 @@ public:
   virtual int priority(const QString &name) const = 0;
 
   /**
+   * @brief Change the priority of a plugin.
+   *
+   * @param name Filename of the plugin (without path but with file extension).
+   * @param newPriority New priority of the plugin.
+   *
+   * @return true on success, false if the priority change was not possible. This is usually because 
+   *     one of the parameters is invalid. The function returns true even if the plugin was not moved
+   *     at the specified priority (e.g. when trying to move a non-master plugin before a master one).
+   */
+  virtual bool setPriority(const QString& name, int newPriority) = 0;
+
+  /**
    * @brief retrieve the load order of a plugin
    * @param name filename of the plugin (without path but with file extension)
    * @return the load order of a plugin (the order in which the game loads it). If all plugins are enabled this is the same as the priority
