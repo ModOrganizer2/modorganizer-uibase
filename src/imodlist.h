@@ -23,6 +23,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 #define IMODLIST_H
 
 #include <functional>
+#include <map>
 
 #include <QString>
 
@@ -79,13 +80,30 @@ public:
 
   /**
    * @brief enable or disable a mod
+   * 
    * @param name name of the mod
    * @param active if true the mod is enabled, otherwise it's disabled
+   * 
    * @return true on success, false if the mod name is not valid
+   * 
    * @note calling this will cause MO to re-evaluate its virtual file system so this is fairly
    *       expensive
    */
   virtual bool setActive(const QString &name, bool active) = 0;
+
+  /**
+   * @brief enable or disable a list of mod
+   * 
+   * @param names names of the mod
+   * @param active if true mods are enabled, otherwise they are disabled
+   * 
+   * @return the number of mods successfully enabled or disabled
+   * 
+   * @note calling this will cause MO to re-evaluate its virtual file system so this is fairly
+   *       expensive
+   */
+  virtual int setActive(const QStringList& names, bool active) = 0;
+
 
   /**
    * @brief retrieve the priority of a mod
@@ -105,11 +123,16 @@ public:
   virtual bool setPriority(const QString &name, int newPriority) = 0;
 
   /**
-   * installs a handler for the event that the state of a mod changed (enabled/disabled, endorsed, ...)
-   * @param func the signal to be called when the state of any mod changes
-   * @return true if the handler was successfully installed (there is as of now no known reason this should fail)
+   * @brief Installs a handler for the event that the state of mods changed (enabled/disabled, endorsed, ...).
+   *
+   * Parameters of the callback:
+   *   - Map containing the mods whose states have changed. Keys are mod names and values are mod states.
+   *
+   * @param func The signal to be called when the state of any mod changes.
+   *
+   * @return true if the handler was successfully installed, false otherwise (there is as of now no known reason this should fail).
    */
-  virtual bool onModStateChanged(const std::function<void(const QString&, ModStates)> &func) = 0;
+  virtual bool onModStateChanged(const std::function<void(const std::map<QString, ModStates>&)> &func) = 0;
 
   /**
    * installs a handler for the event that a mod changes priority
