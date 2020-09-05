@@ -31,50 +31,72 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 
 namespace MOBase {
 
-
 class IPlugin {
 public:
   virtual ~IPlugin() {}
 
-  /** initialize the plugin. This is called immediately after loading the plugin,
-   *  no other function is called before. Plugins will probably want to store the
-   *  moInfo pointer. It is guaranteed to be valid as long as the plugin is loaded.
-   *  return false if the plugin can't be initialized, i.e. because the version
-   *  is invalid. */
-  virtual bool init(IOrganizer *moInfo) = 0;
+  /** 
+   * @brief Initialize the plugin. This is called immediately after loading the plugin,
+   *     no other function is called before. Plugins will probably want to store the
+   *     organizer pointer. It is guaranteed to be valid as long as the plugin is loaded.
+   *
+   * @return false if the plugin could not be initialized, true otherwise. 
+   */
+  virtual bool init(IOrganizer *organizer) = 0;
 
   /**
-   * @return name of this plugin (used for example in the settings menu)
-   * @note Please ensure you use a name that will not change. Do NOT include a version number in the name.
-   *       Do NOT use a localizable string (tr()) here
-   * Settings for example are tied to this name, if you rename your plugin you lose settings users made
+   * @return the internal name of this plugin (used for example in the settings menu).
+   *
+   * @note Please ensure you use a name that will not change. Do NOT include a version number in the 
+   *     name. Do NOT use a localizable string (tr()) here. Settings for example are tied to this name, 
+   *     if you rename your plugin you lose settings users made.
    */
   virtual QString name() const = 0;
 
   /**
-   * @return author of this plugin
+   * @return the localized name for this plugin.
+   *
+   * @note Unlike name(), this method can (and should!) return a localized name for the plugin. 
+   * @note This method returns name() by default.
+   */
+  virtual QString localizedName() const { return name(); }
+
+  /**
+   * @brief Retrieve the master plugin of this plugin. 
+   *
+   * @return the master plugin of this plugin, or a null pointer if this plugin does not have
+   *     a master.
+   */
+  virtual IPlugin* master() const { return nullptr; }
+
+  /**
+   * @return the author of this plugin.
    */
   virtual QString author() const = 0;
 
   /**
-   * @return a short description of the plugin to be displayed to the user
+   * @return a short description of the plugin to be displayed to the user.
    */
   virtual QString description() const = 0;
 
   /**
-   * @return version of the plugin. This can be used to detect outdated versions of plugins
+   * @return the version of the plugin. This can be used to detect outdated versions of plugins.
    */
   virtual VersionInfo version() const = 0;
 
   /**
-   * @brief called to test if this plugin is active. inactive plugins can still be configured
-   *        and report problems but otherwise have no effect
-   * @return true if this plugin is active
+   * @brief Called to test if this plugin is active. Inactive plugins can still be configured
+   *      and report problems but otherwise have no effect.
+   *
+   * @return true if this plugin is active, false otherwise.
    */
   virtual bool isActive() const = 0;
 
   /**
-   * @return list of configurable settings for this plugin. The list may be empty
+   * @return the list of configurable settings for this plugin (in the user interface). The list may be 
+   *     empty.
+   *
+   * @note Plugin can store "hidden" (from the user) settings using IOrganizer::persistent / IOrganizer::setPersistent.
    */
   virtual QList<PluginSetting> settings() const = 0;
 

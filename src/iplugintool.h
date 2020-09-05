@@ -41,6 +41,12 @@ public:
   virtual QString displayName() const = 0;
 
   /**
+   * @brief For IPluginTool, this returns displayName().
+   *
+   */
+  virtual QString localizedName() const { return displayName(); }
+
+  /**
    * @return tooltip string
    */
 
