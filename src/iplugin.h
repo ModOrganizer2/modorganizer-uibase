@@ -64,6 +64,12 @@ public:
   /**
    * @brief Retrieve the master plugin of this plugin. 
    *
+   * It is often easier to implement a functionality as multiple plugins in MO2, but ship the
+   * plugins together, e.g. as a Python module or using `createFunctions()`. In this case, having
+   * a master plugin (one of the plugin, or a separate one) tells MO2 that these plugins are
+   * linked and should also be displayed together in the UI. If MO2 ever implements automatic
+   * updates for plugins, the `master()` plugin will also be used for this purpose.
+   *
    * @return the master plugin of this plugin, or a null pointer if this plugin does not have
    *     a master.
    */
