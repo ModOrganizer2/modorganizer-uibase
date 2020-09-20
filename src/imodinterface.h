@@ -22,21 +22,39 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 #ifndef IMODINTERFACE_H
 #define IMODINTERFACE_H
 
-#include "iplugingame.h"
+#include <utility>
+#include <set>
 
-class QString;
-class QStringList;
+#include <QColor>
+#include <QDateTime>
+#include <QString>
+#include <QStringList>
 
 
 namespace MOBase {
 
 class VersionInfo;
 
+enum class EndorsedState {
+  ENDORSED_FALSE,
+  ENDORSED_TRUE,
+  ENDORSED_UNKNOWN,
+  ENDORSED_NEVER
+};
+
+enum class TrackedState {
+  TRACKED_FALSE,
+  TRACKED_TRUE,
+  TRACKED_UNKNOWN,
+};
+
 class IModInterface
 {
 public:
 
   virtual ~IModInterface() {}
+
+public: // Non-meta related information:
 
   /**
    * @return name of the mod
@@ -47,6 +65,51 @@ public:
    * @return absolute path to the mod to be used in file system operations
    */
   virtual QString absolutePath() const = 0;
+
+public: // Meta-related information:
+
+  virtual QString comments() const = 0;
+
+  virtual QString notes() const = 0;
+
+  virtual QString gameName() const = 0;
+
+  virtual int modId() const = 0;
+
+  virtual VersionInfo version() const = 0;
+  virtual VersionInfo newestVersion() const = 0;
+  virtual VersionInfo ignoredVersion() const = 0;
+
+  virtual QString installationFile() const = 0;
+  virtual std::set<std::pair<int, int>> installedFiles() const = 0;
+
+  virtual QString repository() const = 0;
+
+  // virtual bool converted() const = 0;
+  // virtual bool validated() const = 0;
+
+  virtual QColor color() const = 0;
+
+  /**
+   * @return the URL of this mod, or an empty QString() if no URL is associated
+   *     with this mod.
+   */
+  virtual QString url() const = 0;
+
+  // Nexus-related, do not expose?
+  // virtual QString nexusDescription() const = 0;
+  // virtual int nexusFileStatus() const = 0;
+  // virtual QDateTime lastNexusQuery() const = 0;
+  // virtual QDateTime lastNexusUpdate() const = 0;
+  // virtual QDateTime lastNexusModified() const = 0;
+
+  virtual int primaryCategory() const = 0;
+  virtual QStringList categories() const = 0;
+
+  virtual TrackedState trackedState() const = 0;
+  virtual EndorsedState endorsedState() const = 0;
+
+public: // Mutable operations:
 
   /**
    * @brief set/change the version of this mod
@@ -97,11 +160,6 @@ public:
    * @return true if the category was removed successfully, false if no such category was assigned
    */
   virtual bool removeCategory(const QString &categoryName) = 0;
-
-  /**
-   * @return list of categories assigned to this mod
-   */
-  virtual QStringList categories() const = 0;
 
   /**
    * @brief set/change the source game of this mod
