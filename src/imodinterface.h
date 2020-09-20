@@ -128,6 +128,32 @@ public:
    */
   virtual bool remove() = 0;
 
+public: // Plugin operations:
+
+   /**
+   * @brief Retrieve the specified setting in this mod for a plugin.
+   *
+   * @param pluginName Name of the plugin for which to retrieve a setting. This should always be IPlugin::name()
+   *     unless you have a really good reason to access settings of another plugin.
+   * @param key Identifier of the setting.
+   * @param defaultValue The default value to return if the setting does not exist.
+   *
+   * @return the setting, if found, or the default value.
+   */
+  virtual QVariant pluginSetting(const QString& pluginName, const QString& key, const QVariant& defaultValue) const = 0;
+
+  /**
+   * @brief Set the specified setting in this mod for a plugin.
+   *
+   * @param pluginName Name of the plugin for which to retrieve a setting. This should always be IPlugin::name()
+   *     unless you have a really good reason to access settings of another plugin.
+   * @param key Identifier of the setting.
+   * @param value New value for the setting to set.
+   *
+   * @return true if the setting was set correctly, false otherwise.
+   */
+  virtual bool setPluginSetting(const QString& pluginName, const QString& key, const QVariant& value) = 0;
+
 };
 
 
