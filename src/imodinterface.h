@@ -57,37 +57,78 @@ public:
 public: // Non-meta related information:
 
   /**
-   * @return name of the mod
+   * @return the name of the mod.
    */
   virtual QString name() const = 0;
 
   /**
-   * @return absolute path to the mod to be used in file system operations
+   * @return the absolute path to the mod to be used in file system operations.
    */
   virtual QString absolutePath() const = 0;
 
 public: // Meta-related information:
 
+  /**
+   * @return the comments for this mod, if any.
+   */
   virtual QString comments() const = 0;
 
+  /**
+   * @return the notes for this mod, if any.
+   */
   virtual QString notes() const = 0;
 
+  /**
+   * @brief Retrieve the short name of the game associated with this mod. This may differ
+   *     from the current game plugin (e.g. you can install a Skyrim LE game in a SSE
+   *     installation).
+   *
+   * @return the name of the game associated with this mod.
+   */
   virtual QString gameName() const = 0;
 
+  /**
+   * @return the name of the repository from which this mod was installed.
+   */
+  virtual QString repository() const = 0;
+
+  /**
+   * @return the ID of this mod on the repository.
+   *
+   * @note For Nexus, this is the Nexus ID of the mod.
+   */
   virtual int modId() const = 0;
 
+  /**
+   * @return the current version of this mod.
+   */
   virtual VersionInfo version() const = 0;
+
+  /**
+   * @return the newest version of thid mod (as known by MO2). If this matches version(),
+   *     then the mod is up-to-date.
+   */
   virtual VersionInfo newestVersion() const = 0;
+
+  /**
+   * @return the ignored version of this mod (for update), or an invalid version if the user
+   *     did not ignore version for this mod.
+   */
   virtual VersionInfo ignoredVersion() const = 0;
 
+  /**
+   * @return the absolute path to the file that was used to install this mod.
+   */
   virtual QString installationFile() const = 0;
-  virtual std::set<std::pair<int, int>> installedFiles() const = 0;
 
-  virtual QString repository() const = 0;
+  virtual std::set<std::pair<int, int>> installedFiles() const = 0;
 
   // virtual bool converted() const = 0;
   // virtual bool validated() const = 0;
 
+  /**
+   * @return the color of the 'Notes' column chosen by the user.
+   */
   virtual QColor color() const = 0;
 
   /**
@@ -103,10 +144,24 @@ public: // Meta-related information:
   // virtual QDateTime lastNexusUpdate() const = 0;
   // virtual QDateTime lastNexusModified() const = 0;
 
+  /**
+   * @return the ID of the primary category of this mod.
+   */
   virtual int primaryCategory() const = 0;
+
+  /**
+   * @return the list of categories this mod belongs to.
+   */
   virtual QStringList categories() const = 0;
 
+  /**
+   * @return the tracked state of this mod.
+   */
   virtual TrackedState trackedState() const = 0;
+
+  /**
+   * @return the endorsement state of this mod.
+   */
   virtual EndorsedState endorsedState() const = 0;
 
 public: // Mutable operations:
