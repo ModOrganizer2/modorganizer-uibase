@@ -151,13 +151,6 @@ public: // Meta-related information:
    */
   virtual QString url() const = 0;
 
-  // Nexus-related, do not expose?
-  // virtual QString nexusDescription() const = 0;
-  // virtual int nexusFileStatus() const = 0;
-  // virtual QDateTime lastNexusQuery() const = 0;
-  // virtual QDateTime lastNexusUpdate() const = 0;
-  // virtual QDateTime lastNexusModified() const = 0;
-
   /**
    * @return the ID of the primary category of this mod.
    */
