@@ -140,7 +140,17 @@ public: // Plugin operations:
    *
    * @return the setting, if found, or the default value.
    */
-  virtual QVariant pluginSetting(const QString& pluginName, const QString& key, const QVariant& defaultValue) const = 0;
+  virtual QVariant pluginSetting(const QString& pluginName, const QString& key, const QVariant& defaultValue = QVariant()) const = 0;
+
+  /**
+   * @brief Retrieve the settings in this mod for a plugin.
+   *
+   * @param pluginName Name of the plugin for which to retrieve settings. This should always be IPlugin::name()
+   *     unless you have a really good reason to access settings of another plugin.
+   *
+   * @return a map from setting key to value. The map is empty if there are not settings for this mod.
+   */
+  virtual std::map<QString, QVariant> pluginSettings(const QString& pluginName) const = 0;
 
   /**
    * @brief Set the specified setting in this mod for a plugin.
