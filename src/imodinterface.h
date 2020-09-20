@@ -123,8 +123,22 @@ public: // Meta-related information:
 
   virtual std::set<std::pair<int, int>> installedFiles() const = 0;
 
-  // virtual bool converted() const = 0;
-  // virtual bool validated() const = 0;
+  /**
+   * @return true if this mod was marked as converted by the user.
+   *
+   * @note When a mod is for a different game, a flag is shown to users to warn them, but
+   *     they can mark mods as converted to remove this flag.
+   */
+  virtual bool converted() const = 0;
+
+  /**
+   * @return true if th is mod was marked as containing valid game data.
+   *
+   * @note MO2 uses ModDataChecker to check the content of mods, but sometimes these fail, in
+   *     which case mods are incorrectly marked as 'not containing valid games data'. Users can
+   *     choose to mark these mods as valid to hide the warning / flag.
+   */
+  virtual bool validated() const = 0;
 
   /**
    * @return the color of the 'Notes' column chosen by the user.
