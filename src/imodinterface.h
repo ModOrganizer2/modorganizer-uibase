@@ -164,6 +164,16 @@ public: // Plugin operations:
    */
   virtual bool setPluginSetting(const QString& pluginName, const QString& key, const QVariant& value) = 0;
 
+  /**
+   * @brief Remove all the settings of the specified plugin from th is mod.
+   *
+   * @param pluginName Name of the plugin for which settings should be removed. This should always be IPlugin::name()
+   *     unless you have a really good reason to access settings of another plugin.
+   *
+   * @return the old settings from the given plugin, as returned by `pluginSettings()`.
+   */
+  virtual std::map<QString, QVariant> clearPluginSettings(const QString& pluginName) = 0;
+
 };
 
 
