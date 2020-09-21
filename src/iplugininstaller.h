@@ -22,10 +22,11 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 #ifndef IPLUGININSTALLER_H
 #define IPLUGININSTALLER_H
 
+#include <set>
 
 #include "iplugin.h"
+#include "imodinterface.h"
 #include "ifiletree.h"
-#include <set>
 
 namespace MOBase {
 
@@ -53,43 +54,81 @@ public:
   IPluginInstaller() : m_ParentWidget(nullptr), m_InstallationManager(nullptr) {}
 
   /**
-   * retrieve the priority of this installer. If multiple installers are able
+   * @brief Retrieve the priority of this installer. If multiple installers are able
    * to handle an archive, the one with the highest priority wins.
-   * @return the priority of the installer
+   *
+   * @return the priority of this installer.
    */
   virtual unsigned int priority() const = 0;
 
   /**
    * @return true if this plugin should be treated as a manual installer if the user
    * explicitly requested one. A manual installer should offer the user maximum amount of
-   * customizability
+   * customizability.
    */
   virtual bool isManualInstaller() const = 0;
 
   /**
-   * @brief test if the archive represented by the tree parameter can be installed through this installer
-   * @param tree a directory tree representing the archive
-   * @return true if this installer can handle the archive
+   * @brief Method calls at the start of the installation process, before any other methods.
+   *     This method is only called once per installation process, even for recursive
+   *     installations (e.g. with the bundle installer).
+   *
+   * @param archive Path to the archive that is going to be installed.
+   * @param mod If this is a re-installation, the currently installed mod, otherwise a null
+   *     pointer.
+   *
+   * @note The default implementation does nothing.
+   */
+  virtual void onInstallationStart(QString const& archive, IModInterface* currentMod) { }
+
+  /**
+   * @brief Method calls at the end of the installation process. This method is only called once
+   *     per installation process, even for recursive installations (e.g. with the bundle installer).
+   *
+   * @param result The result of the installation.
+   * @param mod If the installation succeeded (result is RESULT_SUCCESS), contains the newly
+   *     installed mod, otherwise it contains a null pointer.
+   *
+   * @note The default implementation does nothing.
+   */
+  virtual void onInstallationEnd(EInstallResult result, IModInterface* newMod) { }
+
+  /**
+   * @brief Test if the archive represented by the tree parameter can be installed through this 
+   *     installer.
+   *
+   * @param tree a directory tree representing the archive.
+   *
+   * @return true if this installer can handle the archive.
    */
   virtual bool isArchiveSupported(std::shared_ptr<const IFileTree> tree) const = 0;
 
   /**
-   * @brief sets the widget that the tool should use as the parent whenever
-   *        it creates a new modal dialog
-   * @param widget the new parent widget
+   * @brief Sets the widget that the tool should use as the parent whenever
+   *        it creates a new modal dialog.
+   *
+   * @param widget The new parent widget.
    */
   virtual void setParentWidget(QWidget *widget) { m_ParentWidget = widget; }
 
   /**
-   * brief sets the installation manager responsible for the installation process
-   * it can be used by plugins to access utility functions
-   * @param manager the new installation manager
+   * @brief Sets the installation manager responsible for the installation process
+   * it can be used by plugins to access utility functions.
+   *
+   * @param manager The new installation manager.
    */
   void setInstallationManager(IInstallationManager *manager) { m_InstallationManager = manager; }
 
 protected:
 
+  /**
+   * @return the parent widget that the tool should use to create new dialogs and widgets.
+   */
   QWidget *parentWidget() const { return m_ParentWidget; }
+
+  /**
+   * @return the manager responsible for the installation process.
+   */
   IInstallationManager *manager() const { return m_InstallationManager; }
 
 private:
