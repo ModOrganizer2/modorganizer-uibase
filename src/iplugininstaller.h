@@ -77,6 +77,11 @@ public:
    * @param mod If this is a re-installation, the currently installed mod, otherwise a null
    *     pointer.
    *
+   * @note MO2 can specify a mod in two situations: 1) when the user wants to re-install a mod, in
+   *     which case the given mod is the mod selected by the user, 2) when the user installs a mod
+   *     from the download panel, and a corresponding mod is already installed. Plugin should not
+   *     assume the IModInterface corresponds to the same mod as the one being installed and should
+   *     take extra precautions for this.
    * @note The default implementation does nothing.
    */
   virtual void onInstallationStart(QString const& archive, IModInterface* currentMod) { }
