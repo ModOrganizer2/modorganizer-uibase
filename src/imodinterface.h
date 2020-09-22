@@ -93,11 +93,9 @@ public: // Meta-related information:
   virtual QString repository() const = 0;
 
   /**
-   * @return the ID of this mod on the repository.
-   *
-   * @note For Nexus, this is the Nexus ID of the mod.
+   * @return the Nexus ID of this mod.
    */
-  virtual int modId() const = 0;
+  virtual int nexusId() const = 0;
 
   /**
    * @return the current version of this mod.
