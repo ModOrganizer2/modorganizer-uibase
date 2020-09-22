@@ -74,17 +74,17 @@ public:
    *     installations (e.g. with the bundle installer).
    *
    * @param archive Path to the archive that is going to be installed.
-   * @param mod If this is a re-installation, the currently installed mod, otherwise a null
-   *     pointer.
+   * @param reinstallation True if this is a reinstallation, false otherwise.
+   * @param mod A currently installed mod corresponding to the archive being installed, or a null
+   *     if there is no such mod.
    *
-   * @note MO2 can specify a mod in two situations: 1) when the user wants to re-install a mod, in
-   *     which case the given mod is the mod selected by the user, 2) when the user installs a mod
-   *     from the download panel, and a corresponding mod is already installed. Plugin should not
-   *     assume the IModInterface corresponds to the same mod as the one being installed and should
-   *     take extra precautions for this.
+   * @note If `reinstallation` is true, then the given mod is the mod being reinstalled (the one
+   *     selected by the user). If `reinstallation` is false and `currentMod` is not null, then
+   *     it corresponds to a mod MO2 thinks corresponds to the archive (e.g. based on matching Nexus ID
+   *     or name).
    * @note The default implementation does nothing.
    */
-  virtual void onInstallationStart(QString const& archive, IModInterface* currentMod) { }
+  virtual void onInstallationStart(QString const& archive, bool reinstallation, IModInterface* currentMod) { }
 
   /**
    * @brief Method calls at the end of the installation process. This method is only called once
