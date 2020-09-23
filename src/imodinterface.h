@@ -22,15 +22,31 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 #ifndef IMODINTERFACE_H
 #define IMODINTERFACE_H
 
-#include "iplugingame.h"
+#include <utility>
+#include <set>
 
-class QString;
-class QStringList;
+#include <QColor>
+#include <QDateTime>
+#include <QString>
+#include <QStringList>
 
 
 namespace MOBase {
 
 class VersionInfo;
+
+enum class EndorsedState {
+  ENDORSED_FALSE,
+  ENDORSED_TRUE,
+  ENDORSED_UNKNOWN,
+  ENDORSED_NEVER
+};
+
+enum class TrackedState {
+  TRACKED_FALSE,
+  TRACKED_TRUE,
+  TRACKED_UNKNOWN,
+};
 
 class IModInterface
 {
@@ -38,15 +54,122 @@ public:
 
   virtual ~IModInterface() {}
 
+public: // Non-meta related information:
+
   /**
-   * @return name of the mod
+   * @return the name of the mod.
    */
   virtual QString name() const = 0;
 
   /**
-   * @return absolute path to the mod to be used in file system operations
+   * @return the absolute path to the mod to be used in file system operations.
    */
   virtual QString absolutePath() const = 0;
+
+public: // Meta-related information:
+
+  /**
+   * @return the comments for this mod, if any.
+   */
+  virtual QString comments() const = 0;
+
+  /**
+   * @return the notes for this mod, if any.
+   */
+  virtual QString notes() const = 0;
+
+  /**
+   * @brief Retrieve the short name of the game associated with this mod. This may differ
+   *     from the current game plugin (e.g. you can install a Skyrim LE game in a SSE
+   *     installation).
+   *
+   * @return the name of the game associated with this mod.
+   */
+  virtual QString gameName() const = 0;
+
+  /**
+   * @return the name of the repository from which this mod was installed.
+   */
+  virtual QString repository() const = 0;
+
+  /**
+   * @return the Nexus ID of this mod.
+   */
+  virtual int nexusId() const = 0;
+
+  /**
+   * @return the current version of this mod.
+   */
+  virtual VersionInfo version() const = 0;
+
+  /**
+   * @return the newest version of thid mod (as known by MO2). If this matches version(),
+   *     then the mod is up-to-date.
+   */
+  virtual VersionInfo newestVersion() const = 0;
+
+  /**
+   * @return the ignored version of this mod (for update), or an invalid version if the user
+   *     did not ignore version for this mod.
+   */
+  virtual VersionInfo ignoredVersion() const = 0;
+
+  /**
+   * @return the absolute path to the file that was used to install this mod.
+   */
+  virtual QString installationFile() const = 0;
+
+  virtual std::set<std::pair<int, int>> installedFiles() const = 0;
+
+  /**
+   * @return true if this mod was marked as converted by the user.
+   *
+   * @note When a mod is for a different game, a flag is shown to users to warn them, but
+   *     they can mark mods as converted to remove this flag.
+   */
+  virtual bool converted() const = 0;
+
+  /**
+   * @return true if th is mod was marked as containing valid game data.
+   *
+   * @note MO2 uses ModDataChecker to check the content of mods, but sometimes these fail, in
+   *     which case mods are incorrectly marked as 'not containing valid games data'. Users can
+   *     choose to mark these mods as valid to hide the warning / flag.
+   */
+  virtual bool validated() const = 0;
+
+  /**
+   * @return the color of the 'Notes' column chosen by the user.
+   */
+  virtual QColor color() const = 0;
+
+  /**
+   * @return the URL of this mod, or an empty QString() if no URL is associated
+   *     with this mod.
+   */
+  virtual QString url() const = 0;
+
+  /**
+   * @return the ID of the primary category of this mod.
+   */
+  virtual int primaryCategory() const = 0;
+
+  /**
+   * @return the list of categories this mod belongs to.
+   */
+  virtual QStringList categories() const = 0;
+
+  /**
+   * @return the tracked state of this mod.
+   */
+  virtual TrackedState trackedState() const = 0;
+
+  /**
+   * @return the endorsement state of this mod.
+   */
+  virtual EndorsedState endorsedState() const = 0;
+
+public: // Mutable operations:
 
   /**
    * @brief set/change the version of this mod
@@ -97,11 +220,6 @@ public:
    * @return true if the category was removed successfully, false if no such category was assigned
    */
   virtual bool removeCategory(const QString &categoryName) = 0;
-
-  /**
-   * @return list of categories assigned to this mod
-   */
-  virtual QStringList categories() const = 0;
 
   /**
    * @brief set/change the source game of this mod
