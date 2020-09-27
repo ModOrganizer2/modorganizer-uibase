@@ -27,6 +27,7 @@ class QString;
 class QStringList;
 
 #include <functional>
+#include <map>
 
 namespace MOBase {
 
@@ -136,9 +137,16 @@ public:
   virtual bool onPluginMoved(const std::function<void (const QString &, int, int)> &func) = 0;
 
   /**
-   * @brief invoked whenever a plugin has changed state
+   * @brief Installs a handler for the event that the state of plugin changed (active/inactive).
+   *
+   * Parameters of the callback:
+   *   - Map containing the plugins whose states have changed. Keys are plugin names and values are mod states.
+   *
+   * @param func The signal to be called when the states of any plugins change.
+   *
+   * @return true if the handler was successfully installed, false otherwise (there is as of now no known reason this should fail).
    */
-  virtual bool onPluginStateChanged(const std::function<void (const QString &, PluginStates)> &func) = 0;
+  virtual bool onPluginStateChanged(const std::function<void(const std::map<QString, PluginStates>&)>& func) = 0;
 
 };
 
