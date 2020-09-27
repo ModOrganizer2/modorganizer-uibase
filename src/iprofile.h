@@ -27,7 +27,7 @@ public:
    *
    * @return the absolute path for the given INI file for this profile.
    */
-  virtual QString iniFilePath(QString iniFile) = 0;
+  virtual QString iniFilePath(QString iniFile) const = 0;
 };
 
 } // namespace MOBase
