@@ -26,6 +26,11 @@ public:
    *     name of a file or a path to the absolute file outside of the profile.
    *
    * @return the absolute path for the given INI file for this profile.
+   *
+   * @note If iniFile does not correspond to a file in the list of ini files for the 
+   *     current game (as returned by IPluginGame::iniFiles), the path to the global 
+   *     file will be returned (if iniFile is absolute, iniFile is returned, otherwiise 
+         the path is assumed relative to the game documents directory).
    */
   virtual QString iniFilePath(QString iniFile) const = 0;
 };
