@@ -113,13 +113,6 @@ public:
    */
   virtual IPluginInstaller::EInstallResult installArchive(MOBase::GuessedValue<QString> &modName, const QString &archiveFile, int modID = 0) = 0;
 
-  /**
-   * @brief Set the url associated with a mod.
-   *
-   * @param url Url to set.
-   */
-  virtual void setURL(QString const &url) = 0;
-
 };
 
 } // namespace MOBase
