@@ -1,7 +1,7 @@
 #ifndef IDOWNLOADMANAGER_H
 #define IDOWNLOADMANAGER_H
 
-
+#include <functional>
 #include "dllimport.h"
 #include <QStringList>
 #include <QObject>
