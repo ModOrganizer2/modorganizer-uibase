@@ -42,32 +42,49 @@ public:
    */
   virtual QString downloadPath(int id) = 0;
 
-Q_SIGNALS:
+   /**
+    * @brief Installs a handler to be called when a download complete.
+    *
+    * @param callback The function to be called when a download complete. The argument is
+    *     the download ID.
+    *
+    * @return true if the handler was successfully installed (there is as of now no known reason
+    *     this should fail).
+    */
+  virtual bool onDownloadComplete(const std::function<void(int)> &callback) = 0;
 
   /**
-   * @brief emitted when the download has finished completely (including retrieval of meta information)
-   * @param id id of the download
+   * @brief Installs a handler to be called when a download is paused.
+   *
+   * @param callback The function to be called when a download is paused. The argument is
+   *     the download ID.
+   *
+   * @return true if the handler was successfully installed (there is as of now no known reason
+   *     this should fail).
    */
-  void downloadComplete(int id);
+  virtual bool onDownloadPaused(const std::function<void(int)>& callback) = 0;
 
   /**
-   * @brief emitted when the download has been paused by the user
-   * @param id id of the download
+   * @brief Installs a handler to be called when a download fails.
+   *
+   * @param callback The function to be called when a download fails. The argument is
+   *     the download ID.
+   *
+   * @return true if the handler was successfully installed (there is as of now no known reason
+   *     this should fail).
    */
-  void downloadPaused(int id);
+  virtual bool onDownloadFailed(const std::function<void(int)>& callback) = 0;
 
   /**
-   * @brief emitted when the download has failed
-   * @param id id of the download
+   * @brief Installs a handler to be called when a download is removed.
+   *
+   * @param callback The function to be called when a download is removed. The argument is
+   *     the download ID (which is no longer valid).
+   *
+   * @return true if the handler was successfully installed (there is as of now no known reason
+   *     this should fail).
    */
-  void downloadFailed(int id);
-
-  /**
-   * @brief emitted when the download has been removed from the download manager.
-   *        The id of the download is no longer valid
-   * @param id id of the download
-   */
-  void downloadRemoved(int id);
+  virtual bool onDownloadRemoved(const std::function<void(int)>& callback) = 0;
 
 };
 
