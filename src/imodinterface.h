@@ -241,6 +241,13 @@ public: // Mutable operations:
   virtual bool setName(const QString &name) = 0;
 
   /**
+   * @brief Set a URL for this mod.
+   *
+   * @param url The URL of this mod.
+   */
+  virtual void setUrl(const QString &url) = 0;
+
+  /**
    * @brief delete the mod from the disc. This does not update the global ModInfo structure or indices
    * @return true on success
    */
