@@ -381,6 +381,43 @@ public:
   virtual bool onUserInterfaceInitialized(std::function<void(QMainWindow*)> const& func) = 0;
 
   /**
+   * @brief Add a new callback to be called when a new profile is created.
+   *
+   * Parameters of the callback:
+   *   - The created profile (can be a temporary object, so it should not be stored).
+   *
+   * @param func Function to be called when a profile is created.
+   *
+   */
+  virtual bool onProfileCreated(std::function<void(IProfile*)> const& func) = 0;
+
+  /**
+   * @brief Add a new callback to be called when a profile is renamed.
+   *
+   * Parameters of the callback:
+   *   - The renamed profile.
+   *   - The old name of the profile.
+   *   - The new name of the profile.
+   *
+   * @param func Function to be called when a profile is renamed.
+   *
+   */
+  virtual bool onProfileRenamed(std::function<void(IProfile*, QString const&, QString const&)> const& func) = 0;
+
+  /**
+   * @brief Add a new callback to be called when a profile is removed.
+   *
+   * Parameters of the callback:
+   *   - The name of the removed profile.
+   *
+   * The function is called after the profile has been removed, so the profile is not accessible anymore.
+   *
+   * @param func Function to be called when a profile is removed.
+   *
+   */
+  virtual bool onProfileRemoved(std::function<void(QString const&)> const& func) = 0;
+
+  /**
    * @brief Add a new callback to be called when the current profile is changed.
    *
    * Parameters of the callback:
