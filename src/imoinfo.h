@@ -128,13 +128,6 @@ public:
   virtual IPluginGame *getGame(const QString &gameName) const = 0;
 
   /**
-   * @brief remove a mod (from disc and from the ui)
-   * @param mod the mod to remove
-   * @return true on success, false on error
-   */
-  virtual bool removeMod(IModInterface *mod) = 0;
-
-  /**
    * @brief let the organizer know that a mod has changed
    * @param the mod that has changed
    */
