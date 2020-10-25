@@ -22,10 +22,6 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 #ifndef IMOINFO_H
 #define IMOINFO_H
 
-
-#include "versioninfo.h"
-#include "guessedvalue.h"
-#include "iprofile.h"
 #include <QString>
 #include <QStringList>
 #include <QVariant>
@@ -33,13 +29,17 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 #include <Windows.h>
 #include <functional>
 
+#include "guessedvalue.h"
+#include "imodlist.h"
+#include "iprofile.h"
+#include "versioninfo.h"
+
 namespace MOBase {
 
 class IModInterface;
 class IModRepositoryBridge;
 class IDownloadManager;
 class IPluginList;
-class IModList;
 class IPluginGame;
 
 /**
@@ -344,7 +344,12 @@ public:
    *
    * @param func Function to called when a mod has been installed.
    */
-  virtual bool onModInstalled(const std::function<void(const QString&)>& func) = 0;
+  [[deprecated("User modList()->onModInstalled")]]
+  virtual bool onModInstalled(const std::function<void(const QString&)>& func) {
+    return modList()->onModInstalled([func](IModInterface* mod) {
+      func(mod->name());
+    });
+  }
 
   /**
    * @brief Add a new callback to be called when an application is about to be run.

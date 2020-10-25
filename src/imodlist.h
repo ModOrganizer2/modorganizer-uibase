@@ -27,6 +27,8 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 
 #include <QString>
 
+#include "imodinterface.h"
+
 namespace MOBase {
 
 /**
@@ -121,6 +123,26 @@ public:
    *       all mods with higher priority than the moved mod decrease in priority by one.
    */
   virtual bool setPriority(const QString &name, int newPriority) = 0;
+
+  /**
+   * @brief Add a new callback to be called when a new mod is installed.
+   *
+   * Parameters of the callback:
+   *   - The installed mod.
+   *
+   * @param func Function to called when a mod has been installed.
+   */
+  virtual bool onModInstalled(const std::function<void(IModInterface *)>& func) = 0;
+
+  /**
+   * @brief Add a new callback to be called when a mod is removed.
+   *
+   * Parameters of the callback:
+   *   - The name of the removed mod.
+   *
+   * @param func Function to called when a mod has been removed.
+   */
+  virtual bool onModRemoved(const std::function<void(QString const&)>& func) = 0;
 
   /**
    * @brief Installs a handler for the event that the state of mods changed (enabled/disabled, endorsed, ...).
