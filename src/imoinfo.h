@@ -104,13 +104,6 @@ public:
   virtual VersionInfo appVersion() const = 0;
 
   /**
-   * @brief retrieve an interface to a mod by its name
-   * @param name name of the mod to query
-   * @return an interface to the mod or nullptr if there is no mod with the name
-   */
-  virtual IModInterface *getMod(const QString &name) const = 0;
-
-  /**
    * @brief create a new mod with the specified name
    * @param name name of the new mod
    * @return an interface that can be used to modify the mod. nullptr if the user canceled

@@ -86,6 +86,15 @@ public:
   virtual QStringList allModsByProfilePriority(MOBase::IProfile *profile = nullptr) const = 0;
 
   /**
+   * @brief Retrieve the mod with the given name.
+   *
+   * @param name Name of the mod to retrieve.
+   *
+   * @return the mod with the given name, or a null pointer if there is no mod with this name.
+   */
+  virtual IModInterface* getMod(const QString& name) const = 0;
+
+  /**
    * @brief Remove a mod (from disc and from the ui).
    *
    * @param mod The mod to remove.
