@@ -307,11 +307,11 @@ public:
       HANDLE handle, LPDWORD exitCode = nullptr) const = 0;
 
   /**
-   * @brief Refresh the internal structure of Mod Organizer. This includes the mod list, the plugin
-   *     list but also the virtual file system layout.
+   * @brief Refresh the internal mods file structure from disk. This includes the mod list, the plugin  
+   *     list, data tab and other smaller things like problems button (same as pressing F5).
    *
-   * @note The cheap operations are done synchronously, but the refresh of the VFS layout is done
-   *     asynchronously, so you should not expect it to be up-to-date when this function returns.
+   * @note The main part of the refresh of the mods file strcuture, modlist and pluginlist is done
+   *     asynchronously, so you should not expect them to be up-to-date when this function returns.
    *
    * @param saveChanges If true, the relevant profile information is saved first (enabled mods and their order).
    */
