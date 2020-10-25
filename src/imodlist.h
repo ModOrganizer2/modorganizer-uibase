@@ -27,6 +27,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 
 #include <QString>
 
+#include "iprofile.h"
 #include "imodinterface.h"
 
 namespace MOBase {
@@ -68,10 +69,22 @@ public:
   virtual QString displayName(const QString &internalName) const = 0;
 
   /**
-   * @brief retrieve a list of all installed mod names
-   * @return list of mods (internal names)
+   * @brief Retrieve a list of all installed mod names.
+   *
+   * @return list of mods (internal names).
    */
   virtual QStringList allMods() const = 0;
+
+  /**
+   * @brief Retrieve the list of installed mod names, sorted by current profile priority.
+   *
+   * @param profile The profile to use for the priority. If nullptr, the current
+   *     profile is used.
+   *
+   * @return list of mods (internal names), sorted by priority.
+   */
+  virtual QStringList allModsByProfilePriority(MOBase::IProfile *profile = nullptr) const = 0;
+
 
   /**
    * @brief retrieve the state of a mod

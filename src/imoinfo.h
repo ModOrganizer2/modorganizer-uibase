@@ -337,26 +337,6 @@ public:
   virtual MOBase::IPluginGame const *managedGame() const = 0;
 
   /**
-   * @brief Get the mod list, sorted by current profile priority
-   */
-  virtual QStringList modsSortedByProfilePriority() const = 0;
-
-  /**
-   * @brief Add a new callback to be called when a new mod is installed.
-   *
-   * Parameters of the callback:
-   *   - The name of the mod installed.
-   *
-   * @param func Function to called when a mod has been installed.
-   */
-  [[deprecated("User modList()->onModInstalled")]]
-  virtual bool onModInstalled(const std::function<void(const QString&)>& func) {
-    return modList()->onModInstalled([func](IModInterface* mod) {
-      func(mod->name());
-    });
-  }
-
-  /**
    * @brief Add a new callback to be called when an application is about to be run.
    *
    * Parameters of the callback:
