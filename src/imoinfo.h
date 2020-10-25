@@ -321,10 +321,15 @@ public:
       HANDLE handle, LPDWORD exitCode = nullptr) const = 0;
 
   /**
-   * @brief refresh the mod list
-   * @param saveChanges if true, the relevant profile information is saved first (enabled mods and the ordering)
+   * @brief Refresh the internal structure of Mod Organizer. This includes the mod list, the plugin
+   *     list but also the virtual file system layout.
+   *
+   * @note The cheap operations are done synchronously, but the refresh of the VFS layout is done
+   *     asynchronously, so you should not expect it to be up-to-date when this function returns.
+   *
+   * @param saveChanges If true, the relevant profile information is saved first (enabled mods and their order).
    */
-  virtual void refreshModList(bool saveChanges = true) = 0;
+  virtual void refresh(bool saveChanges = true) = 0;
 
   /**
    * @brief get the currently managed game info
