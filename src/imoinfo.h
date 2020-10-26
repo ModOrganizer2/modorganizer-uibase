@@ -22,10 +22,6 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 #ifndef IMOINFO_H
 #define IMOINFO_H
 
-
-#include "versioninfo.h"
-#include "guessedvalue.h"
-#include "iprofile.h"
 #include <QString>
 #include <QStringList>
 #include <QVariant>
@@ -33,13 +29,17 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 #include <Windows.h>
 #include <functional>
 
+#include "guessedvalue.h"
+#include "imodlist.h"
+#include "iprofile.h"
+#include "versioninfo.h"
+
 namespace MOBase {
 
 class IModInterface;
 class IModRepositoryBridge;
 class IDownloadManager;
 class IPluginList;
-class IModList;
 class IPluginGame;
 
 /**
@@ -104,13 +104,6 @@ public:
   virtual VersionInfo appVersion() const = 0;
 
   /**
-   * @brief retrieve an interface to a mod by its name
-   * @param name name of the mod to query
-   * @return an interface to the mod or nullptr if there is no mod with the name
-   */
-  virtual IModInterface *getMod(const QString &name) const = 0;
-
-  /**
    * @brief create a new mod with the specified name
    * @param name name of the new mod
    * @return an interface that can be used to modify the mod. nullptr if the user canceled
@@ -126,13 +119,6 @@ public:
    * @return a game plugin, or nullptr if there is no match
    */
   virtual IPluginGame *getGame(const QString &gameName) const = 0;
-
-  /**
-   * @brief remove a mod (from disc and from the ui)
-   * @param mod the mod to remove
-   * @return true on success, false on error
-   */
-  virtual bool removeMod(IModInterface *mod) = 0;
 
   /**
    * @brief let the organizer know that a mod has changed
@@ -321,30 +307,20 @@ public:
       HANDLE handle, LPDWORD exitCode = nullptr) const = 0;
 
   /**
-   * @brief refresh the mod list
-   * @param saveChanges if true, the relevant profile information is saved first (enabled mods and the ordering)
+   * @brief Refresh the internal mods file structure from disk. This includes the mod list, the plugin  
+   *     list, data tab and other smaller things like problems button (same as pressing F5).
+   *
+   * @note The main part of the refresh of the mods file strcuture, modlist and pluginlist is done
+   *     asynchronously, so you should not expect them to be up-to-date when this function returns.
+   *
+   * @param saveChanges If true, the relevant profile information is saved first (enabled mods and their order).
    */
-  virtual void refreshModList(bool saveChanges = true) = 0;
+  virtual void refresh(bool saveChanges = true) = 0;
 
   /**
    * @brief get the currently managed game info
    */
   virtual MOBase::IPluginGame const *managedGame() const = 0;
-
-  /**
-   * @brief Get the mod list, sorted by current profile priority
-   */
-  virtual QStringList modsSortedByProfilePriority() const = 0;
-
-  /**
-   * @brief Add a new callback to be called when a new mod is installed.
-   *
-   * Parameters of the callback:
-   *   - The name of the mod installed.
-   *
-   * @param func Function to called when a mod has been installed.
-   */
-  virtual bool onModInstalled(const std::function<void(const QString&)>& func) = 0;
 
   /**
    * @brief Add a new callback to be called when an application is about to be run.
