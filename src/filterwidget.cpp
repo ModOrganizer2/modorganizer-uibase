@@ -71,6 +71,10 @@ bool FilterWidgetProxyModel::columnMatches(
 void FilterWidgetProxyModel::sort(int column, Qt::SortOrder order)
 {
   if (m_filter.useSourceSort()) {
+    // without this, the proxy seems to sometimes ignore the sorting done below,
+    // no idea why
+    QSortFilterProxyModel::sort(-1, order);
+
     sourceModel()->sort(column, order);
   } else {
     QSortFilterProxyModel::sort(column, order);
