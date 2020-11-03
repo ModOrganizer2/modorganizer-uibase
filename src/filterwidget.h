@@ -81,9 +81,6 @@ public:
   FilterWidgetProxyModel* proxyModel();
   QAbstractItemModel* sourceModel();
 
-  [[deprecated("use mapToSource()")]]
-  QModelIndex map(const QModelIndex& index);
-
   QModelIndex mapFromSource(const QModelIndex& index) const;
   QModelIndex mapToSource(const QModelIndex& index) const;
   QItemSelection mapSelectionFromSource(const QItemSelection& sel) const;

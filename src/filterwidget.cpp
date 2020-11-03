@@ -221,11 +221,6 @@ QAbstractItemModel* FilterWidget::sourceModel()
   }
 }
 
-QModelIndex FilterWidget::map(const QModelIndex& index)
-{
-  return mapToSource(index);
-}
-
 QModelIndex FilterWidget::mapFromSource(const QModelIndex& index) const
 {
   if (m_proxy) {
