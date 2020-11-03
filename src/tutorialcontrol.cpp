@@ -128,7 +128,7 @@ void TutorialControl::startTutorial(const QString &tutorial)
     m_TutorialView->setObjectName("tutorialView");
     m_TutorialView->rootContext()->setContextProperty("manager", &m_Manager);
 
-    QString qmlName = canonicalPath(QCoreApplication::applicationDirPath() + "/tutorials") + "/tutorials_" + m_Name.toLower() + ".qml";
+    QString qmlName = canonicalPath(QCoreApplication::applicationDirPath() + "/dlls/tutorials") + "/tutorials_" + m_Name.toLower() + ".qml";
     QUrl qmlSource = QUrl::fromLocalFile(qmlName);
 
     m_TutorialView->setSource(qmlSource);
