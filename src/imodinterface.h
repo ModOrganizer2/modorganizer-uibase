@@ -22,6 +22,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 #ifndef IMODINTERFACE_H
 #define IMODINTERFACE_H
 
+#include <memory>
 #include <utility>
 #include <set>
 
@@ -34,6 +35,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 namespace MOBase {
 
 class VersionInfo;
+class IFileTree;
 
 enum class EndorsedState {
   ENDORSED_FALSE,
@@ -168,6 +170,17 @@ public: // Meta-related information:
    * @return the endorsement state of this mod.
    */
   virtual EndorsedState endorsedState() const = 0;
+
+  /**
+   * @brief Retrieve a file tree corresponding to the underlying disk content
+   *     of this mod.
+   *
+   * The file tree should not be cached since it is already cached and updated when
+   * required.
+   *
+   * @return a file tree representing the content of this mod.
+   */
+  virtual std::shared_ptr<const MOBase::IFileTree> fileTree() const = 0;
 
 public: // Mutable operations:
 
