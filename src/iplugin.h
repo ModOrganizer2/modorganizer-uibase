@@ -31,24 +31,46 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 
 namespace MOBase {
 
-class IPlugin {
+class IPlugin
+{
 public:
   virtual ~IPlugin() {}
 
-  /** 
-   * @brief Initialize the plugin. This is called immediately after loading the plugin,
-   *     no other function is called before. Plugins will probably want to store the
-   *     organizer pointer. It is guaranteed to be valid as long as the plugin is loaded.
+  /**
+  * @brief Called after the plugin has been created and registered in MO, but
+  *        before init()
+  *
+  * This function will always be called on plugins just after they load, but
+  * note that init() may never be called.
+  */
+  virtual void registered() {}
+
+  /**
+   * @brief Initialize the plugin. This is called after registered().
    *
-   * @return false if the plugin could not be initialized, true otherwise. 
+   * Note that this function may never be called if no IOrganizer is available
+   * at that time, such as when creating the first instance in MO. For proxy
+   * plugins, init() is always called, but the given IOrganizer will have
+   * reduced capabilities. See IOrganizer.
+   *
+   * Plugins will probably want to store the organizer pointer. It is guaranteed
+   * to be valid as long as the plugin is loaded.
+   *
+   * These functions may be called before init():
+   *   - name()
+   *   - see IPluginGame for more
+   *
+   * @return false if the plugin could not be initialized, true otherwise.
    */
   virtual bool init(IOrganizer *organizer) = 0;
 
   /**
+   * this function may be called before init()
+   *
    * @return the internal name of this plugin (used for example in the settings menu).
    *
-   * @note Please ensure you use a name that will not change. Do NOT include a version number in the 
-   *     name. Do NOT use a localizable string (tr()) here. Settings for example are tied to this name, 
+   * @note Please ensure you use a name that will not change. Do NOT include a version number in the
+   *     name. Do NOT use a localizable string (tr()) here. Settings for example are tied to this name,
    *     if you rename your plugin you lose settings users made.
    */
   virtual QString name() const = 0;
@@ -56,13 +78,13 @@ public:
   /**
    * @return the localized name for this plugin.
    *
-   * @note Unlike name(), this method can (and should!) return a localized name for the plugin. 
+   * @note Unlike name(), this method can (and should!) return a localized name for the plugin.
    * @note This method returns name() by default.
    */
   virtual QString localizedName() const { return name(); }
 
   /**
-   * @brief Retrieve the master plugin of this plugin. 
+   * @brief Retrieve the master plugin of this plugin.
    *
    * It is often easier to implement a functionality as multiple plugins in MO2, but ship the
    * plugins together, e.g. as a Python module or using `createFunctions()`. In this case, having
@@ -99,7 +121,7 @@ public:
   virtual bool isActive() const = 0;
 
   /**
-   * @return the list of configurable settings for this plugin (in the user interface). The list may be 
+   * @return the list of configurable settings for this plugin (in the user interface). The list may be
    *     empty.
    *
    * @note Plugin can store "hidden" (from the user) settings using IOrganizer::persistent / IOrganizer::setPersistent.

@@ -45,9 +45,26 @@ class IPluginGame;
 /**
  * @brief Interface to class that provides information about the running session
  *        of Mod Organizer to be used by plugins
+ *
+ * When MO requires plugins but does not have a valid instance loaded (such as
+ * on first start in the instance creation dialog), init() will not be called at
+ * all, except for proxy plugins.
+ *
+ * In the case of proxy plugins, init() is called with an IOrganizer that has
+ * reduced capabilities. All functions may be called, but most of them will
+ * return empty values.
+ *
+ * In particular, these functions are guaranteed to return useful information:
+ *    - appVersion()
+ *    - pluginDataPath()
+ *
+ * All setting related functions (persistent(), pluginSetting(), etc.) will
+ * return empty variants for getters and will be no-ops for setters.
  */
-class QDLLEXPORT IOrganizer: public QObject {
+class QDLLEXPORT IOrganizer: public QObject
+{
   Q_OBJECT
+
 public:
 
   /**
