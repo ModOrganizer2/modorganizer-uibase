@@ -37,20 +37,11 @@ public:
   virtual ~IPlugin() {}
 
   /**
-  * @brief Called after the plugin has been created and registered in MO, but
-  *        before init()
-  *
-  * This function will always be called on plugins just after they load, but
-  * note that init() may never be called.
-  */
-  virtual void registered() {}
-
-  /**
-   * @brief Initialize the plugin. This is called after registered().
+   * @brief Initialize the plugin.
    *
    * Note that this function may never be called if no IOrganizer is available
    * at that time, such as when creating the first instance in MO. For proxy
-   * plugins, init() is always called, but given a null IOrganizer
+   * plugins, init() is always called, but given a null IOrganizer.
    *
    * Plugins will probably want to store the organizer pointer. It is guaranteed
    * to be valid as long as the plugin is loaded.
