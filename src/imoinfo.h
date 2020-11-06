@@ -50,16 +50,7 @@ class IPluginGame;
  * on first start in the instance creation dialog), init() will not be called at
  * all, except for proxy plugins.
  *
- * In the case of proxy plugins, init() is called with an IOrganizer that has
- * reduced capabilities. All functions may be called, but most of them will
- * return empty values.
- *
- * In particular, these functions are guaranteed to return useful information:
- *    - appVersion()
- *    - pluginDataPath()
- *
- * All setting related functions (persistent(), pluginSetting(), etc.) will
- * return empty variants for getters and will be no-ops for setters.
+ * In the case of proxy plugins, init() is called with a null IOrganizer.
  */
 class QDLLEXPORT IOrganizer: public QObject
 {
@@ -77,8 +68,11 @@ public:
   };
 
 public:
-
   virtual ~IOrganizer() {}
+
+  // the directory for plugin data, typically plugins/data
+  //
+  static QString getPluginDataPath();
 
   /**
    * @return create a new nexus interface class
@@ -444,5 +438,12 @@ public:
 };
 
 } // namespace MOBase
+
+
+namespace MOBase::details
+{
+  // called from MO
+  QDLLEXPORT void setPluginDataPath(const QString& s);
+}
 
 #endif // IMOINFO_H

@@ -50,8 +50,7 @@ public:
    *
    * Note that this function may never be called if no IOrganizer is available
    * at that time, such as when creating the first instance in MO. For proxy
-   * plugins, init() is always called, but the given IOrganizer will have
-   * reduced capabilities. See IOrganizer.
+   * plugins, init() is always called, but given a null IOrganizer
    *
    * Plugins will probably want to store the organizer pointer. It is guaranteed
    * to be valid as long as the plugin is loaded.

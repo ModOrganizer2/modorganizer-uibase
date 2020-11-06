@@ -18,8 +18,6 @@ class QStringList;
 
 namespace MOBase {
 
-// A game plugin.
-//
 // Game plugins can be loaded without an IOrganizer being available, in which
 // case registered() is called, but not init().
 //
