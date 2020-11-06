@@ -19,9 +19,9 @@ class QStringList;
 namespace MOBase {
 
 // Game plugins can be loaded without an IOrganizer being available, in which
-// case registered() is called, but not init().
+// case detectGame() is called, but not init().
 //
-// These functions may be called before init():
+// These functions may be called before init() (after detectGame()):
 //   - gameName()
 //   - isInstalled()
 //   - gameIcon()
@@ -30,6 +30,7 @@ namespace MOBase {
 //   - gameVariants()
 //   - looksValid()
 //   - see IPlugin::init() for more
+//
 //
 class IPluginGame : public QObject, public IPlugin
 {
@@ -84,6 +85,22 @@ public:
       return nullptr;
     }
   }
+
+  /**
+   * @brief Detect the game.
+   *
+   * This method is the first method called for game plugins (before init()). The
+   * following methods can be called after detectGame() but before init():
+   * - gameName()
+   * - isInstalled()
+   * - gameIcon()
+   * - gameDirectory()
+   * - dataDirectory()
+   * - gameVariants()
+   * - looksValid()
+   * - see IPlugin::init() for more
+   */
+  virtual void detectGame() = 0;
 
   /**
    * @brief initialize a profile for this game
