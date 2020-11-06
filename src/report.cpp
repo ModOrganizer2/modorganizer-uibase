@@ -58,7 +58,7 @@ TaskDialogButton::TaskDialogButton(QString t, QMessageBox::StandardButton b)
 TaskDialog::TaskDialog(QWidget* parent, QString title) :
   m_dialog(new QDialog(parent)), ui(new Ui::TaskDialog),
   m_title(std::move(title)), m_icon(QMessageBox::NoIcon),
-  m_result(QMessageBox::Cancel),
+  m_result(QMessageBox::Cancel), m_width(-1),
   m_rememberCheck(nullptr), m_rememberCombo(nullptr)
 {
   ui->setupUi(m_dialog.get());
@@ -109,6 +109,19 @@ TaskDialog& TaskDialog::remember(const QString& action, const QString& file)
   return *this;
 }
 
+void TaskDialog::addContent(QWidget* w)
+{
+  auto* ly = static_cast<QVBoxLayout*>(ui->contentPanel->layout());
+
+  // add before spacer
+  ly->insertWidget(ly->count() - 1, w);
+}
+
+void TaskDialog::setWidth(int w)
+{
+  m_width = w;
+}
+
 QMessageBox::StandardButton TaskDialog::exec()
 {
   const auto b = checkMemory();
@@ -122,7 +135,12 @@ QMessageBox::StandardButton TaskDialog::exec()
   setButtons();
   setDetails();
 
-  ui->topPanel->setMinimumWidth(400);
+  if (m_width >= 0) {
+    ui->topPanel->setMinimumWidth(m_width);
+  } else {
+    ui->topPanel->setMinimumWidth(400);
+  }
+
   m_dialog->adjustSize();
 
   if (m_dialog->exec() != QDialog::Accepted) {
@@ -265,7 +283,9 @@ void TaskDialog::setWidgets()
 {
   ui->main->setText(m_main);
   setFontPercent(ui->main, 1.5);
+
   ui->content->setText(m_content);
+  ui->content->setVisible(!m_content.isEmpty());
 
   auto icon = standardIcon(m_icon);
 

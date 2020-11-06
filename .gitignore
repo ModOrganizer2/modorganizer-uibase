@@ -3,3 +3,4 @@ CMakeLists.txt.user
 /msbuild.log
 /*std*.log
 /*build
+/src/uibasetests_en.ts

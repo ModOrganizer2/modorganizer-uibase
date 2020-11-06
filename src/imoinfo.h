@@ -45,9 +45,17 @@ class IPluginGame;
 /**
  * @brief Interface to class that provides information about the running session
  *        of Mod Organizer to be used by plugins
+ *
+ * When MO requires plugins but does not have a valid instance loaded (such as
+ * on first start in the instance creation dialog), init() will not be called at
+ * all, except for proxy plugins.
+ *
+ * In the case of proxy plugins, init() is called with a null IOrganizer.
  */
-class QDLLEXPORT IOrganizer: public QObject {
+class QDLLEXPORT IOrganizer: public QObject
+{
   Q_OBJECT
+
 public:
 
   /**
@@ -60,8 +68,11 @@ public:
   };
 
 public:
-
   virtual ~IOrganizer() {}
+
+  // the directory for plugin data, typically plugins/data
+  //
+  static QString getPluginDataPath();
 
   /**
    * @return create a new nexus interface class
@@ -109,7 +120,7 @@ public:
    * @return an interface that can be used to modify the mod. nullptr if the user canceled
    * @note a popup asking the user to merge, rename or replace the mod is displayed if the mod already exists.
    *       That has to happen on the main thread and MO2 will deadlock if it happens on any other.
-   *       If this needs to be called from another thread, use "getMod" to verify the mod-name is unused first
+   *       If this needs to be called from another thread, use IModList::getMod() to verify the mod-name is unused first
    */
   virtual IModInterface *createMod(GuessedValue<QString> &name) = 0;
 
@@ -307,7 +318,7 @@ public:
       HANDLE handle, LPDWORD exitCode = nullptr) const = 0;
 
   /**
-   * @brief Refresh the internal mods file structure from disk. This includes the mod list, the plugin  
+   * @brief Refresh the internal mods file structure from disk. This includes the mod list, the plugin
    *     list, data tab and other smaller things like problems button (same as pressing F5).
    *
    * @note The main part of the refresh of the mods file strcuture, modlist and pluginlist is done
@@ -427,5 +438,12 @@ public:
 };
 
 } // namespace MOBase
+
+
+namespace MOBase::details
+{
+  // called from MO
+  QDLLEXPORT void setPluginDataPath(const QString& s);
+}
 
 #endif // IMOINFO_H

@@ -33,6 +33,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 #include <QTextCodec>
 #include <QtDebug>
 #include <QUuid>
+#include <QCollator>
 #include <QtWinExtras/QtWin>
 #define WIN32_LEAN_AND_MEAN
 #include <Windows.h>
@@ -147,7 +148,9 @@ static DWORD TranslateError(int error)
 }
 
 
-static bool shellOp(const QStringList &sourceNames, const QStringList &destinationNames, QWidget *dialog, UINT operation, bool yesToAll)
+static bool shellOp(
+  const QStringList &sourceNames, const QStringList &destinationNames,
+  QWidget *dialog, UINT operation, bool yesToAll, bool silent=false)
 {
   std::vector<wchar_t> fromBuffer;
   std::vector<wchar_t> toBuffer;
@@ -208,6 +211,10 @@ static bool shellOp(const QStringList &sourceNames, const QStringList &destinati
     if (destinationNames.count() == sourceNames.count()) {
       op.fFlags |= FOF_MULTIDESTFILES;
     }
+  }
+
+  if (silent) {
+    op.fFlags |= FOF_NO_UI;
   }
 
   int res = ::SHFileOperationW(&op);
@@ -503,12 +510,48 @@ Result Delete(const QFileInfo& path)
 
 Result Rename(const QFileInfo& src, const QFileInfo& dest)
 {
+  return Rename(src, dest, true);
+}
+
+Result Rename(const QFileInfo& src, const QFileInfo& dest, bool copyAllowed)
+{
   const auto wsrc = toUNC(src);
   const auto wdest = toUNC(dest);
 
-  if (!::MoveFileEx(wsrc.c_str(), wdest.c_str(), MOVEFILE_COPY_ALLOWED)) {
+  DWORD flags = 0;
+
+  if (copyAllowed) {
+    flags |= MOVEFILE_COPY_ALLOWED;
+  }
+
+  if (!::MoveFileEx(wsrc.c_str(), wdest.c_str(), flags)) {
     const auto e = ::GetLastError();
     return Result::makeFailure(e);
+  }
+
+  return Result::makeSuccess();
+}
+
+Result CreateDirectories(const QDir& dir)
+{
+  const DWORD e = static_cast<DWORD>(
+    ::SHCreateDirectory(0, dir.path().toStdWString().c_str()));
+
+  if (e != ERROR_SUCCESS) {
+    return Result::makeFailure(
+      e, QString::fromStdWString(formatSystemMessage(e)));
+  }
+
+  return Result::makeSuccess();
+}
+
+Result DeleteDirectoryRecursive(const QDir& dir)
+{
+  if (!shellOp({dir.path()}, QStringList(), nullptr, FO_DELETE, true)) {
+    const auto e = GetLastError();
+
+    return Result::makeFailure(
+      e, QString::fromStdWString(formatSystemMessage(e)));
   }
 
   return Result::makeSuccess();
@@ -607,6 +650,33 @@ QString ToString(const SYSTEMTIME &time)
   GetDateFormatA(LOCALE_USER_DEFAULT, LOCALE_USE_CP_ACP, &time, nullptr, dateBuffer, size);
   GetTimeFormatA(LOCALE_USER_DEFAULT, LOCALE_USE_CP_ACP, &time, nullptr, timeBuffer, size);
   return QString::fromLocal8Bit(dateBuffer) + " " + QString::fromLocal8Bit(timeBuffer);
+}
+
+static int naturalCompareI(const QString& a, const QString& b)
+{
+  static QCollator c = []{
+    QCollator temp;
+    temp.setNumericMode(true);
+    temp.setCaseSensitivity(Qt::CaseInsensitive);
+    return temp;
+  }();
+
+  return c.compare(a, b);
+}
+
+int naturalCompare(const QString& a, const QString& b, Qt::CaseSensitivity cs)
+{
+  if (cs == Qt::CaseInsensitive) {
+    return naturalCompareI(a, b);
+  }
+
+  static QCollator c = []{
+    QCollator temp;
+    temp.setNumericMode(true);
+    return temp;
+  }();
+
+  return c.compare(a, b);
 }
 
 bool fixDirectoryName(QString &name)
@@ -894,10 +964,11 @@ QString localizedSize(
   constexpr unsigned long long OneTB = 1024ull * 1024 * 1024 * 1024;
 
   auto makeNum = [&](int factor) {
-    const double n = bytes / std::pow(1024.0, factor);
+    const double n = static_cast<double>(bytes) / std::pow(1024.0, factor);
 
     // avoids rounding something like "1.999" to "2.00 KB"
-    const double truncated = static_cast<unsigned long long>(n * 100) / 100.0;
+    const double truncated =
+      static_cast<double>(static_cast<unsigned long long>(n * 100)) / 100.0;
 
     return QString().setNum(truncated, 'f', 2);
   };
