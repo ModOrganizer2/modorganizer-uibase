@@ -66,6 +66,9 @@ public:
   TaskDialog& button(TaskDialogButton b);
   TaskDialog& remember(const QString& action, const QString& file={});
 
+  void addContent(QWidget* w);
+  void setWidth(int w);
+
   QMessageBox::StandardButton exec();
 
 private:
@@ -76,6 +79,7 @@ private:
   std::vector<TaskDialogButton> m_buttons;
   QMessageBox::StandardButton m_result;
   std::unique_ptr<ExpanderWidget> m_expander;
+  int m_width;
 
   QString m_rememberAction, m_rememberFile;
   QCheckBox* m_rememberCheck;

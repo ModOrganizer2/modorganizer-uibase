@@ -267,6 +267,10 @@ namespace shell
   // across volumes
   //
   QDLLEXPORT Result Rename(const QFileInfo& src, const QFileInfo& dest);
+  QDLLEXPORT Result Rename(const QFileInfo& src, const QFileInfo& dest, bool copyAllowed);
+
+  QDLLEXPORT Result CreateDirectories(const QDir& dir);
+  QDLLEXPORT Result DeleteDirectoryRecursive(const QDir& dir);
 }
 
 /**
@@ -398,6 +402,34 @@ QDLLEXPORT QString ToQString(const std::wstring &source);
  * @return string representation of the time object
  **/
 QDLLEXPORT QString ToString(const SYSTEMTIME &time);
+
+
+// three-way compare for natural sorting (case insensitive default, 10 comes
+// after 2)
+//
+QDLLEXPORT int naturalCompare(
+  const QString& a, const QString& b,
+  Qt::CaseSensitivity cs=Qt::CaseInsensitive);
+
+
+// calls naturalCompare()
+//
+class QDLLEXPORT NaturalSort
+{
+public:
+  NaturalSort(Qt::CaseSensitivity cs=Qt::CaseInsensitive)
+    : m_cs(cs)
+  {
+  }
+
+  bool operator()(const QString& a, const QString& b)
+  {
+    return (naturalCompare(a, b, m_cs) < 0);
+  }
+
+private:
+  Qt::CaseSensitivity m_cs;
+};
 
 /**
  * throws on failure

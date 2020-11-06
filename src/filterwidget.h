@@ -75,11 +75,19 @@ public:
   void setFilteringEnabled(bool b);
   bool filteringEnabled() const;
 
-  FilterWidgetProxyModel* proxyModel();
+  void setFilteredBorder(bool b);
+  bool filteredBorder() const;
 
-  QModelIndex map(const QModelIndex& index);
+  FilterWidgetProxyModel* proxyModel();
+  QAbstractItemModel* sourceModel();
+
+  QModelIndex mapFromSource(const QModelIndex& index) const;
+  QModelIndex mapToSource(const QModelIndex& index) const;
+  QItemSelection mapSelectionFromSource(const QItemSelection& sel) const;
+  QItemSelection mapSelectionToSource(const QItemSelection& sel) const;
 
   bool matches(predFun pred) const;
+  bool matches(const QString& s) const;
 
 signals:
   void aboutToChange(const QString& oldFilter, const QString& newFilter);
@@ -102,6 +110,7 @@ private:
   bool m_useSourceSort;
   int m_filterColumn;
   bool m_filteringEnabled;
+  bool m_filteredBorder;
 
   void hookEdit();
   void unhookEdit();

@@ -18,12 +18,24 @@ class QStringList;
 
 namespace MOBase {
 
-
-class IPluginGame : public QObject, public IPlugin {
+// Game plugins can be loaded without an IOrganizer being available, in which
+// case registered() is called, but not init().
+//
+// These functions may be called before init():
+//   - gameName()
+//   - isInstalled()
+//   - gameIcon()
+//   - gameDirectory()
+//   - dataDirectory()
+//   - gameVariants()
+//   - looksValid()
+//   - see IPlugin::init() for more
+//
+class IPluginGame : public QObject, public IPlugin
+{
   Q_INTERFACES(IPlugin)
 
 public:
-
   enum class LoadOrderMechanism {
     FileTime,
     PluginsTxt
@@ -42,11 +54,13 @@ public:
     SAVEGAMES       = 0x04,
     PREFER_DEFAULTS = 0x08
   };
+
   Q_DECLARE_FLAGS(ProfileSettings, ProfileSetting)
 
 public:
-
   /**
+   * this function may be called before init()
+   *
    * @return name of the game
    */
   virtual QString gameName() const = 0;
@@ -92,21 +106,29 @@ public:
   virtual QString savegameSEExtension() const = 0;
 
   /**
+   * this function may be called before init()
+   *
    * @return true if this game has been discovered as installed, false otherwise
    */
   virtual bool isInstalled() const = 0;
 
   /**
+   * this function may be called before init()
+   *
    * @return an icon for this game
    */
   virtual QIcon gameIcon() const = 0;
 
   /**
+   * this function may be called before init()
+   *
    * @return directory to the game installation
    */
   virtual QDir gameDirectory() const = 0;
 
   /**
+   * this function may be called before init()
+   *
    * @return directory where the game expects to find its data files
    */
   virtual QDir dataDirectory() const = 0;
@@ -152,6 +174,8 @@ public:
   virtual QStringList primaryPlugins() const = 0;
 
   /**
+   * this function may be called before init()
+   *
    * @return list of game variants
    * @note if there are multiple variants of a game (and the variants make a difference to the
    *       plugin) like a regular one and a GOTY-edition the plugin can return a list of them and
@@ -247,6 +271,8 @@ public:
   virtual int nexusGameID() const = 0;
 
   /**
+   * this function may be called before init()
+   *
    * @brief See if the supplied directory looks like a valid game
    */
   virtual bool looksValid(QDir const &) const = 0;
