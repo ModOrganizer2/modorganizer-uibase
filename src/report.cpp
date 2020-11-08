@@ -143,6 +143,13 @@ QMessageBox::StandardButton TaskDialog::exec()
 
   m_dialog->adjustSize();
 
+  if (!m_dialog->parent()) {
+    // no parent, make sure it's shown on top
+    m_dialog->show();
+    m_dialog->activateWindow();
+    m_dialog->raise();
+  }
+
   if (m_dialog->exec() != QDialog::Accepted) {
     return QMessageBox::Cancel;
   }
