@@ -583,9 +583,13 @@ private:
 class QDLLEXPORT TimeThis
 {
 public:
-  TimeThis(QString what={});
+  TimeThis(const QString& what={});
   ~TimeThis();
 
+  TimeThis(const TimeThis&) = delete;
+  TimeThis& operator=(const TimeThis&) = delete;
+
+  void start(const QString& what={});
   void stop();
 
 private:
