@@ -580,16 +580,31 @@ private:
 };
 
 
+// remembers the time in the constructor, logs the time elapsed in the
+// destructor
+//
 class QDLLEXPORT TimeThis
 {
 public:
+  // calls start()
+  //
   TimeThis(const QString& what={});
+
+  // calls stop()
+  //
   ~TimeThis();
 
   TimeThis(const TimeThis&) = delete;
   TimeThis& operator=(const TimeThis&) = delete;
 
+  // remembers the current time and the given string; if there is currently
+  // a timing active, calls stop() to log it first
+  //
   void start(const QString& what={});
+
+  // logs the time elapsed since start() in the form of "timing: what X ms";
+  // no-op if start() wasn't called
+  //
   void stop();
 
 private:
