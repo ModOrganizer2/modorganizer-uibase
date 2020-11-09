@@ -1045,14 +1045,24 @@ QDLLEXPORT void localizedByteSizeTests()
 }
 
 
-TimeThis::TimeThis(QString what)
-  : m_what(std::move(what)), m_start(Clock::now()), m_running(true)
+TimeThis::TimeThis(const QString& what)
+  : m_running(false)
 {
+  start(what);
 }
 
 TimeThis::~TimeThis()
 {
   stop();
+}
+
+void TimeThis::start(const QString& what)
+{
+  stop();
+
+  m_what = what;
+  m_start = Clock::now();
+  m_running = true;
 }
 
 void TimeThis::stop()
