@@ -138,8 +138,18 @@ public:
   virtual void modDataChanged(IModInterface *mod) = 0;
 
   /**
-   * @brief retrieve the specified setting for a plugin
-   * @param pluginName name of the plugin for which to retrieve a setting. This should always be IPlugin::name() unless you have a really good reason
+   * @brief Check if a plugin is enabled.
+   *
+   * @param pluginName Name of the plugin to check.
+   *
+   * @return true if the plugin is enabled, false otherwise.
+   */
+  virtual bool isPluginEnabled(QString const& pluginName) const = 0;
+
+  /**
+   * @brief Retrieve the specified setting for a plugin.
+   *
+   * @param pluginName Name of the plugin for which to retrieve a setting. This should always be IPlugin::name() unless you have a really good reason
    *                   to access settings of another mod. You can not access settings for a plugin that isn't installed.
    * @param key identifier of the setting
    * @return the setting
