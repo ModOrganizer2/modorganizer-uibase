@@ -5,6 +5,8 @@
 
 #include <QStringList>
 
+#include "dllimport.h"
+
 namespace MOBase {
 
 class IOrganizer;
@@ -86,16 +88,16 @@ public:
 
 private:
 
-  DiagnoseRequirement(IPluginDiagnose* diagnose);
+  DiagnoseRequirement(const IPluginDiagnose* diagnose);
 
-  IPluginDiagnose* m_Diagnose;
+  const IPluginDiagnose* m_Diagnose;
 };
 
 
 /**
  * Factory for plugin requirements.
  */
-class PluginRequirementFactory {
+class QDLLEXPORT PluginRequirementFactory {
 public:
 
   /**
@@ -107,6 +109,9 @@ public:
    * @param pluginNames Name of the plugin required.
    */
   static PluginRequirement* pluginDependency(QStringList const& pluginNames);
+  static PluginRequirement* pluginDependency(QString const& pluginName) {
+    return pluginDependency(QStringList{ pluginName });
+  }
 
   /**
    * @brief Create a new plugin dependency. The requirement is met if one of the
@@ -119,13 +124,16 @@ public:
    * @note This differ from makePluginDependency only for the message.
    */
   static PluginRequirement* gameDependency(QStringList const& pluginGameNames);
+  static PluginRequirement* gameDependency(QString const& pluginGameName) {
+    return gameDependency(QStringList{ pluginGameName });
+  }
 
   /**
    * @brief Create a requirement from the given diagnose plugin.
    *
    * @param diagnose The diagnose plugin.
    */
-  static PluginRequirement* diagnose(IPluginDiagnose *diagnose);
+  static PluginRequirement* diagnose(const IPluginDiagnose *diagnose);
 
   /**
    * @brief Create a generic requirement with the given checker and message.

@@ -18,8 +18,8 @@ std::vector<unsigned int> PluginDependencyRequirement::problems(IOrganizer* o) c
     if (o->isPluginEnabled(pluginName)) {
       return {};
     }
-    return { 0 };
   }
+  return { 0 };
 }
 
 QString PluginDependencyRequirement::description(unsigned int) const
@@ -38,7 +38,7 @@ QString GameDependencyRequirement::description(unsigned int) const
 
 // Diagnose requirements
 
-DiagnoseRequirement::DiagnoseRequirement(IPluginDiagnose *diagnose) :
+DiagnoseRequirement::DiagnoseRequirement(const IPluginDiagnose *diagnose) :
   m_Diagnose(diagnose) { }
 
 std::vector<unsigned int> DiagnoseRequirement::problems(IOrganizer*) const
@@ -86,7 +86,7 @@ PluginRequirement* PluginRequirementFactory::gameDependency(QStringList const& p
   return new GameDependencyRequirement(pluginGameNames);
 }
 
-PluginRequirement* PluginRequirementFactory::diagnose(IPluginDiagnose* diagnose)
+PluginRequirement* PluginRequirementFactory::diagnose(const IPluginDiagnose* diagnose)
 {
   return new DiagnoseRequirement(diagnose);
 }

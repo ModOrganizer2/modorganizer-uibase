@@ -40,6 +40,7 @@ class IModInterface;
 class IModRepositoryBridge;
 class IDownloadManager;
 class IPluginList;
+class IPlugin;
 class IPluginGame;
 
 /**
@@ -136,6 +137,15 @@ public:
    * @param the mod that has changed
    */
   virtual void modDataChanged(IModInterface *mod) = 0;
+
+  /**
+   * @brief Check if a plugin is enabled.
+   *
+   * @param pluginName Plugin to check.
+   *
+   * @return true if the plugin is enabled, false otherwise.
+   */
+  virtual bool isPluginEnabled(IPlugin* plugin) const = 0;
 
   /**
    * @brief Check if a plugin is enabled.

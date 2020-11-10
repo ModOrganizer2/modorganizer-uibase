@@ -61,7 +61,7 @@ public:
 public:
 
   // Game plugin should not have requirements:
-  QList<PluginRequirement> requirements() const final override { return {}; }
+  QList<PluginRequirement*> requirements() const final override { return {}; }
 
   /**
    * this function may be called before init()
