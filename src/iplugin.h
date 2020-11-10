@@ -26,6 +26,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 #include "versioninfo.h"
 #include "imoinfo.h"
 #include "pluginsetting.h"
+#include "pluginrequirements.h"
 #include <QString>
 #include <QObject>
 
@@ -33,6 +34,11 @@ namespace MOBase {
 
 class IPlugin
 {
+public:
+
+  // For easier access in child class:
+  using Requirements = PluginRequirementFactory;
+
 public:
   virtual ~IPlugin() {}
 
@@ -88,6 +94,16 @@ public:
   virtual IPlugin* master() const { return nullptr; }
 
   /**
+   * @brief Retrieve the requirements for the plugins.
+   *
+   * This method is called right after init() and the ownership the requirements is
+   * transferred to MO2 so plugins should not take care of releasing the requirements.
+   *
+   * @return the requirements for this plugin.
+   */
+  virtual QList<PluginRequirement*> requirements() const { return {}; }
+
+  /**
    * @return the author of this plugin.
    */
   virtual QString author() const = 0;
@@ -101,14 +117,6 @@ public:
    * @return the version of the plugin. This can be used to detect outdated versions of plugins.
    */
   virtual VersionInfo version() const = 0;
-
-  /**
-   * @brief Called to test if this plugin is active. Inactive plugins can still be configured
-   *      and report problems but otherwise have no effect.
-   *
-   * @return true if this plugin is active, false otherwise.
-   */
-  virtual bool isActive() const = 0;
 
   /**
    * @return the list of configurable settings for this plugin (in the user interface). The list may be
