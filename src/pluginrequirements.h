@@ -52,6 +52,11 @@ public:
   std::vector<unsigned int> problems(IOrganizer*) const override;
   QString description(unsigned int) const override;
 
+  /**
+   * @return the list of plugin names in this dependency requirement.
+   */
+  QStringList pluginNames() const { return m_PluginNames; }
+
 protected:
   PluginDependencyRequirement(QStringList const& pluginNames);
 
@@ -66,8 +71,15 @@ class GameDependencyRequirement : public IPluginRequirement {
 
   friend class PluginRequirementFactory;
 
+public:
+
   std::vector<unsigned int> problems(IOrganizer*) const override;
   QString description(unsigned int) const override;
+
+  /**
+   * @return the list of game names in this dependency requirement.
+   */
+  QStringList gameNames() const { return m_GameNames; }
 
 protected:
   GameDependencyRequirement(QStringList const& gameNames);

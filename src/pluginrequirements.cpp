@@ -25,9 +25,16 @@ std::vector<unsigned int> PluginDependencyRequirement::problems(IOrganizer* o) c
 
 QString PluginDependencyRequirement::description(unsigned int) const
 {
-  return QCoreApplication::translate(
-    "PluginRequirement",
-    "One of the following plugins must be enabled: %s").arg(m_PluginNames.join(", "));
+  if (m_PluginNames.size() > 1) {
+    return QCoreApplication::translate(
+      "PluginRequirement",
+      "One of the following plugins must be enabled: %1.").arg(m_PluginNames.join(", "));
+  }
+  else {
+    return QCoreApplication::translate(
+      "PluginRequirement",
+      "This plugin can only be enabled if the '%1' plugin is installed and enabled.").arg(m_PluginNames[0]);
+  }
 }
 
 GameDependencyRequirement::GameDependencyRequirement(QStringList const& gameNames) :
@@ -53,7 +60,8 @@ QString GameDependencyRequirement::description(unsigned int) const
 {
   return QCoreApplication::translate(
     "PluginRequirement",
-    "This plugin can only be enabled for the following games: %s").arg(m_GameNames.join(", "));
+    "This plugin can only be enabled for the following game(s): %1.", "",
+    m_GameNames.size()).arg(m_GameNames.join(", "));
 }
 
 // Diagnose requirements
