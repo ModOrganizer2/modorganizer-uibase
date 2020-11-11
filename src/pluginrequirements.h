@@ -2,6 +2,7 @@
 #define PLUGINREQUIREMENTS_H
 
 #include <functional>
+#include <optional>
 
 #include <QStringList>
 
@@ -18,23 +19,41 @@ class IPluginDiagnose;
 class IPluginRequirement {
 public:
 
+  class Problem {
+  public:
+
+    /**
+     * @return a short description for the problem.
+     */
+    QString shortDescription() const { return m_ShortDescription; }
+
+    /**
+     * @return a long description for the problem.
+     */
+    QString longDescription() const { return m_LongDescription; }
+
+    /**
+     *
+     */
+    Problem(QString shortDescription, QString longDescription = "") :
+      m_ShortDescription(shortDescription),
+      m_LongDescription(longDescription.isEmpty() ? shortDescription : longDescription) { }
+
+  private:
+    QString m_ShortDescription, m_LongDescription;
+
+  };
+
+public:
+
   /**
    * @brief Check if the requirements is met.
    *
    * @param organizer The organizer proxy.
    *
-   * @return the list of problem IDs.
+   * @return a problem if the requirement is not met, otherwise an empty optional.
    */
-  virtual std::vector<unsigned int> problems(IOrganizer* organizer) const = 0;
-
-  /**
-   * @brief Return a for the given problem.
-   *
-   * @param id The ID of the problem.
-   *
-   * @return a message indicating why the requirement was not met.
-   */
-  virtual QString description(unsigned int id) const = 0;
+  virtual std::optional<Problem> check(IOrganizer* organizer) const = 0;
 
   virtual ~IPluginRequirement() { }
 };
@@ -49,8 +68,7 @@ class PluginDependencyRequirement : public IPluginRequirement {
 
 public:
 
-  std::vector<unsigned int> problems(IOrganizer*) const override;
-  QString description(unsigned int) const override;
+  virtual std::optional<Problem> check(IOrganizer* organizer) const;
 
   /**
    * @return the list of plugin names in this dependency requirement.
@@ -59,7 +77,7 @@ public:
 
 protected:
   PluginDependencyRequirement(QStringList const& pluginNames);
-
+  QString message() const;
   QStringList m_PluginNames;
 };
 
@@ -73,8 +91,7 @@ class GameDependencyRequirement : public IPluginRequirement {
 
 public:
 
-  std::vector<unsigned int> problems(IOrganizer*) const override;
-  QString description(unsigned int) const override;
+  virtual std::optional<Problem> check(IOrganizer* organizer) const;
 
   /**
    * @return the list of game names in this dependency requirement.
@@ -83,7 +100,7 @@ public:
 
 protected:
   GameDependencyRequirement(QStringList const& gameNames);
-
+  QString message() const;
   QStringList m_GameNames;
 };
 
@@ -97,13 +114,10 @@ class DiagnoseRequirement : public IPluginRequirement {
 
 public:
 
-  std::vector<unsigned int> problems(IOrganizer*) const override;
-  QString description(unsigned int) const override;
+  virtual std::optional<Problem> check(IOrganizer* organizer) const;
 
 private:
-
   DiagnoseRequirement(const IPluginDiagnose* diagnose);
-
   const IPluginDiagnose* m_Diagnose;
 };
 

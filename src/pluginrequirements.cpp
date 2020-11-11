@@ -13,17 +13,17 @@ using namespace MOBase;
 PluginDependencyRequirement::PluginDependencyRequirement(QStringList const& pluginNames) :
   m_PluginNames(pluginNames) { }
 
-std::vector<unsigned int> PluginDependencyRequirement::problems(IOrganizer* o) const
+std::optional<IPluginRequirement::Problem> PluginDependencyRequirement::check(IOrganizer* o) const
 {
   for (auto const& pluginName : m_PluginNames) {
     if (o->isPluginEnabled(pluginName)) {
       return {};
     }
   }
-  return { 0 };
+  return Problem(message());
 }
 
-QString PluginDependencyRequirement::description(unsigned int) const
+QString PluginDependencyRequirement::message() const
 {
   if (m_PluginNames.size() > 1) {
     return QCoreApplication::translate(
@@ -40,11 +40,11 @@ QString PluginDependencyRequirement::description(unsigned int) const
 GameDependencyRequirement::GameDependencyRequirement(QStringList const& gameNames) :
   m_GameNames(gameNames) { }
 
-std::vector<unsigned int> GameDependencyRequirement::problems(IOrganizer* o) const
+std::optional<IPluginRequirement::Problem> GameDependencyRequirement::check(IOrganizer* o) const
 {
   auto* game = o->managedGame();
   if (!game) {
-    return { 0 };
+    return Problem(message());
   }
 
   QString gameName = game->gameName();
@@ -53,10 +53,10 @@ std::vector<unsigned int> GameDependencyRequirement::problems(IOrganizer* o) con
       return {};
     }
   }
-  return { 0 };
+  return Problem(message());
 }
 
-QString GameDependencyRequirement::description(unsigned int) const
+QString GameDependencyRequirement::message() const
 {
   return QCoreApplication::translate(
     "PluginRequirement",
@@ -69,14 +69,21 @@ QString GameDependencyRequirement::description(unsigned int) const
 DiagnoseRequirement::DiagnoseRequirement(const IPluginDiagnose *diagnose) :
   m_Diagnose(diagnose) { }
 
-std::vector<unsigned int> DiagnoseRequirement::problems(IOrganizer*) const
+std::optional<IPluginRequirement::Problem>  DiagnoseRequirement::check(IOrganizer*) const
 {
-  return m_Diagnose->activeProblems();
-}
+  auto activeProblems = m_Diagnose->activeProblems();
 
-QString DiagnoseRequirement::description(unsigned int id) const
-{
-  return m_Diagnose->shortDescription(id);
+  if (activeProblems.empty()) {
+    return {};
+  }
+
+  QStringList shortDescriptions, longDescriptions;
+  for (auto i : activeProblems) {
+    shortDescriptions.append(m_Diagnose->shortDescription(i));
+    longDescriptions.append(m_Diagnose->fullDescription(i));
+  }
+
+  return Problem(shortDescriptions.join("\n"), longDescriptions.join("\n"));
 }
 
 // Basic requirements
@@ -85,15 +92,11 @@ public:
   BasicPluginRequirement(std::function<bool(IOrganizer*)> const& checker, QString const description) :
     m_Checker(checker), m_Description(description) { }
 
-  std::vector<unsigned int> problems(IOrganizer* o) const {
+  std::optional<Problem> check(IOrganizer* o) const {
     if (m_Checker(o)) {
       return {};
     }
-    return { 0 };
-  }
-
-  QString description(unsigned int) const {
-    return m_Description;
+    return Problem(m_Description);
   }
 
 private:
