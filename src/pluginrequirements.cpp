@@ -3,6 +3,7 @@
 #include <QCoreApplication>
 
 #include "imoinfo.h"
+#include "iplugingame.h"
 #include "iplugindiagnose.h"
 
 using namespace MOBase;
@@ -29,11 +30,30 @@ QString PluginDependencyRequirement::description(unsigned int) const
     "One of the following plugins must be enabled: %s").arg(m_PluginNames.join(", "));
 }
 
+GameDependencyRequirement::GameDependencyRequirement(QStringList const& gameNames) :
+  m_GameNames(gameNames) { }
+
+std::vector<unsigned int> GameDependencyRequirement::problems(IOrganizer* o) const
+{
+  auto* game = o->managedGame();
+  if (!game) {
+    return { 0 };
+  }
+
+  QString gameName = game->gameName();
+  for (auto const& pluginName : m_GameNames) {
+    if (pluginName.compare(gameName, Qt::CaseInsensitive) == 0) {
+      return {};
+    }
+  }
+  return { 0 };
+}
+
 QString GameDependencyRequirement::description(unsigned int) const
 {
   return QCoreApplication::translate(
     "PluginRequirement",
-    "This plugin can only be enabled for the following games: %s").arg(m_PluginNames.join(", "));
+    "This plugin can only be enabled for the following games: %s").arg(m_GameNames.join(", "));
 }
 
 // Diagnose requirements
@@ -52,7 +72,7 @@ QString DiagnoseRequirement::description(unsigned int id) const
 }
 
 // Basic requirements
-class BasicPluginRequirement : public PluginRequirement {
+class BasicPluginRequirement : public IPluginRequirement {
 public:
   BasicPluginRequirement(std::function<bool(IOrganizer*)> const& checker, QString const description) :
     m_Checker(checker), m_Description(description) { }
@@ -76,22 +96,22 @@ private:
 
 // Factory
 
-PluginRequirement* PluginRequirementFactory::pluginDependency(QStringList const& pluginNames)
+IPluginRequirement* PluginRequirementFactory::pluginDependency(QStringList const& pluginNames)
 {
   return new PluginDependencyRequirement(pluginNames);
 }
 
-PluginRequirement* PluginRequirementFactory::gameDependency(QStringList const& pluginGameNames)
+IPluginRequirement* PluginRequirementFactory::gameDependency(QStringList const& pluginGameNames)
 {
   return new GameDependencyRequirement(pluginGameNames);
 }
 
-PluginRequirement* PluginRequirementFactory::diagnose(const IPluginDiagnose* diagnose)
+IPluginRequirement* PluginRequirementFactory::diagnose(const IPluginDiagnose* diagnose)
 {
   return new DiagnoseRequirement(diagnose);
 }
 
-PluginRequirement* PluginRequirementFactory::basic(std::function<bool(IOrganizer*)> const& checker, QString const description)
+IPluginRequirement* PluginRequirementFactory::basic(std::function<bool(IOrganizer*)> const& checker, QString const description)
 {
   return new BasicPluginRequirement(checker, description);
 }

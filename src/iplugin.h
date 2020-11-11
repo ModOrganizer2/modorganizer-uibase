@@ -101,7 +101,7 @@ public:
    *
    * @return the requirements for this plugin.
    */
-  virtual QList<PluginRequirement*> requirements() const { return {}; }
+  virtual QList<IPluginRequirement*> requirements() const { return {}; }
 
   /**
    * @return the author of this plugin.

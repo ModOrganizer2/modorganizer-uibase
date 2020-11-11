@@ -15,7 +15,7 @@ class IPluginDiagnose;
 /**
  * @brief The interface for plugin requirements.
  */
-class PluginRequirement {
+class IPluginRequirement {
 public:
 
   /**
@@ -36,14 +36,14 @@ public:
    */
   virtual QString description(unsigned int id) const = 0;
 
-  virtual ~PluginRequirement() { }
+  virtual ~IPluginRequirement() { }
 };
 
 /**
  * @brief Plugin dependency - The requirement is met if one of the
  *     given plugin is active.
  */
-class PluginDependencyRequirement : public PluginRequirement {
+class PluginDependencyRequirement : public IPluginRequirement {
 
   friend class PluginRequirementFactory;
 
@@ -62,22 +62,24 @@ protected:
  * @brief Game dependency - The requirement is met if the active game
  *     is one of the specified game.
  */
-class GameDependencyRequirement : public PluginDependencyRequirement {
+class GameDependencyRequirement : public IPluginRequirement {
 
   friend class PluginRequirementFactory;
 
-public:
+  std::vector<unsigned int> problems(IOrganizer*) const override;
   QString description(unsigned int) const override;
 
 protected:
-  using PluginDependencyRequirement::PluginDependencyRequirement;
+  GameDependencyRequirement(QStringList const& gameNames);
+
+  QStringList m_GameNames;
 };
 
 /**
  * @brief Diagnose dependency - This wrap a IPluginDiagnose into a plugin
  *     requirements.
  */
-class DiagnoseRequirement : public PluginRequirement {
+class DiagnoseRequirement : public IPluginRequirement {
 
   friend class PluginRequirementFactory;
 
@@ -108,24 +110,22 @@ public:
    *
    * @param pluginNames Name of the plugin required.
    */
-  static PluginRequirement* pluginDependency(QStringList const& pluginNames);
-  static PluginRequirement* pluginDependency(QString const& pluginName) {
+  static IPluginRequirement* pluginDependency(QStringList const& pluginNames);
+  static IPluginRequirement* pluginDependency(QString const& pluginName) {
     return pluginDependency(QStringList{ pluginName });
   }
 
   /**
-   * @brief Create a new plugin dependency. The requirement is met if one of the
-   *     given plugin is enabled.
+   * @brief Create a new plugin dependency. The requirement is met if the current
+   *     game plugin matches one of the given name.
    *
-   * If you want all plugins to be active, simply create multiple requirements.
-   *
-   * @param pluginGameNames Name of the plugin required.
+   * @param gameName Name of the game required.
    *
    * @note This differ from makePluginDependency only for the message.
    */
-  static PluginRequirement* gameDependency(QStringList const& pluginGameNames);
-  static PluginRequirement* gameDependency(QString const& pluginGameName) {
-    return gameDependency(QStringList{ pluginGameName });
+  static IPluginRequirement* gameDependency(QStringList const& gameNames);
+  static IPluginRequirement* gameDependency(QString const& gameName) {
+    return gameDependency(QStringList{ gameName });
   }
 
   /**
@@ -133,7 +133,7 @@ public:
    *
    * @param diagnose The diagnose plugin.
    */
-  static PluginRequirement* diagnose(const IPluginDiagnose *diagnose);
+  static IPluginRequirement* diagnose(const IPluginDiagnose *diagnose);
 
   /**
    * @brief Create a generic requirement with the given checker and message.
@@ -142,7 +142,7 @@ public:
    *     return true if the requirement is met).
    * @param description The description to show user if the requirement is not met.
    */
-  static PluginRequirement* basic(std::function<bool(IOrganizer*)> const& checker, QString const description);
+  static IPluginRequirement* basic(std::function<bool(IOrganizer*)> const& checker, QString const description);
 
 };
 
