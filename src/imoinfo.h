@@ -455,6 +455,42 @@ public:
    */
   virtual bool onPluginSettingChanged(std::function<void(QString const&, const QString& key, const QVariant&, const QVariant&)> const& func) = 0;
 
+  /**
+   * @brief Add a new callback to be called when a plugin is enabled.
+   *
+   * Parameters of the callback:
+   *   - The enabled plugin.
+   *
+   * @param func Function to be called when a plugin is enabled.
+   */
+  virtual bool onPluginEnabled(std::function<void(const IPlugin*)> const& func) = 0;
+
+  /**
+   * @brief Add a new callback to be called when the specified plugin is enabled.
+   *
+   * @param name Name of the plugin to watch.
+   * @param func Function to be called when a plugin is enabled.
+   */
+  virtual bool onPluginEnabled(const QString& pluginName, std::function<void()> const& func) = 0;
+
+  /**
+   * @brief Add a new callback to be called when a plugin is disabled.
+   *
+   * Parameters of the callback:
+   *   - The disabled plugin.
+   *
+   * @param func Function to be called when a plugin is disabled.
+   */
+  virtual bool onPluginDisabled(std::function<void(const IPlugin*)> const& func) = 0;
+
+  /**
+   * @brief Add a new callback to be called when the specified plugin is disabled.
+   *
+   * @param name Name of the plugin to watch.
+   * @param func Function to be called when a plugin is disabled.
+   */
+  virtual bool onPluginDisabled(const QString& pluginName, std::function<void()> const& func) = 0;
+
 };
 
 } // namespace MOBase
