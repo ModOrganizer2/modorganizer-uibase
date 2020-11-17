@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.16)
 
 project(uibase)
 set(project_type dll)
-set(create_translations OFF)
+set(create_translations ON)
 
 if(DEFINED DEPENDENCIES_DIR)
 	include(${DEPENDENCIES_DIR}/modorganizer_super/cmake_common/project.cmake)
