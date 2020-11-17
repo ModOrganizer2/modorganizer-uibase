@@ -107,6 +107,10 @@ protected:
 /**
  * @brief Diagnose dependency - This wrap a IPluginDiagnose into a plugin
  *     requirements.
+ *
+ * If the wrapped diagnose plugin reports a problem, the requirement fails
+ * and the associated message is the one from the diagnose plugin (or the
+ * list of messages if multiple problems were reported).
  */
 class DiagnoseRequirement : public IPluginRequirement {
 
