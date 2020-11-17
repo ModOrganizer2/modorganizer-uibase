@@ -26,13 +26,11 @@ std::optional<IPluginRequirement::Problem> PluginDependencyRequirement::check(IO
 QString PluginDependencyRequirement::message() const
 {
   if (m_PluginNames.size() > 1) {
-    return QCoreApplication::translate(
-      "PluginRequirement",
+    return QObject::tr(
       "One of the following plugins must be enabled: %1.").arg(m_PluginNames.join(", "));
   }
   else {
-    return QCoreApplication::translate(
-      "PluginRequirement",
+    return QObject::tr(
       "This plugin can only be enabled if the '%1' plugin is installed and enabled.").arg(m_PluginNames[0]);
   }
 }
@@ -58,8 +56,7 @@ std::optional<IPluginRequirement::Problem> GameDependencyRequirement::check(IOrg
 
 QString GameDependencyRequirement::message() const
 {
-  return QCoreApplication::translate(
-    "PluginRequirement",
+  return QObject::tr(
     "This plugin can only be enabled for the following game(s): %1.", "",
     m_GameNames.size()).arg(m_GameNames.join(", "));
 }
