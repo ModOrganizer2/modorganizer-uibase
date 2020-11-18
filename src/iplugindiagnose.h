@@ -94,6 +94,7 @@ public:
     return m_OnInvalidated.connect(callback);
   }
 
+  virtual ~IPluginDiagnose() { }
 
 protected:
 

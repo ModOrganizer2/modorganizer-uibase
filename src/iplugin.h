@@ -26,6 +26,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 #include "versioninfo.h"
 #include "imoinfo.h"
 #include "pluginsetting.h"
+#include "pluginrequirements.h"
 #include <QString>
 #include <QObject>
 
@@ -33,6 +34,11 @@ namespace MOBase {
 
 class IPlugin
 {
+public:
+
+  // For easier access in child class:
+  using Requirements = PluginRequirementFactory;
+
 public:
   virtual ~IPlugin() {}
 
@@ -74,7 +80,7 @@ public:
   virtual QString localizedName() const { return name(); }
 
   /**
-   * @brief Retrieve the master plugin of this plugin.
+   * @brief Retrieve the name of the master plugin of this plugin.
    *
    * It is often easier to implement a functionality as multiple plugins in MO2, but ship the
    * plugins together, e.g. as a Python module or using `createFunctions()`. In this case, having
@@ -82,10 +88,20 @@ public:
    * linked and should also be displayed together in the UI. If MO2 ever implements automatic
    * updates for plugins, the `master()` plugin will also be used for this purpose.
    *
-   * @return the master plugin of this plugin, or a null pointer if this plugin does not have
+   * @return the name of the master plugin of this plugin, or an empty string if this plugin does not have
    *     a master.
    */
-  virtual IPlugin* master() const { return nullptr; }
+  virtual QString master() const { return ""; }
+
+  /**
+   * @brief Retrieve the requirements for the plugins.
+   *
+   * This method is called right after init() and the ownership the requirements is
+   * transferred to MO2 so plugins should not take care of releasing the requirements.
+   *
+   * @return the requirements for this plugin.
+   */
+  virtual QList<IPluginRequirement*> requirements() const { return {}; }
 
   /**
    * @return the author of this plugin.
@@ -101,14 +117,6 @@ public:
    * @return the version of the plugin. This can be used to detect outdated versions of plugins.
    */
   virtual VersionInfo version() const = 0;
-
-  /**
-   * @brief Called to test if this plugin is active. Inactive plugins can still be configured
-   *      and report problems but otherwise have no effect.
-   *
-   * @return true if this plugin is active, false otherwise.
-   */
-  virtual bool isActive() const = 0;
 
   /**
    * @return the list of configurable settings for this plugin (in the user interface). The list may be

@@ -40,6 +40,7 @@ class IModInterface;
 class IModRepositoryBridge;
 class IDownloadManager;
 class IPluginList;
+class IPlugin;
 class IPluginGame;
 
 /**
@@ -138,8 +139,27 @@ public:
   virtual void modDataChanged(IModInterface *mod) = 0;
 
   /**
-   * @brief retrieve the specified setting for a plugin
-   * @param pluginName name of the plugin for which to retrieve a setting. This should always be IPlugin::name() unless you have a really good reason
+   * @brief Check if a plugin is enabled.
+   *
+   * @param pluginName Plugin to check.
+   *
+   * @return true if the plugin is enabled, false otherwise.
+   */
+  virtual bool isPluginEnabled(IPlugin* plugin) const = 0;
+
+  /**
+   * @brief Check if a plugin is enabled.
+   *
+   * @param pluginName Name of the plugin to check.
+   *
+   * @return true if the plugin is enabled, false otherwise.
+   */
+  virtual bool isPluginEnabled(QString const& pluginName) const = 0;
+
+  /**
+   * @brief Retrieve the specified setting for a plugin.
+   *
+   * @param pluginName Name of the plugin for which to retrieve a setting. This should always be IPlugin::name() unless you have a really good reason
    *                   to access settings of another mod. You can not access settings for a plugin that isn't installed.
    * @param key identifier of the setting
    * @return the setting
@@ -434,6 +454,42 @@ public:
    * @param func Function to be called when a plugin setting is changed.
    */
   virtual bool onPluginSettingChanged(std::function<void(QString const&, const QString& key, const QVariant&, const QVariant&)> const& func) = 0;
+
+  /**
+   * @brief Add a new callback to be called when a plugin is enabled.
+   *
+   * Parameters of the callback:
+   *   - The enabled plugin.
+   *
+   * @param func Function to be called when a plugin is enabled.
+   */
+  virtual bool onPluginEnabled(std::function<void(const IPlugin*)> const& func) = 0;
+
+  /**
+   * @brief Add a new callback to be called when the specified plugin is enabled.
+   *
+   * @param name Name of the plugin to watch.
+   * @param func Function to be called when a plugin is enabled.
+   */
+  virtual bool onPluginEnabled(const QString& pluginName, std::function<void()> const& func) = 0;
+
+  /**
+   * @brief Add a new callback to be called when a plugin is disabled.
+   *
+   * Parameters of the callback:
+   *   - The disabled plugin.
+   *
+   * @param func Function to be called when a plugin is disabled.
+   */
+  virtual bool onPluginDisabled(std::function<void(const IPlugin*)> const& func) = 0;
+
+  /**
+   * @brief Add a new callback to be called when the specified plugin is disabled.
+   *
+   * @param name Name of the plugin to watch.
+   * @param func Function to be called when a plugin is disabled.
+   */
+  virtual bool onPluginDisabled(const QString& pluginName, std::function<void()> const& func) = 0;
 
 };
 
