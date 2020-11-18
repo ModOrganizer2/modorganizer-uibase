@@ -3,6 +3,7 @@
 
 
 #include "iplugin.h"
+#include "isavegame.h"
 #include "executableinfo.h"
 
 class QIcon;
@@ -14,6 +15,7 @@ class QStringList;
 #include <cstdint>
 #include <typeindex>
 #include <unordered_map>
+#include <memory>
 #include <vector>
 
 namespace MOBase {
@@ -117,14 +119,16 @@ public:
   virtual void initializeProfile(const QDir &directory, ProfileSettings settings) const = 0;
 
   /**
+   * @brief List save games in the specified folder.
+   *
+   * @param folder The folder containing the saves.
+   *
+   * @return the list of saves in the specified folder.
+   */
+  /**
    * @return file extension of save games for this game
    */
-  virtual QString savegameExtension() const = 0;
-
-  /**
-   * @return file extension of script extender save game files for this game
-   */
-  virtual QString savegameSEExtension() const = 0;
+  virtual std::vector<std::shared_ptr<const ISaveGame>> listSaves(QDir folder) const = 0;
 
   /**
    * this function may be called before init()
