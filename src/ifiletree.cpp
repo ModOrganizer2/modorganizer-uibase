@@ -7,7 +7,7 @@
 namespace MOBase {
   FileTreeEntry::FileTreeEntry(std::shared_ptr<const IFileTree> parent, QString name) :
     m_Parent(parent), m_Name(name) { }
-  
+
   QString FileTreeEntry::suffix() const {
     const int idx = m_Name.lastIndexOf(".");
     return (isDir() || idx == -1) ? "" : m_Name.mid(idx + 1);
@@ -81,7 +81,7 @@ namespace MOBase {
   };
 
   /**
-   * @brief Comparator that can be used to find entry matching the given name and 
+   * @brief Comparator that can be used to find entry matching the given name and
    *     file type.
    */
   struct MatchEntryComparator {
@@ -125,7 +125,7 @@ namespace MOBase {
 
 
     std::stack<std::pair<QString, std::shared_ptr<const FileTreeEntry>>> stack;
-    
+
     // We start by pushing all the entries in this tree, this avoid having to do extra check later
     // for avoid leading separator:
     for (auto rit = rbegin(); rit != rend(); ++rit) {
@@ -271,7 +271,7 @@ namespace MOBase {
       insertionIt = entries().insert(insertionIt, entry);
     }
 
-    // Remove the tree from its parent (parent() can be null if we are inserting 
+    // Remove the tree from its parent (parent() can be null if we are inserting
     // a new tree):
     if (entry->parent() != nullptr) {
       entry->parent()->erase(entry);
@@ -345,14 +345,14 @@ namespace MOBase {
     }
 
     return true;
-  }  
-  
+  }
+
   /**
    *
    */
   std::shared_ptr<FileTreeEntry> IFileTree::copy(std::shared_ptr<const FileTreeEntry> entry, QString path, InsertPolicy insertPolicy) {
     // Note: If a conflict exists, the tree is cloned before checking the conflict, so this is not the
-    // most efficient way but copying tree should be pretty rare (and probably avoided anyway), and this 
+    // most efficient way but copying tree should be pretty rare (and probably avoided anyway), and this
     // allow us to use `move()` to do all the complex operations.
     auto clone = entry->clone();
     if (move(clone, path, insertPolicy)) {
@@ -461,7 +461,7 @@ namespace MOBase {
     // Using raw \\ instead of QDir::separator() since we are replacing by /
     // anyway, and this avoid pulling an extra header (like QDir) only
     // for the separator.
-    return path.replace("\\", "/").split("/", QString::SkipEmptyParts);
+    return path.replace("\\", "/").split("/", Qt::SkipEmptyParts);
   }
 
   /**
@@ -685,7 +685,7 @@ namespace MOBase {
    */
   std::shared_ptr<FileTreeEntry> IFileTree::clone() const {
     std::shared_ptr<IFileTree> tree = doClone();
-    
+
     // Don't copy not populated tree, it is not useful:
     if (m_Populated) {
       tree->m_Populated = true;
