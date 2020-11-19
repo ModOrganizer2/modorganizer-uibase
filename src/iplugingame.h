@@ -63,7 +63,7 @@ public:
 public:
 
   // Game plugin should not have requirements:
-  QList<IPluginRequirement*> requirements() const final override { return {}; }
+  std::vector<std::shared_ptr<const IPluginRequirement>> requirements() const final override { return {}; }
 
   /**
    * this function may be called before init()

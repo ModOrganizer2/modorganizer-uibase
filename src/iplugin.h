@@ -27,6 +27,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 #include "imoinfo.h"
 #include "pluginsetting.h"
 #include "pluginrequirements.h"
+#include <vector>
 #include <QString>
 #include <QObject>
 
@@ -101,7 +102,7 @@ public:
    *
    * @return the requirements for this plugin.
    */
-  virtual QList<IPluginRequirement*> requirements() const { return {}; }
+  virtual std::vector<std::shared_ptr<const IPluginRequirement>> requirements() const { return {}; }
 
   /**
    * @return the author of this plugin.

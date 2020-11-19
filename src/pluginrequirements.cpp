@@ -104,22 +104,26 @@ private:
 
 // Factory
 
-IPluginRequirement* PluginRequirementFactory::pluginDependency(QStringList const& pluginNames)
+std::shared_ptr<const IPluginRequirement> PluginRequirementFactory::pluginDependency(
+  QStringList const& pluginNames)
 {
-  return new PluginDependencyRequirement(pluginNames);
+  return std::make_shared<PluginDependencyRequirement>(pluginNames);
 }
 
-IPluginRequirement* PluginRequirementFactory::gameDependency(QStringList const& pluginGameNames)
+std::shared_ptr<const IPluginRequirement> PluginRequirementFactory::gameDependency(
+  QStringList const& pluginGameNames)
 {
-  return new GameDependencyRequirement(pluginGameNames);
+  return std::make_shared<GameDependencyRequirement>(pluginGameNames);
 }
 
-IPluginRequirement* PluginRequirementFactory::diagnose(const IPluginDiagnose* diagnose)
+std::shared_ptr<const IPluginRequirement> PluginRequirementFactory::diagnose(
+  const IPluginDiagnose* diagnose)
 {
-  return new DiagnoseRequirement(diagnose);
+  return std::make_shared<DiagnoseRequirement>(diagnose);
 }
 
-IPluginRequirement* PluginRequirementFactory::basic(std::function<bool(IOrganizer*)> const& checker, QString const description)
+std::shared_ptr<const IPluginRequirement> PluginRequirementFactory::basic(
+  std::function<bool(IOrganizer*)> const& checker, QString const description)
 {
-  return new BasicPluginRequirement(checker, description);
+  return std::make_shared<BasicPluginRequirement>(checker, description);
 }
