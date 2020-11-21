@@ -97,8 +97,7 @@ public:
   /**
    * @brief Retrieve the requirements for the plugins.
    *
-   * This method is called right after init() and the ownership the requirements is
-   * transferred to MO2 so plugins should not take care of releasing the requirements.
+   * This method is called right after init().
    *
    * @return the requirements for this plugin.
    */
