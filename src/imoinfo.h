@@ -325,6 +325,7 @@ public:
    * @brief blocks until the given process has completed
    *
    * @param handle     the process to wait for
+   * @param refresh    whether MO should refresh after the process completed
    * @param exitCode   the exit code of the process after it ended
    *
    * @return true if the process completed successfully
@@ -335,7 +336,7 @@ public:
    *       which case this will return false
    */
   virtual bool waitForApplication(
-      HANDLE handle, LPDWORD exitCode = nullptr) const = 0;
+      HANDLE handle, bool refresh = true, LPDWORD exitCode = nullptr) const = 0;
 
   /**
    * @brief Refresh the internal mods file structure from disk. This includes the mod list, the plugin
