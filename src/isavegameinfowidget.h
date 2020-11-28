@@ -3,6 +3,8 @@
 
 #include <QWidget>
 
+#include "isavegame.h"
+
 class QFile;
 
 namespace MOBase {
@@ -21,7 +23,7 @@ public:
   virtual ~ISaveGameInfoWidget() {}
 
   /** Set the save file to display in the widget */
-  virtual void setSave(QString const &) = 0;
+  virtual void setSave(ISaveGame const &) = 0;
 };
 
 }

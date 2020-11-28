@@ -2,6 +2,7 @@
 #define PLUGINREQUIREMENTS_H
 
 #include <functional>
+#include <memory>
 #include <optional>
 
 #include <QStringList>
@@ -67,6 +68,7 @@ class PluginDependencyRequirement : public IPluginRequirement {
   friend class PluginRequirementFactory;
 
 public:
+  PluginDependencyRequirement(QStringList const& pluginNames);
 
   virtual std::optional<Problem> check(IOrganizer* organizer) const;
 
@@ -76,7 +78,6 @@ public:
   QStringList pluginNames() const { return m_PluginNames; }
 
 protected:
-  PluginDependencyRequirement(QStringList const& pluginNames);
   QString message() const;
   QStringList m_PluginNames;
 };
@@ -90,6 +91,7 @@ class GameDependencyRequirement : public IPluginRequirement {
   friend class PluginRequirementFactory;
 
 public:
+  GameDependencyRequirement(QStringList const& gameNames);
 
   virtual std::optional<Problem> check(IOrganizer* organizer) const;
 
@@ -99,7 +101,6 @@ public:
   QStringList gameNames() const { return m_GameNames; }
 
 protected:
-  GameDependencyRequirement(QStringList const& gameNames);
   QString message() const;
   QStringList m_GameNames;
 };
@@ -117,11 +118,11 @@ class DiagnoseRequirement : public IPluginRequirement {
   friend class PluginRequirementFactory;
 
 public:
+  DiagnoseRequirement(const IPluginDiagnose* diagnose);
 
   virtual std::optional<Problem> check(IOrganizer* organizer) const;
 
 private:
-  DiagnoseRequirement(const IPluginDiagnose* diagnose);
   const IPluginDiagnose* m_Diagnose;
 };
 
@@ -140,8 +141,8 @@ public:
    *
    * @param pluginNames Name of the plugin required.
    */
-  static IPluginRequirement* pluginDependency(QStringList const& pluginNames);
-  static IPluginRequirement* pluginDependency(QString const& pluginName) {
+  static std::shared_ptr<const IPluginRequirement> pluginDependency(QStringList const& pluginNames);
+  static std::shared_ptr<const IPluginRequirement> pluginDependency(QString const& pluginName) {
     return pluginDependency(QStringList{ pluginName });
   }
 
@@ -153,8 +154,8 @@ public:
    *
    * @note This differ from makePluginDependency only for the message.
    */
-  static IPluginRequirement* gameDependency(QStringList const& gameNames);
-  static IPluginRequirement* gameDependency(QString const& gameName) {
+  static std::shared_ptr<const IPluginRequirement> gameDependency(QStringList const& gameNames);
+  static std::shared_ptr<const IPluginRequirement> gameDependency(QString const& gameName) {
     return gameDependency(QStringList{ gameName });
   }
 
@@ -163,7 +164,7 @@ public:
    *
    * @param diagnose The diagnose plugin.
    */
-  static IPluginRequirement* diagnose(const IPluginDiagnose *diagnose);
+  static std::shared_ptr<const IPluginRequirement> diagnose(const IPluginDiagnose *diagnose);
 
   /**
    * @brief Create a generic requirement with the given checker and message.
@@ -172,7 +173,7 @@ public:
    *     return true if the requirement is met).
    * @param description The description to show user if the requirement is not met.
    */
-  static IPluginRequirement* basic(std::function<bool(IOrganizer*)> const& checker, QString const description);
+  static std::shared_ptr<const IPluginRequirement> basic(std::function<bool(IOrganizer*)> const& checker, QString const description);
 
 };
 

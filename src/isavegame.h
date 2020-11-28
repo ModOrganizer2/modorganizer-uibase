@@ -15,22 +15,30 @@ public:
   virtual ~ISaveGame() {}
 
   /**
-   * @brief get the name of the (main) save file.
+   * @return the path of the (main) save file, either as an absolute file or
+   *     relative to the save folder for which this save was created.
    */
-  virtual QString getFilename() const = 0;
+  virtual QString getFilepath() const = 0;
 
   /**
-   * @brief get the creation time of the save.
+   * @brief Retrieve the creation time of the save.
    *
    * Note that this might not be the same as the creation time of the file.
    */
   virtual QDateTime getCreationTime() const = 0;
 
   /**
-   * @brief get a name which can be used to identify sets of saves to transfer
-   * between profiles.
+   * @brief Retrieve the name of this save.
    *
-   * This is normally the pc name for RPG games.
+   * @return the name of this save.
+   */
+  virtual QString getName() const = 0;
+
+  /**
+   * @brief Get a name which can be used to identify sets of saves.
+   *
+   * This is usually the PC name for RPG games. The name can contain '/' that
+   * are considered separate section for better visualization (not yet implemented).
    */
   virtual QString getSaveGroupIdentifier() const = 0;
 
@@ -41,10 +49,6 @@ public:
    */
   virtual QStringList allFiles() const = 0;
 
-  /**
-  * @brief See if the save file has an associated script extender save
-  */
-  virtual bool hasScriptExtenderFile() const = 0;
 };
 
 }
