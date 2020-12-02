@@ -21,6 +21,9 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 #ifndef IPLUGINPROXY_H
 #define IPLUGINPROXY_H
 
+#include <QDir>
+#include <QString>
+
 #include "iplugin.h"
 
 
@@ -32,22 +35,36 @@ public:
   IPluginProxy() : m_ParentWidget(nullptr) {}
 
   /**
-   * @param pluginPath path to plugins
-   * @return list of plugins that supported by this proxy
+   * @brief List the plugins managed by this proxy in the given
+   *   folder.
+   *
+   * @param pluginPath Path containing the plugins.
+   *
+   * @return list of plugin identifiers that supported by this proxy.
    */
-  virtual QStringList pluginList(const QString &pluginPath) const = 0;
+  virtual QStringList pluginList(const QDir& pluginPath) const = 0;
 
   /**
-   * @brief instantiate a proxied plugin
-   * @param pluginName name of the proxied plugin to instantiate
-   * @return plugin object
+   * @brief Load the plugins corresponding to the given identifier.
+   *
+   * @param identifier Identifier of the proxied plugin to load.
+   *
+   * @return a list of QObject, one for each plugins in the given identifier.
    */
-  virtual QList<QObject*> instantiate(const QString &pluginName) = 0;
+  virtual QList<QObject*> load(const QString& identifier) = 0;
 
   /**
-   * @brief sets the widget that the tool should use as the parent whenever
-   *        it creates a new modal dialog
-   * @param widget the new parent widget
+   * @brief Unload the plugins corresponding to the given identifier.
+   *
+   * @param identifier Identifier of the proxied plugin to unload.
+   */
+  virtual void unload(const QString& identifier) = 0;
+
+  /**
+   * @brief Sets the widget that the tool should use as the parent whenever
+   *   it creates a new modal dialog.
+   *
+   * @param widget The new parent widget.
    */
   void setParentWidget(QWidget *widget) { m_ParentWidget = widget; }
 
