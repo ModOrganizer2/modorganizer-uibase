@@ -100,8 +100,8 @@ namespace MOBase {
    * @brief Exception thrown when an operation on the tree is not supported by the
    *     implementation or makes no sense (e.g., creation of a file in an archive).
    */
-  struct QDLLEXPORT UnsupportedOperationException: public MOException {
-    using MOException::MOException;
+  struct QDLLEXPORT UnsupportedOperationException: public Exception {
+    using Exception::Exception;
   };
 
   /**

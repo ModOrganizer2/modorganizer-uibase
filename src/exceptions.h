@@ -15,10 +15,10 @@ namespace MOBase {
 /**
   * @brief exception class that takes a QString as the parameter
   **/
-class QDLLEXPORT MOException : public std::exception {
+class QDLLEXPORT Exception : public std::exception {
 public:
 
-  MOException(const QString& text) : m_Message(text.toUtf8()) { }
+  Exception(const QString& text) : m_Message(text.toUtf8()) { }
 
   virtual const char* what() const noexcept override {
     return m_Message.constData();
@@ -32,20 +32,20 @@ private:
 
 
 // Exception thrown in case of incompatibilities, i.e. between plugins.
-class QDLLEXPORT IncompatibilityException : public MOException {
+class QDLLEXPORT IncompatibilityException : public Exception {
 public:
-  using MOException::MOException;
+  using Exception::Exception;
 };
 
 // Exception thrown for invalid NXM links.
-class QDLLEXPORT InvalidNXMLinkException : public MOException {
+class QDLLEXPORT InvalidNXMLinkException : public Exception {
 public:
   InvalidNXMLinkException(const QString& link) :
-    MOException(QObject::tr("invalid nxm-link: %1").arg(link)) { }
+    Exception(QObject::tr("invalid nxm-link: %1").arg(link)) { }
 };
 
 // alias for backward-compatibility, should be removed when possible
-using MyException = MOException;
+using MyException = Exception;
 
 }
 

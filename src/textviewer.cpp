@@ -217,7 +217,7 @@ void TextViewer::addFile(const QString &fileName, bool writable)
 {
   QFile file(fileName);
   if (!file.open(QIODevice::ReadOnly)) {
-    throw MOException(tr("file not found: %1").arg(fileName));
+    throw Exception(tr("file not found: %1").arg(fileName));
   }
   QByteArray temp = file.readAll();
 

@@ -51,7 +51,7 @@ void TutorialManager::init(const QString &tutorialPath, QObject *organizerCore)
 TutorialManager &TutorialManager::instance()
 {
   if (s_Instance == nullptr) {
-    throw MOException(tr("tutorial manager not set up yet"));
+    throw Exception(tr("tutorial manager not set up yet"));
   }
   return *s_Instance;
 }

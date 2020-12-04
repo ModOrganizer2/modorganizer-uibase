@@ -46,7 +46,7 @@ SafeWriteFile::SafeWriteFile(const QString &fileName)
       .arg(m_TempFile.errorString())
       .arg(m_TempFile.error());
 
-    throw MOException(errorMsg);
+    throw Exception(errorMsg);
   }
 }
 

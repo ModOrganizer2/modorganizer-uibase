@@ -335,7 +335,7 @@ QList<T> ConvertList(const QVariantList &variants)
   QList<T> result;
   for (const QVariant& var : variants) {
     if (!var.canConvert<T>()) {
-      throw MOException("invalid variant type");
+      throw Exception("invalid variant type");
     }
     result.append(var.value<T>());
   }
