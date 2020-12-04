@@ -69,6 +69,7 @@ public:
   };
 
 public:
+
   virtual ~IOrganizer() {}
 
   // the directory for plugin data, typically plugins/data
@@ -491,6 +492,10 @@ public:
    * @param func Function to be called when a plugin is disabled.
    */
   virtual bool onPluginDisabled(const QString& pluginName, std::function<void()> const& func) = 0;
+
+protected:
+
+  using QObject::QObject;
 
 };
 
