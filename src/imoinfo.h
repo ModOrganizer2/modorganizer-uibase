@@ -493,10 +493,6 @@ public:
    */
   virtual bool onPluginDisabled(const QString& pluginName, std::function<void()> const& func) = 0;
 
-protected:
-
-  using QObject::QObject;
-
 };
 
 } // namespace MOBase
