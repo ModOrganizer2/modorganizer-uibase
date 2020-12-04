@@ -21,7 +21,6 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 #ifndef MO_UIBASE_UTILITY_INCLUDED
 #define MO_UIBASE_UTILITY_INCLUDED
 
-#include "dllimport.h"
 #include <vector>
 #include <set>
 #include <algorithm>
@@ -33,6 +32,9 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 #include <QVariant>
 #include <Windows.h>
 #include <ShlObj.h>
+
+#include "dllimport.h"
+#include "exceptions.h"
 
 
 namespace MOBase {
@@ -327,52 +329,17 @@ QString SetJoin(const std::set<T> &value, const QString &separator, size_t maxim
   return result;
 }
 
-
-/**
- * @brief exception class that takes a QString as the parameter
- **/
-
-#pragma warning(push)
-#pragma warning(disable: 4275)  // non-dll interface
-
-class QDLLEXPORT MyException : public std::exception {
-public:
-  /**
-   * @brief constructor
-   *
-   * @param text exception text
-   **/
-  MyException(const QString &text);
-
-  virtual const char* what() const throw()
-          { return m_Message.constData(); }
-private:
-  QByteArray m_Message;
-};
-
-#pragma warning(pop)
-
-
-/**
- * @brief exception thrown in case of incompatibilities, i.e. between plugins
- */
-class QDLLEXPORT IncompatibilityException : public MyException {
-public:
-  IncompatibilityException(const QString &text) : MyException(text) {}
-};
-
 template <typename T>
 QList<T> ConvertList(const QVariantList &variants)
 {
   QList<T> result;
   for (const QVariant& var : variants) {
     if (!var.canConvert<T>()) {
-      throw MyException("invalid variant type");
+      throw Exception("invalid variant type");
     }
     result.append(var.value<T>());
   }
 }
-
 /**
  * @brief convert QString to std::wstring (utf-16 encoding)
  **/

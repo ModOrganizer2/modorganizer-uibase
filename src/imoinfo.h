@@ -69,6 +69,7 @@ public:
   };
 
 public:
+
   virtual ~IOrganizer() {}
 
   // the directory for plugin data, typically plugins/data

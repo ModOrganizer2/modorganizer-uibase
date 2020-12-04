@@ -110,7 +110,7 @@ void TextViewer::findNext()
     auto oldCursor = editor->textCursor();
 
     editor->moveCursor(QTextCursor::Start);
-    
+
     // search again from the top
     if (editor->find(m_FindPattern)) {
       // found something, keep new cursor position.
@@ -174,7 +174,7 @@ void TextViewer::saveFile(const QTextEdit *editor)
 
     if (buttonPressed & (QMessageBox::Yes | QMessageBox::Ignore)) {
       file.setPermissions(file.permissions() | QFile::WriteUser);
-    } 
+    }
 
     if (!file.open(QIODevice::WriteOnly | QIODevice::Truncate)) {
       reportError(tr("failed to write to %1").arg(editor->documentTitle()));
@@ -217,7 +217,7 @@ void TextViewer::addFile(const QString &fileName, bool writable)
 {
   QFile file(fileName);
   if (!file.open(QIODevice::ReadOnly)) {
-    throw MyException(tr("file not found: %1").arg(fileName));
+    throw Exception(tr("file not found: %1").arg(fileName));
   }
   QByteArray temp = file.readAll();
 
@@ -231,7 +231,7 @@ void TextViewer::addFile(const QString &fileName, bool writable)
   editor->setDocumentTitle(fileName);
   editor->installEventFilter(this);
   editor->setReadOnly(!writable);
- 
+
   // set text highlighting color in inactive window equal to text hightlighting color in active window
   QPalette palette = editor->palette();
   palette.setColor(QPalette::Inactive, QPalette::Highlight, palette.color(QPalette::Active, QPalette::Highlight));

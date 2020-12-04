@@ -97,11 +97,11 @@ namespace MOBase {
   };
 
   /**
-   * @brief Exception thrown when an operation on the tree is not supported by the 
+   * @brief Exception thrown when an operation on the tree is not supported by the
    *     implementation or makes no sense (e.g., creation of a file in an archive).
    */
-  struct QDLLEXPORT UnsupportedOperationException: public MyException {
-    using MyException::MyException;
+  struct QDLLEXPORT UnsupportedOperationException: public Exception {
+    using Exception::Exception;
   };
 
   /**
@@ -124,7 +124,7 @@ namespace MOBase {
      *
      */
     enum FileType {
-      DIRECTORY = 0b01, 
+      DIRECTORY = 0b01,
       FILE      = 0b10
     };
     Q_DECLARE_FLAGS(FileTypes, FileType);
@@ -200,7 +200,7 @@ namespace MOBase {
     /**
      * @brief Compare the name of this entry against the given string.
      *
-     * This method only checks the name of the entry, not the full path. 
+     * This method only checks the name of the entry, not the full path.
      *
      * @param name Name to test.
      *
@@ -215,7 +215,7 @@ namespace MOBase {
      *
      * The "last" extension is everything after the last dot in the file name.
      *
-     * @return the last extension of this entry, or an empty string if the file has no 
+     * @return the last extension of this entry, or an empty string if the file has no
      *     extension or is directory.
      */
     QString suffix() const;
@@ -355,7 +355,7 @@ namespace MOBase {
    * Read-only operations on the tree are thread-safe, even when the tree has not been populated
    * yet.
    *
-   * In order to prevent wrong usage of the tree, implementing classes may throw 
+   * In order to prevent wrong usage of the tree, implementing classes may throw
    * UnsupportedOperationException if an operation is not supported. By default, all operations
    * are supported, but some may not make sense in many situations.
    *
@@ -363,12 +363,12 @@ namespace MOBase {
    * classes may override relevant methods to do so.
    *
    * The tree is built upon FileTreeEntry. A given tree holds shared pointers to its entries
-   * while each entry holds a weak pointer to its parent, this means that the descending link 
+   * while each entry holds a weak pointer to its parent, this means that the descending link
    * are strong (shared pointers) but the uplink are weaks.
    *
    * Accessing the parent is always done by locking the weak pointer so that returned pointer
    * or either null or valid. This structure implies that as long as the initial root lives,
-   * entry should not be destroyed, unless the entry are detached from the root and no shared 
+   * entry should not be destroyed, unless the entry are detached from the root and no shared
    * pointers are kept.
    *
    * However, it is not guarantee that one can go up the tree from a single node entry. If the
@@ -387,7 +387,7 @@ namespace MOBase {
      */
     enum class InsertPolicy {
       FAIL_IF_EXISTS,
-      REPLACE, 
+      REPLACE,
       MERGE
     };
 
@@ -410,7 +410,7 @@ namespace MOBase {
      * immutability when IFileTree is const-qualified.
      *
      * Note: convert_iterator satisfies InputIterator but not ForwardIterator since
-     * dereferencing it does not return a reference, even if it can likely be used 
+     * dereferencing it does not return a reference, even if it can likely be used
      * exactly in the same way since it returns a pointer-like type (U is a shared
      * pointer).
      */
@@ -454,7 +454,7 @@ namespace MOBase {
 
     using iterator = std::vector<std::shared_ptr<FileTreeEntry>>::const_iterator;
     using const_iterator = convert_iterator<
-      std::shared_ptr<const FileTreeEntry>, 
+      std::shared_ptr<const FileTreeEntry>,
       std::vector<std::shared_ptr<FileTreeEntry>>::const_iterator>;
 
     using reverse_iterator = std::vector<std::shared_ptr<FileTreeEntry>>::const_reverse_iterator;
@@ -551,7 +551,7 @@ namespace MOBase {
      * a null pointer is returned.
      *
      * @param path Path to the entry, separated by / or \.
-     * @param type The type of the entry to find. 
+     * @param type The type of the entry to find.
      *
      * @return the entry if found, a null pointer otherwize.
      */
@@ -611,13 +611,13 @@ namespace MOBase {
     /**
      * @brief Walk this tree, calling the given function for each entry in it.
      *
-     * The given callback will be called with two parameters: the path from this tree to the given entry 
+     * The given callback will be called with two parameters: the path from this tree to the given entry
      * (with a trailing separator, not including the entry name), and the actual entry. The method returns
      * a `WalkReturn` object to indicates what to do.
      *
      * During the walk, parent tree are guaranteed to be visited before their childrens. The given function
      * is never called with the current tree.
-     *     
+     *
      * @param callback Method to call for each entry in the tree.
      */
     void walk(std::function<WalkReturn(QString const&, std::shared_ptr<const FileTreeEntry>)> callback, QString sep = "\\") const;
@@ -638,8 +638,8 @@ namespace MOBase {
     /**
      * @brief Create a new file directly under this tree.
      *
-     * This method will return a null pointer if the file already exists and if 
-     * replaceIfExists is false. This method invalidates iterators to this tree and 
+     * This method will return a null pointer if the file already exists and if
+     * replaceIfExists is false. This method invalidates iterators to this tree and
      * all the subtrees present in the given path.
      *
      * @param name Name of the file.
@@ -657,8 +657,8 @@ namespace MOBase {
      *
      * This method will create missing folders in the given path and will
      * not fail if the directory already exists but will fail if the given
-     * path contains "." or "..". 
-     * This method invalidates iterators to this tree and all the subtrees 
+     * path contains "." or "..".
+     * This method invalidates iterators to this tree and all the subtrees
      * present in the given path.
      *
      * @param path Path to the directory.
@@ -675,11 +675,11 @@ namespace MOBase {
      * The entry must not be this tree or a parent entry of this tree.
      *
      * - If the insert policy if FAIL_IF_EXISTS, the call will fail if an entry
-     * with the same name already exists. 
+     * with the same name already exists.
      * - If the policy is REPLACE, an existing entry will be replaced by the given entry.
      * - If MERGE:
      *   - If there is no entry with the same name, the new entry is inserted.
-     *   - If there is an entry with the same name: 
+     *   - If there is an entry with the same name:
      *     - If both entries are files, the old file is replaced by the given entry.
      *     - If both entries are directories, a merge is performed as if using merge().
      *     - Otherwize the insertion fails (two entries with different types).
@@ -688,7 +688,7 @@ namespace MOBase {
      * entry, and to subtrees of this tree if the insert policy is MERGE.
      *
      * @param entry Entry to insert.
-     * @param insertPolicy Policy to use on conflict. 
+     * @param insertPolicy Policy to use on conflict.
      *
      * @return an iterator to the inserted tree if it was inserted or if it
      *     already existed, or the end iterator if insertPolicy is FAIL_IF_EXISTS
@@ -705,13 +705,13 @@ namespace MOBase {
      * be used to track the replaced files. After a merge, the source tree will be
      * empty but still attached to its parent.
      *
-     * Note that the merge process makes no distinction between files and directories 
+     * Note that the merge process makes no distinction between files and directories
      * when merging: if a directory is present in this tree and a file from source
      * is in conflict with it, the tree will be removed and the file inserted; if a file
      * is in this tree and a directory from source is in conflict with it, the file will
      * be replaced with the directory.
      *
-     * This method invalidates iterators to this tree, all the subtrees under this tree 
+     * This method invalidates iterators to this tree, all the subtrees under this tree
      * present in the given path, and all the subtrees of the given source.
      *
      * @param source Tree to merge.
@@ -776,15 +776,15 @@ namespace MOBase {
      * @param entry Entry to delete. The entry must belongs to this tree (and
      *     not to a subtree).
      *
-     * @return an iterator following the removed entry (might be the end 
+     * @return an iterator following the removed entry (might be the end
      *     iterator if the entry was not found or was the last).
      */
-    iterator erase(std::shared_ptr<FileTreeEntry> entry);    
-    
+    iterator erase(std::shared_ptr<FileTreeEntry> entry);
+
     /**
      * @brief Delete the entry with the given name.
      *
-     * This method does not recurse into subtrees, so the entry should be 
+     * This method does not recurse into subtrees, so the entry should be
      * accessible directly from this tree.
      *
      * @param name Name of the entry to delete.
@@ -804,7 +804,7 @@ namespace MOBase {
      * @return true if all entries could be deleted, false otherwize.
      */
     bool clear();
-    
+
     /**
      * @brief Delete the entries with the given names from the tree.
      *
@@ -873,8 +873,8 @@ namespace MOBase {
    * There are three pure virtual methods that needs to be implemented by any child class:
    *   - makeDirectory(): used to create directories - this method serves to create directory
    *         that may or may not existing in the underlying source. Implementing class do not
-   *         have to rely on this for `doPopulate()`. This method is also called when new 
-   *         directory needs to be created (addDirectory, insert, createOrphanTree, merge, etc.), 
+   *         have to rely on this for `doPopulate()`. This method is also called when new
+   *         directory needs to be created (addDirectory, insert, createOrphanTree, merge, etc.),
    *         and may return a null pointer to indicate that the operations failed or is not permitted.
    *   - doClone(): called when a tree needs to be cloned (e.g., for a copy) - this methods does
    *         not copy the subtrees, it should only create an empty tree equivalent to the current tree.
@@ -883,7 +883,7 @@ namespace MOBase {
    * The other commons methods that can be re-implemented are:
    *   - makeFile(), this is used to create new file - this is very similar to makeDirectory()
    *       except that it has a default implementation that simply creates a FileTreeEntry.
-   *   - beforeInsert(), beforeReplace() and beforeRemove(): these can be implemented to 1) prevent 
+   *   - beforeInsert(), beforeReplace() and beforeRemove(): these can be implemented to 1) prevent
    *       some operations, 2) perform operations on the actual tree (e.g., move a file on the disk).
    */
   protected:
@@ -906,7 +906,7 @@ namespace MOBase {
      * the tree.
      *
      * This method is for internal usage only and is called when an entry is going to
-     * be replaced by another (because there is name conflict). 
+     * be replaced by another (because there is name conflict).
      *
      * The base implementation of this method does nothing (the actual replacement is
      * made elsewhere). This method can be used to prevent a replacement by returning
@@ -1051,7 +1051,7 @@ namespace MOBase {
     /**
      * @brief Create a new subtree under the given tree.
      *
-     * This method will create missing folders in the given path and will not fail if the directory 
+     * This method will create missing folders in the given path and will not fail if the directory
      * already exists but will fail the given path contains "." or "..".
      *
      * @param begin, end Range of section of the path.
@@ -1059,7 +1059,7 @@ namespace MOBase {
      * @return the entry corresponding to the create tree, or a null pointer if the tree was not created.
      */
     std::shared_ptr<IFileTree> createTree(QStringList::const_iterator begin, QStringList::const_iterator end);
-    
+
     // Indicate if this tree has been populated:
     mutable std::atomic<bool> m_Populated{ false };
     mutable std::once_flag m_OnceFlag;

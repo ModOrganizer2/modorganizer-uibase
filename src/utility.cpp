@@ -44,13 +44,6 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 
 namespace MOBase {
 
-
-MyException::MyException(const QString &text)
-  : std::exception(), m_Message(text.toUtf8())
-{
-}
-
-
 bool removeDir(const QString &dirName)
 {
   QDir dir(dirName);

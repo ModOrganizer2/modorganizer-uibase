@@ -31,7 +31,7 @@ NXMUrl::NXMUrl(const QString &url)
   QRegularExpression exp("nxm://[a-z0-9]+/mods/(\\d+)/files/(\\d+)", QRegularExpression::CaseInsensitiveOption);
   auto match = exp.match(url);
   if (!match.hasMatch()) {
-    throw MOBase::MyException(tr("invalid nxm-link: %1").arg(url));
+    throw MOBase::InvalidNXMLinkException(url);
   }
   m_Game = nxm.host();
   m_ModId = match.captured(1).toInt();
