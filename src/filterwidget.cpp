@@ -81,13 +81,24 @@ void FilterWidgetProxyModel::sort(int column, Qt::SortOrder order)
   }
 }
 
+bool FilterWidgetProxyModel::lessThan(
+  const QModelIndex& left, const QModelIndex& right) const
+{
+  if (auto lt=m_filter.sortPredicate()) {
+    return lt(left, right);
+  } else {
+    return QSortFilterProxyModel::lessThan(left, right);
+  }
+}
+
+
 
 static FilterWidget::Options s_options;
 
 FilterWidget::FilterWidget() :
   m_edit(nullptr), m_list(nullptr), m_proxy(nullptr),
   m_eventFilter(nullptr), m_clear(nullptr), m_timer(nullptr),
-  m_valid(true), m_useSourceSort(false), m_filterColumn(-1),
+  m_useDelay(false), m_valid(true), m_useSourceSort(false), m_filterColumn(-1),
   m_filteringEnabled(true), m_filteredBorder(true)
 {
   m_timer = new QTimer(this);
@@ -173,6 +184,16 @@ void FilterWidget::setUseSourceSort(bool b)
 bool FilterWidget::useSourceSort() const
 {
   return m_useSourceSort;
+}
+
+void FilterWidget::setSortPredicate(sortFun f)
+{
+  m_lt = f;
+}
+
+const FilterWidget::sortFun& FilterWidget::sortPredicate() const
+{
+  return m_lt;
 }
 
 void FilterWidget::setFilterColumn(int i)
@@ -375,6 +396,7 @@ void FilterWidget::hookEdit()
   });
 
   m_edit->installEventFilter(m_eventFilter);
+  QObject::connect(m_edit, &QLineEdit::textChanged, [&]{ onTextChanged(); });
 }
 
 void FilterWidget::unhookEdit()
@@ -514,7 +536,6 @@ void FilterWidget::createClear()
   m_clear->hide();
 
   QObject::connect(m_clear, &QToolButton::clicked, [&]{ clear(); });
-  QObject::connect(m_edit, &QLineEdit::textChanged, [&]{ onTextChanged(); });
 
   repositionClearButton();
 }
