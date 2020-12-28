@@ -42,7 +42,8 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 #define FO_RECYCLE 0x1003
 
 
-namespace MOBase {
+namespace MOBase
+{
 
 bool removeDir(const QString &dirName)
 {
@@ -253,6 +254,9 @@ bool shellDelete(const QStringList &fileNames, bool recycle, QWidget *dialog)
 
 namespace shell
 {
+
+static QString g_urlHandler;
+
 
 Result::Result(bool success, DWORD error, QString message, HANDLE process) :
   m_success(success), m_error(error), m_message(std::move(message)),
@@ -465,10 +469,82 @@ Result Open(const QString& path)
   return ShellExecuteWrapper(L"open", ws_path.c_str(), nullptr);
 }
 
+Result OpenCustomURL(const std::wstring& format, const std::wstring& url)
+{
+  log::debug("custom url handler: '{}'", format);
+
+  // arguments, the first one is the url, the next 98 are empty strings because
+  // FormatMessage() doesn't have a way of saying how many arguments are
+  // available in the array, so this avoids a crash if there's something like
+  // %2 in the format string
+  const std::size_t args_count = 99;
+  DWORD_PTR args[args_count];
+  args[0] = reinterpret_cast<DWORD_PTR>(url.c_str());
+
+  for (std::size_t i=1; i<args_count; ++i) {
+    args[i] = reinterpret_cast<DWORD_PTR>(L"");
+  }
+
+  wchar_t* output = nullptr;
+
+  // formatting
+  const auto n = ::FormatMessageW(
+    FORMAT_MESSAGE_ALLOCATE_BUFFER |
+    FORMAT_MESSAGE_ARGUMENT_ARRAY |
+    FORMAT_MESSAGE_FROM_STRING,
+    format.c_str(), 0, 0,
+    reinterpret_cast<LPWSTR>(&output), 0, reinterpret_cast<va_list*>(args));
+
+  if (n == 0) {
+    const auto e = GetLastError();
+
+    log::error("failed to format browser command '{}'", format);
+    log::error("{}", formatSystemMessage(e));
+    log::error("{}", QObject::tr(
+      "You have an invalid custom browser command in the settings."));
+
+    return Result::makeFailure(e);
+  }
+
+  const std::wstring cmd(output, n);
+  ::LocalFree(output);
+
+  log::debug("running '{}'", cmd);
+
+  // creating process
+  STARTUPINFO si = { .cb = sizeof(STARTUPINFO) };
+  PROCESS_INFORMATION pi = {};
+
+  const auto r = ::CreateProcessW(
+    nullptr, const_cast<wchar_t*>(cmd.c_str()),
+    nullptr, nullptr, FALSE, 0, nullptr, nullptr, &si, &pi);
+
+  if (r == 0) {
+    const auto e = GetLastError();
+    log::error("failed to run '{}'", cmd);
+    log::error("{}", formatSystemMessage(e));
+    log::error("{}", QObject::tr(
+      "You have an invalid custom browser command in the settings."));
+    return Result::makeFailure(e);
+  }
+
+  ::CloseHandle(pi.hProcess);
+  ::CloseHandle(pi.hThread);
+
+  return Result::makeSuccess();
+}
+
 Result Open(const QUrl& url)
 {
+  log::debug("opening url '{}'", url.toString());
+
   const auto ws_url = url.toString().toStdWString();
-  return ShellExecuteWrapper(L"open", ws_url.c_str(), nullptr);
+
+  if (g_urlHandler.isEmpty()) {
+    return ShellExecuteWrapper(L"open", ws_url.c_str(), nullptr);
+  } else {
+    return OpenCustomURL(g_urlHandler.toStdWString(), ws_url);
+  }
 }
 
 Result Execute(const QString& program, const QString& params)
@@ -477,6 +553,11 @@ Result Execute(const QString& program, const QString& params)
   const auto params_ws = params.toStdWString();
 
   return ShellExecuteWrapper(L"open", program_ws.c_str(), params_ws.c_str());
+}
+
+void SetUrlHandler(const QString& cmd)
+{
+  g_urlHandler = cmd;
 }
 
 std::wstring toUNC(const QFileInfo& path)
