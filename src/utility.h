@@ -273,6 +273,11 @@ namespace shell
 
   QDLLEXPORT Result CreateDirectories(const QDir& dir);
   QDLLEXPORT Result DeleteDirectoryRecursive(const QDir& dir);
+
+  // sets the command used for Open() with a QUrl, %1 is replaced by the URL;
+  // pass an empty string to use the system handler
+  //
+  QDLLEXPORT void SetUrlHandler(const QString& cmd);
 }
 
 /**
