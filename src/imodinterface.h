@@ -182,6 +182,26 @@ public: // Meta-related information:
    */
   virtual std::shared_ptr<const MOBase::IFileTree> fileTree() const = 0;
 
+  /**
+   * @return true if this object represents the overwrite mod.
+   */
+  virtual bool isOverwrite() const = 0;
+
+  /**
+   * @return true if this object represents a backup.
+   */
+  virtual bool isBackup() const = 0;
+
+  /**
+   * @return true if this object represents a separator.
+   */
+  virtual bool isSeparator() const = 0;
+
+  /**
+   * @return true if this object represents a foreign mod.
+   */
+  virtual bool isForeign() const = 0;
+
 public: // Mutable operations:
 
   /**
