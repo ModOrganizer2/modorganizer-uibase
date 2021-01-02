@@ -103,6 +103,17 @@ public:
    */
   virtual bool removeMod(MOBase::IModInterface *mod) = 0;
 
+  /**
+   * @brief Rename the given mod.
+   *
+   * This invalidate the mod so you should use the returned value afterwards.
+   *
+   * @param mod The mod to rename.
+   *
+   * @return the new mod (after renaming) on success, a null pointer on error.
+   */
+  virtual MOBase::IModInterface* renameMod(MOBase::IModInterface *mod, const QString& name) = 0;
+
 
   /**
    * @brief retrieve the state of a mod
@@ -113,12 +124,12 @@ public:
 
   /**
    * @brief enable or disable a mod
-   * 
+   *
    * @param name name of the mod
    * @param active if true the mod is enabled, otherwise it's disabled
-   * 
+   *
    * @return true on success, false if the mod name is not valid
-   * 
+   *
    * @note calling this will cause MO to re-evaluate its virtual file system so this is fairly
    *       expensive
    */
@@ -126,12 +137,12 @@ public:
 
   /**
    * @brief enable or disable a list of mod
-   * 
+   *
    * @param names names of the mod
    * @param active if true mods are enabled, otherwise they are disabled
-   * 
+   *
    * @return the number of mods successfully enabled or disabled
-   * 
+   *
    * @note calling this will cause MO to re-evaluate its virtual file system so this is fairly
    *       expensive
    */

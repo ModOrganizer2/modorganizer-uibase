@@ -262,29 +262,11 @@ public: // Mutable operations:
   virtual void setGameName(const QString &gameName) = 0;
 
   /**
-   * @brief set the name of this mod
-   *
-   * set the name of this mod. This will also update the name of the
-   * directory that contains this mod
-   *
-   * @param name new name of the mod
-   * @return true on success, false if the new name can't be used (i.e. because the new
-   *         directory name wouldn't be valid)
-   **/
-  virtual bool setName(const QString &name) = 0;
-
-  /**
    * @brief Set a URL for this mod.
    *
    * @param url The URL of this mod.
    */
   virtual void setUrl(const QString &url) = 0;
-
-  /**
-   * @brief delete the mod from the disc. This does not update the global ModInfo structure or indices
-   * @return true on success
-   */
-  virtual bool remove() = 0;
 
 public: // Plugin operations:
 
