@@ -32,14 +32,46 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 namespace MOBase
 {
 
+QWidget* topLevelWindow()
+{
+  if (!qApp) {
+    return nullptr;
+  }
+
+  for (QWidget* w : qApp->topLevelWidgets()) {
+    if (dynamic_cast<QMainWindow*>(w)) {
+      return w;
+    }
+  }
+
+  return nullptr;
+}
+
+void criticalOnTop(const QString& message)
+{
+  QMessageBox mb(QMessageBox::Critical, QObject::tr("Mod Organizer"), message);
+
+  mb.show();
+  mb.activateWindow();
+  mb.raise();
+  mb.exec();
+}
+
 void reportError(const QString &message)
 {
   log::error("{}", message);
+
   if (QApplication::topLevelWidgets().count() != 0) {
-    QMessageBox messageBox(QMessageBox::Warning, QObject::tr("Error"), message, QMessageBox::Ok);
-    messageBox.exec();
+    if (auto* mw=topLevelWindow()) {
+      QMessageBox::warning(mw, QObject::tr("Error"), message, QMessageBox::Ok);
+    } else {
+      criticalOnTop(message);
+    }
   } else {
-    ::MessageBoxW(nullptr, message.toStdWString().c_str(), QObject::tr("Error").toStdWString().c_str(), MB_ICONERROR | MB_OK);
+    ::MessageBoxW(
+      0, message.toStdWString().c_str(),
+      QObject::tr("Error").toStdWString().c_str(),
+      MB_ICONERROR | MB_OK);
   }
 }
 
