@@ -49,7 +49,7 @@ QWidget* topLevelWindow()
 
 void criticalOnTop(const QString& message)
 {
-  QMessageBox mb(QMessageBox::Critical, QObject::tr("Mod Organizer"), message);
+  QMessageBox mb(QMessageBox::Critical, "Mod Organizer", message);
 
   mb.show();
   mb.activateWindow();
