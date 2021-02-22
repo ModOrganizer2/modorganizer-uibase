@@ -487,7 +487,9 @@ bool isOneOf(const T &val, const std::initializer_list<T> &list) {
   return std::find(list.begin(), list.end(), val) != list.end();
 }
 
+
 QDLLEXPORT std::wstring formatSystemMessage(DWORD id);
+QDLLEXPORT std::wstring formatNtMessage(NTSTATUS s);
 
 inline std::wstring formatSystemMessage(HRESULT hr)
 {
