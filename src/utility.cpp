@@ -989,37 +989,64 @@ void deleteChildWidgets(QWidget* w)
   }
 }
 
-std::wstring formatSystemMessage(DWORD id)
+std::wstring getMessage(DWORD id, HMODULE mod)
 {
   wchar_t* message = nullptr;
 
-  const auto ret = FormatMessageW(
+  DWORD flags =
     FORMAT_MESSAGE_ALLOCATE_BUFFER |
     FORMAT_MESSAGE_FROM_SYSTEM |
-    FORMAT_MESSAGE_IGNORE_INSERTS,
-    NULL,
-    id,
+    FORMAT_MESSAGE_IGNORE_INSERTS;
+
+  void* source = nullptr;
+
+  if (mod != 0) {
+    flags |= FORMAT_MESSAGE_FROM_HMODULE;
+    source = mod;
+  }
+
+  const auto ret = FormatMessageW(
+    flags, source, id,
     MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),
     reinterpret_cast<LPWSTR>(&message),
     0, NULL);
 
   std::wstring s;
 
+  if (ret != 0 && message) {
+    s = message;
+    boost::trim(s);
+    LocalFree(message);
+  }
+
+  return s;
+}
+
+std::wstring formatMessage(DWORD id, const std::wstring& message)
+{
+  std::wstring s;
+
   std::wostringstream oss;
   oss << L"0x" << std::hex << id;
 
-  if (ret == 0 || !message) {
+  if (message.empty()) {
     s = oss.str();
   } else {
-    s = message;
-    boost::trim(s);
-
-    s += L" (" + oss.str() + L")";
+    s += message + L" (" + oss.str() + L")";
   }
 
-  LocalFree(message);
-
   return s;
+}
+
+std::wstring formatSystemMessage(DWORD id)
+{
+  return formatMessage(id, getMessage(id, 0));
+}
+
+std::wstring formatNtMessage(NTSTATUS s)
+{
+  const DWORD id = static_cast<DWORD>(s);
+  return formatMessage(id, getMessage(id, ::GetModuleHandleW(L"ntdll.dll")));
 }
 
 QString windowsErrorString(DWORD errorCode)
