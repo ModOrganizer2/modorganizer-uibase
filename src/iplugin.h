@@ -126,6 +126,11 @@ public:
    */
   virtual QList<PluginSetting> settings() const = 0;
 
+  /**
+   * @return whether the plugin should be enabled by default
+   */
+  virtual bool enabledByDefault() const { return true; }
+
 };
 
 } // namespace MOBase

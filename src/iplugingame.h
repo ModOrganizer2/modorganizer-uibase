@@ -65,6 +65,9 @@ public:
   // Game plugin should not have requirements:
   std::vector<std::shared_ptr<const IPluginRequirement>> requirements() const final override { return {}; }
 
+  // Game plugin can not be disabled
+  bool enabledByDefault() const final override { return true; }
+
   /**
    * this function may be called before init()
    *
