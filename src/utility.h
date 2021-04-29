@@ -428,12 +428,6 @@ QDLLEXPORT QString getDesktopDirectory();
 QDLLEXPORT QString getStartMenuDirectory();
 
 /**
- * @brief fix a directory name so it can be dealt with by windows explorer
- * @return false if there was no way to convert the name into a valid one
- **/
-QDLLEXPORT bool fixDirectoryName(QString &name);
-
-/**
  * @brief read a file and return it's content as a unicode string. This tries to guess
  *        the encoding used in the file
  * @param fileName name of the file to read

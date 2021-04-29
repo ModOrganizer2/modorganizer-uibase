@@ -8,6 +8,12 @@
 namespace MOBase
 {
 /**
+ * @brief fix a directory name so it can be dealt with by windows explorer
+ * @return false if there was no way to convert the name into a valid one
+ **/
+QDLLEXPORT bool fixDirectoryName(QString &name);
+
+/**
  * @brief ensures a file name is valid
  *
  * @param name the file name being sanitized
