@@ -76,6 +76,7 @@ private:
   TutorialManager &m_Manager;
 
   std::vector<std::pair<QString, QObject*> > m_ExposedObjects;
+  QList<QMetaObject::Connection> m_Connections;
   int m_ExpectedTab;
   QWidget *m_CurrentClickControl;
 

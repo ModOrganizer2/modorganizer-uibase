@@ -249,17 +249,14 @@ void TutorialControl::nextTutorialStepProxy()
     QTimer::singleShot(1, background, SLOT(nextStep()));
     lockUI(true);
 
-    bool success = false;
-    if (sender()->inherits("QAction")) {
-      success = disconnect(sender(), SIGNAL(triggered()),
-                           this, SLOT(nextTutorialStepProxy()));
-    } else if (sender()->inherits("QMenu")) {
-      success = disconnect(sender(), SIGNAL(aboutToShow()),
-                           this, SLOT(nextTutorialStepProxy()));
-    } else {
-      success = disconnect(sender(), SIGNAL(pressed()),
-                           this, SLOT(nextTutorialStepProxy()));
+    bool success = true;
+    for (QMetaObject::Connection connection : m_Connections) {
+        if(!disconnect(connection))
+        {
+            success = false;
+        }
     }
+    m_Connections.clear();
     if (!success) {
       log::error("failed to disconnect tutorial proxy");
     }
@@ -276,8 +273,15 @@ void TutorialControl::tabChangedProxy(int selected)
     QObject *background = m_TutorialView->rootObject();
     QTimer::singleShot(1, background, SLOT(nextStep()));
     lockUI(true);
-    if (!disconnect(sender(), SIGNAL(currentChanged(int)),
-                    this, SLOT(tabChangedProxy(int)))) {
+    bool success = true;
+    for (QMetaObject::Connection connection : m_Connections) {
+        if(!disconnect(connection))
+        {
+            success = false;
+        }
+    }
+    m_Connections.clear();
+    if (!success) {
       log::error("failed to disconnect tab-changed proxy");
     }
   }
@@ -294,9 +298,9 @@ bool TutorialControl::waitForAction(const QString &actionName)
     }
     if (action->isEnabled()) {
         if (action->menu() != nullptr) {
-            connect(action->menu(), SIGNAL(aboutToShow()), this, SLOT(nextTutorialStepProxy()));
+            m_Connections.append(connect(action->menu(), SIGNAL(aboutToShow()), this, SLOT(nextTutorialStepProxy())));
         } else {
-            connect(action, SIGNAL(triggered()), this, SLOT(nextTutorialStepProxy()));
+            m_Connections.append(connect(action, SIGNAL(triggered()), this, SLOT(nextTutorialStepProxy())));
         }
         lockUI(false);
         return true;
@@ -317,7 +321,7 @@ bool TutorialControl::waitForButton(const QString &buttonName)
       return false;
     }
     if (button->isEnabled()) {
-      connect(button, SIGNAL(pressed()), this, SLOT(nextTutorialStepProxy()));
+      m_Connections.append(connect(button, SIGNAL(pressed()), this, SLOT(nextTutorialStepProxy())));
       lockUI(false);
       return true;
     } else {
@@ -350,7 +354,7 @@ bool TutorialControl::waitForTabOpen(const QString &tabControlName, const QStrin
         if (tabWidget->isEnabled()) {
             if (tabWidget->currentIndex() != tabIndex) {
                 m_ExpectedTab = tabIndex;
-                connect(tabWidget, SIGNAL(currentChanged(int)), this, SLOT(tabChangedProxy(int)));
+                m_Connections.append(connect(tabWidget, SIGNAL(currentChanged(int)), this, SLOT(tabChangedProxy(int))));
                 lockUI(false);
             } else {
                 QObject* background = m_TutorialView->rootObject();
