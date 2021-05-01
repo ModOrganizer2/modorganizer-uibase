@@ -49,7 +49,8 @@ SOURCES += \
     delayedfilewriter.cpp \
     filenamestring.cpp \
     registry.cpp \
-    steamutility.cpp
+    steamutility.cpp \
+    filesystemutilities.cpp
 
 HEADERS +=\
     utility.h \
@@ -101,7 +102,8 @@ HEADERS +=\
     filemapping.h \
     ipluginfilemapper.h \
     registry.h \
-    steamutility.h
+    steamutility.h \
+    filesystemutilities.cpp
 
 FORMS += \
     textviewer.ui \
