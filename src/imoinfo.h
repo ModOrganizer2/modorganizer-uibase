@@ -36,6 +36,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 
 namespace MOBase {
 
+class IFileTree;
 class IModInterface;
 class IModRepositoryBridge;
 class IDownloadManager;
@@ -263,6 +264,11 @@ public:
    * @note this function is more expensive than the one filtering by name so use the other one if it suffices
    */
   virtual QList<FileInfo> findFileInfos(const QString &path, const std::function<bool(const FileInfo&)> &filter) const = 0;
+
+  /**
+   * @return a IFileTree representing the virtual file tree.
+   */
+  virtual std::shared_ptr<const MOBase::IFileTree> virtualFileTree() const = 0;
 
   /**
    * @return interface to the download manager
