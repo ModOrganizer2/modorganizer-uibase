@@ -27,27 +27,18 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 #include <functional>
 #include <QObject>
 #include <QString>
-#pragma warning(push)
-#pragma warning(disable: 4100)
-#include <boost/signals2.hpp>
-#pragma warning(pop)
 
 namespace MOBase {
 
 
 /**
- * brief A plugin that creates problem reports to be displayed in the UI.
+ * @brief A plugin that creates problem reports to be displayed in the UI.
  * This can be used to report problems related to the same plugin (which implements further
  * interfaces) or as a stand-alone diagnosis tool.
  * This does not derive from IPlugin to prevent multiple inheritance issues. For stand-alone
  * diagnosis plugins, derive from IPlugin and IPluginDiagnose
  */
 class IPluginDiagnose {
-public:
-
-  /// signal to be emitted when the diagnosis information of the plugin is invalidated
-  typedef boost::signals2::signal<void (void)> SignalInvalidated;
-
 public:
 
   /**
@@ -87,11 +78,12 @@ public:
   virtual void startGuidedFix(unsigned int key) const = 0;
 
   /**
-   * @brief the application will use this to register callbacks to be called when
-   *        the diagnosis information needs to be re-evaluated
+   * @brief Register the callback to be called when this plugin is invalidated.
+   *
+   * Only one callback can be activate at a time.
    */
-  virtual boost::signals2::connection onInvalidated(std::function<void()> callback) {
-    return m_OnInvalidated.connect(callback);
+  void onInvalidated(std::function<void()> callback) {
+    m_OnInvalidated = callback;
   }
 
   virtual ~IPluginDiagnose() { }
@@ -104,7 +96,7 @@ protected:
 
 private:
 
-  SignalInvalidated m_OnInvalidated;
+  std::function<void()> m_OnInvalidated;
 
 };
 
