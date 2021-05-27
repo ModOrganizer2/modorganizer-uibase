@@ -56,13 +56,6 @@
 #include <shobjidl.h>
 #include <Windows.h>
 
-// boost
-#include <boost/algorithm/string/trim.hpp>
-#include <boost/any.hpp>
-#include <boost/assign.hpp>
-#include <boost/scoped_array.hpp>
-#include <boost/signals2.hpp>
-
 // Qt
 #include <QAbstractButton>
 #include <QAction>

@@ -10,8 +10,7 @@ class QIcon;
 class QUrl;
 class QStringList;
 
-#include <boost/any.hpp>
-
+#include <any>
 #include <cstdint>
 #include <typeindex>
 #include <unordered_map>
@@ -81,8 +80,8 @@ public:
     auto iter = list.find(typeid(T));
     if (iter != list.end()) {
       try {
-        return boost::any_cast<T*>(iter->second);
-      } catch (const boost::bad_any_cast&) {
+        return std::any_cast<T*>(iter->second);
+      } catch (const std::bad_any_cast&) {
         // don't use log::error() here so log.h and fmt aren't pulled into
         // plugins
         qCritical(
@@ -317,7 +316,7 @@ public:
 
 protected:
 
-  virtual std::map<std::type_index, boost::any> featureList() const = 0;
+  virtual std::map<std::type_index, std::any> featureList() const = 0;
 
 };
 
