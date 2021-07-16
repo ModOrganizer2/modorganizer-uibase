@@ -24,8 +24,6 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 #include "log.h"
 #include <memory>
 #include <sstream>
-#include <boost/scoped_array.hpp>
-#include <boost/algorithm/string/trim.hpp>
 #include <QDir>
 #include <QBuffer>
 #include <QDesktopWidget>
@@ -963,6 +961,12 @@ void deleteChildWidgets(QWidget* w)
   }
 }
 
+void trimWString(std::wstring& s)
+{
+    s.erase(std::remove_if(s.begin(), s.end(),
+        [](wint_t ch) { return std::iswspace(ch); }), s.end());
+}
+
 std::wstring getMessage(DWORD id, HMODULE mod)
 {
   wchar_t* message = nullptr;
@@ -989,7 +993,7 @@ std::wstring getMessage(DWORD id, HMODULE mod)
 
   if (ret != 0 && message) {
     s = message;
-    boost::trim(s);
+    trimWString(s);
     LocalFree(message);
   }
 

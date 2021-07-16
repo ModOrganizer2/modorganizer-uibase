@@ -41,6 +41,7 @@
 #include <utility>
 #include <vector>
 #include <wchar.h>
+#include <cwctype>
 
 // fmt
 #include <fmt/format.h>
