@@ -22,7 +22,6 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 #include "versioninfo.h"
 #include <QRegExp>
 #include <QVersionNumber>
-#include <boost/assign.hpp>
 
 namespace MOBase {
 
@@ -209,10 +208,12 @@ QString VersionInfo::parseReleaseType(QString versionString)
   // release types are often followed by a number (i.e. "beta4"). This needs to be extracted now, otherwise
   // the outer parser will think it's the subminor version and then 1.0.0rc1 would be interpreted as newer than 1.0.0
 
-  static std::map<QString, ReleaseType> typeStrings = boost::assign::map_list_of("prealpha", RELEASE_PREALPHA)
-                                                                                ("alpha", RELEASE_ALPHA)
-                                                                                ("beta", RELEASE_BETA)
-                                                                                ("rc", RELEASE_CANDIDATE);
+  static std::map<QString, ReleaseType> typeStrings = {
+    {"prealpha", RELEASE_PREALPHA},
+    {"alpha", RELEASE_ALPHA},
+    {"beta", RELEASE_BETA},
+    {"rc", RELEASE_CANDIDATE}
+  };
 
   m_ReleaseType = RELEASE_FINAL;
 

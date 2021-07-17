@@ -23,8 +23,6 @@ along with Mod Organizer.  If not, see <http://www.gnu.org/licenses/>.
 #include "report.h"
 #include "log.h"
 
-#include <boost/scoped_array.hpp>
-
 #include <QCoreApplication>
 #include <QQmlEngine>
 #include <QQmlContext>
@@ -104,7 +102,7 @@ void TutorialControl::expose(const QString &widgetName, QObject *widget)
 
 static QString canonicalPath(const QString &path)
 {
-  boost::scoped_array<wchar_t> buffer(new wchar_t[32768]);
+  std::unique_ptr<wchar_t[]> buffer(new wchar_t[32768]);
   DWORD res = ::GetShortPathNameW((wchar_t*)path.utf16(), buffer.get(), 32768);
   if (res == 0) {
     return path;
