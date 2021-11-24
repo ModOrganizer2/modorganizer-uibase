@@ -281,6 +281,38 @@ void Logger::setCallback(Callback* f)
   }
 }
 
+void Logger::addToBlacklist(const std::string& filter, const std::string& replacement)
+{
+    bool present = false;
+    for (BlacklistEntry& e : m_conf.blacklist) {
+        if (e.filter.compare(filter) == 0) {
+            e.replacement = replacement;
+            present = true;
+            break;
+        }
+    }
+    if (!present) {
+        m_conf.blacklist.push_back(BlacklistEntry(filter, replacement));
+    }
+}
+
+void Logger::removeFromBlacklist(const std::string& filter)
+{
+    for (auto it = m_conf.blacklist.begin(); it != m_conf.blacklist.end(); ) {
+        if (it->filter.compare(filter) == 0) {
+            it = m_conf.blacklist.erase(it);
+        }
+        else {
+            ++it;
+        }
+    }
+}
+
+void Logger::resetBlacklist()
+{
+    m_conf.blacklist.clear();
+}
+
 void Logger::createLogger(const std::string& name)
 {
   m_sinks.reset(new spdlog::sinks::dist_sink<std::mutex>);
