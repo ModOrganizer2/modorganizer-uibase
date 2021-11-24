@@ -2,6 +2,7 @@
 
 #include <string>
 #include <filesystem>
+#include <vector>
 #include <QString>
 #include <QSize>
 #include <QRect>
@@ -22,6 +23,12 @@ enum Levels
   Info    = 1,
   Warning = 2,
   Error   = 3
+};
+
+struct BlacklistEntry
+{
+    std::string filter;
+    std::string replacement;
 };
 
 } // namespace
@@ -99,7 +106,7 @@ void QDLLEXPORT doLogImpl(
 
 template <class F, class... Args>
 void doLog(
-  spdlog::logger& logger, Levels lv, F&& format, Args&&... args) noexcept
+  spdlog::logger& logger, Levels lv, const std::vector<MOBase::log::BlacklistEntry>& bl, F&& format, Args&&... args) noexcept
 {
   std::string s;
 
@@ -110,6 +117,16 @@ void doLog(
     s = fmt::format(
       std::forward<F>(format),
       converter<std::decay_t<Args>>::convert(std::forward<Args>(args))...);
+
+    // check the blacklist
+    for (const BlacklistEntry& entry : bl) {
+      std::string::iterator it = std::search(s.begin(), s.end(), entry.filter.begin(), entry.filter.end(), [](char a, char b) { return toupper(a) == toupper(b); });
+      while (it != s.end())
+      {
+        s.replace(it, it + (ptrdiff_t)entry.filter.length(), entry.replacement);
+        it = std::search(s.begin(), s.end(), entry.filter.begin(), entry.filter.end(), [](char a, char b) { return toupper(a) == toupper(b); });
+      }
+    }
   }
   catch(fmt::format_error&)
   {
@@ -173,13 +190,13 @@ struct Entry
 
 using Callback = void (Entry);
 
-
 struct LoggerConfiguration
 {
   std::string name;
   Levels maxLevel = Levels::Info;
   std::string pattern;
   bool utc = false;
+  std::vector<BlacklistEntry> blacklist;
 };
 
 
@@ -195,6 +212,10 @@ public:
   void setPattern(const std::string& pattern);
   void setFile(const File& f);
   void setCallback(Callback* f);
+
+  void addToBlacklist(const std::string& filter, const std::string& replacement);
+  void removeFromBlacklist(const std::string& filter);
+  void resetBlacklist();
 
   template <class F, class... Args>
   void debug(F&& format, Args&&... args) noexcept
@@ -224,7 +245,7 @@ public:
   void log(Levels lv, F&& format, Args&&... args) noexcept
   {
     details::doLog(
-      *m_logger, lv, std::forward<F>(format), std::forward<Args>(args)...);
+      *m_logger, lv, m_conf.blacklist, std::forward<F>(format), std::forward<Args>(args)...);
   }
 
 private:
