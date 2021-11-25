@@ -283,6 +283,11 @@ void Logger::setCallback(Callback* f)
 
 void Logger::addToBlacklist(const std::string& filter, const std::string& replacement)
 {
+    if (filter.length() <= 0 || replacement.length() <= 0) {
+        // nothing to do
+        return;
+    }
+
     bool present = false;
     for (BlacklistEntry& e : m_conf.blacklist) {
         if (e.filter.compare(filter) == 0) {
@@ -298,6 +303,11 @@ void Logger::addToBlacklist(const std::string& filter, const std::string& replac
 
 void Logger::removeFromBlacklist(const std::string& filter)
 {
+    if (filter.length() <= 0) {
+        // nothing to do
+        return;
+    }
+
     for (auto it = m_conf.blacklist.begin(); it != m_conf.blacklist.end(); ) {
         if (it->filter.compare(filter) == 0) {
             it = m_conf.blacklist.erase(it);

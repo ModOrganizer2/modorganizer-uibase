@@ -106,7 +106,7 @@ void QDLLEXPORT doLogImpl(
 
 template <class F, class... Args>
 void doLog(
-  spdlog::logger& logger, Levels lv, const std::vector<MOBase::log::BlacklistEntry>& bl, F&& format, Args&&... args) noexcept
+  spdlog::logger& logger, Levels lv, const std::vector<MOBase::log::BlacklistEntry> bl, F&& format, Args&&... args) noexcept
 {
   std::string s;
 
