@@ -5,7 +5,8 @@
 #include <memory>
 #include <optional>
 
-#include <QStringList>
+#include <QList>
+#include <QString>
 
 #include "dllimport.h"
 
@@ -68,18 +69,18 @@ class PluginDependencyRequirement : public IPluginRequirement {
   friend class PluginRequirementFactory;
 
 public:
-  PluginDependencyRequirement(QStringList const& pluginNames);
+  PluginDependencyRequirement(QList<QString> const& pluginNames);
 
   virtual std::optional<Problem> check(IOrganizer* organizer) const;
 
   /**
    * @return the list of plugin names in this dependency requirement.
    */
-  QStringList pluginNames() const { return m_PluginNames; }
+  QList<QString> pluginNames() const { return m_PluginNames; }
 
 protected:
   QString message() const;
-  QStringList m_PluginNames;
+  QList<QString> m_PluginNames;
 };
 
 /**
@@ -91,18 +92,18 @@ class GameDependencyRequirement : public IPluginRequirement {
   friend class PluginRequirementFactory;
 
 public:
-  GameDependencyRequirement(QStringList const& gameNames);
+  GameDependencyRequirement(QList<QString> const& gameNames);
 
   virtual std::optional<Problem> check(IOrganizer* organizer) const;
 
   /**
    * @return the list of game names in this dependency requirement.
    */
-  QStringList gameNames() const { return m_GameNames; }
+  QList<QString> gameNames() const { return m_GameNames; }
 
 protected:
   QString message() const;
-  QStringList m_GameNames;
+  QList<QString> m_GameNames;
 };
 
 /**
@@ -141,9 +142,9 @@ public:
    *
    * @param pluginNames Name of the plugin required.
    */
-  static std::shared_ptr<const IPluginRequirement> pluginDependency(QStringList const& pluginNames);
+  static std::shared_ptr<const IPluginRequirement> pluginDependency(QList<QString> const& pluginNames);
   static std::shared_ptr<const IPluginRequirement> pluginDependency(QString const& pluginName) {
-    return pluginDependency(QStringList{ pluginName });
+    return pluginDependency(QList<QString>{ pluginName });
   }
 
   /**
@@ -154,9 +155,9 @@ public:
    *
    * @note This differ from makePluginDependency only for the message.
    */
-  static std::shared_ptr<const IPluginRequirement> gameDependency(QStringList const& gameNames);
+  static std::shared_ptr<const IPluginRequirement> gameDependency(QList<QString> const& gameNames);
   static std::shared_ptr<const IPluginRequirement> gameDependency(QString const& gameName) {
-    return gameDependency(QStringList{ gameName });
+    return gameDependency(QList<QString>{ gameName });
   }
 
   /**

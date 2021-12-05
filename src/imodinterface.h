@@ -28,8 +28,8 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 
 #include <QColor>
 #include <QDateTime>
+#include <QList>
 #include <QString>
-#include <QStringList>
 
 
 namespace MOBase {
@@ -159,7 +159,7 @@ public: // Meta-related information:
   /**
    * @return the list of categories this mod belongs to.
    */
-  virtual QStringList categories() const = 0;
+  virtual QList<QString> categories() const = 0;
 
   /**
    * @return the tracked state of this mod.

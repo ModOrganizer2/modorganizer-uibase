@@ -20,7 +20,8 @@ along with Mod Organizer.  If not, see <http://www.gnu.org/licenses/>.
 #include "nxmurl.h"
 #include "utility.h"
 #include <QRegularExpression>
-#include <QStringList>
+#include <QList>
+#include <QString>
 #include <QUrl>
 #include <QUrlQuery>
 

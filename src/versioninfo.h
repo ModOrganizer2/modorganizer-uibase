@@ -23,6 +23,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 
 
 #include "dllimport.h"
+#include <QList>
 #include <QString>
 
 class QVersionNumber;

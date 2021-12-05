@@ -47,7 +47,7 @@ public:
    *
    * Note: This must return the actual list, not the potential list.
    */
-  virtual QStringList allFiles() const = 0;
+  virtual QList<QString> allFiles() const = 0;
 
 };
 

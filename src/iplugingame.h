@@ -8,7 +8,7 @@
 
 class QIcon;
 class QUrl;
-class QStringList;
+class QString;
 
 #include <any>
 #include <cstdint>
@@ -198,7 +198,7 @@ public:
   /**
    * @return list of plugins that are part of the game and not considered optional
    */
-  virtual QStringList primaryPlugins() const = 0;
+  virtual QList<QString> primaryPlugins() const = 0;
 
   /**
    * this function may be called before init()
@@ -208,7 +208,7 @@ public:
    *       plugin) like a regular one and a GOTY-edition the plugin can return a list of them and
    *       the user gets to chose which one he owns.
    */
-  virtual QStringList gameVariants() const = 0;
+  virtual QList<QString> gameVariants() const = 0;
 
   /**
    * @brief if there are multiple game variants (returned by gameVariants) this will get called
@@ -236,7 +236,7 @@ public:
    * this is used to determine if a Nexus (or other) download source should be considered
    * a 'primary' source for the game so that it isn't flagged as an alternative source
    */
-  virtual QStringList primarySources() const = 0;
+  virtual QList<QString> primarySources() const = 0;
 
   /**
    * @brief Get any valid 'short' name for the game
@@ -248,7 +248,7 @@ public:
    * the short name should be considered the primary handler for a directly supported game
    * for puroses of auto-launching an instance
    */
-  virtual QStringList validShortNames() const = 0;
+  virtual QList<QString> validShortNames() const = 0;
 
    /**
    * @brief Get the 'short' name of the game
@@ -263,17 +263,17 @@ public:
    *
    * @note It is important that the 'main' .ini file comes first in this list
    */
-  virtual QStringList iniFiles() const = 0;
+  virtual QList<QString> iniFiles() const = 0;
 
   /**
    * @brief Get a list of esp/esm files that are part of known dlcs
    */
-  virtual QStringList DLCPlugins() const = 0;
+  virtual QList<QString> DLCPlugins() const = 0;
 
   /**
    * @brief Get the current list of active Creation Club plugins
    */
-  virtual QStringList CCPlugins() const = 0;
+  virtual QList<QString> CCPlugins() const = 0;
 
   /*
    * @brief determine the load order mechanism used by this game.

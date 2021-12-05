@@ -3,7 +3,9 @@
 #include <string>
 #include <filesystem>
 #include <vector>
+#include <QList>
 #include <QString>
+#include <QStringRef>
 #include <QSize>
 #include <QRect>
 #include <QColor>

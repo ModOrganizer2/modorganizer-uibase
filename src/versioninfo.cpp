@@ -170,7 +170,7 @@ QString VersionInfo::displayString(int forcedVersionSegments) const
     const auto month = m_Minor;
     const auto day = m_SubMinor;
 
-    return QDate(year, month, day).toString(Qt::SystemLocaleShortDate);
+    return QLocale::system().toString(QDate(year, month, day), QLocale::FormatType::ShortFormat);
   }
   switch (m_ReleaseType) {
     case RELEASE_PREALPHA: {

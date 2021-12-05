@@ -25,6 +25,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 #include <functional>
 #include <map>
 
+#include <QList>
 #include <QString>
 
 #include "iprofile.h"
@@ -73,7 +74,7 @@ public:
    *
    * @return list of mods (internal names).
    */
-  virtual QStringList allMods() const = 0;
+  virtual QList<QString> allMods() const = 0;
 
   /**
    * @brief Retrieve the list of installed mod names, sorted by current profile priority.
@@ -83,7 +84,7 @@ public:
    *
    * @return list of mods (internal names), sorted by priority.
    */
-  virtual QStringList allModsByProfilePriority(MOBase::IProfile *profile = nullptr) const = 0;
+  virtual QList<QString> allModsByProfilePriority(MOBase::IProfile *profile = nullptr) const = 0;
 
   /**
    * @brief Retrieve the mod with the given name.
@@ -146,7 +147,7 @@ public:
    * @note calling this will cause MO to re-evaluate its virtual file system so this is fairly
    *       expensive
    */
-  virtual int setActive(const QStringList& names, bool active) = 0;
+  virtual int setActive(const QList<QString>& names, bool active) = 0;
 
 
   /**

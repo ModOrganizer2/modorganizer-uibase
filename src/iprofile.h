@@ -2,6 +2,7 @@
 #define IPROFILE
 
 
+#include <QList>
 #include <QString>
 
 namespace MOBase {

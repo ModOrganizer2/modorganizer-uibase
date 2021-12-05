@@ -20,6 +20,7 @@ along with Mod Organizer.  If not, see <http://www.gnu.org/licenses/>.
 #ifndef NXMURL_H
 #define NXMURL_H
 
+#include <QList>
 #include <QString>
 #include <QObject>
 #include "dllimport.h"

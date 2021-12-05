@@ -3,7 +3,8 @@
 
 #include <functional>
 #include "dllimport.h"
-#include <QStringList>
+#include <QList>
+#include <QString>
 #include <QObject>
 
 
@@ -25,7 +26,7 @@ public:
    * @param urls list of urls to download from
    * @return an id by which the download will be identified
    */
-  virtual int startDownloadURLs(const QStringList &urls) = 0;
+  virtual int startDownloadURLs(const QList<QString> &urls) = 0;
 
   /**
    * @brief download a file from www.nexusmods.com/<game>. <game> is always the game currently being managed

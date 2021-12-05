@@ -4,6 +4,7 @@
 
 #include "dllimport.h"
 #include <QString>
+#include <QList>
 #include <QFileInfo>
 #include <QDir>
 
@@ -49,7 +50,7 @@ public:
 
   QString title() const;
   QFileInfo binary() const;
-  QStringList arguments() const;
+  QList<QString> arguments() const;
   QDir workingDirectory() const;
   QString steamAppID() const;
   bool isCustom() const;
@@ -58,7 +59,7 @@ private:
 
   QString m_Title;
   QFileInfo m_Binary;
-  QStringList m_Arguments;
+  QList<QString> m_Arguments;
   QDir m_WorkingDirectory;
   QString m_SteamAppID;
   bool m_Custom { false };

@@ -17,7 +17,7 @@ namespace MOBase {
     return this->suffix().compare(suffix, FileNameComparator::CaseSensitivity) == 0;
   }
 
-  bool FileTreeEntry::hasSuffix(QStringList suffixes) const {
+  bool FileTreeEntry::hasSuffix(QList<QString> suffixes) const {
     return suffixes.contains(suffix(), FileNameComparator::CaseSensitivity);
   }
 
@@ -153,7 +153,7 @@ namespace MOBase {
    *
    */
   std::shared_ptr<FileTreeEntry> IFileTree::addFile(QString path, bool replaceIfExists) {
-    QStringList parts = splitPath(path);
+    QList<QString> parts = splitPath(path);
 
     // Check if the file already exists:
     auto existingEntry = fetchEntry(parts, IFileTree::FILE_OR_DIRECTORY);
@@ -205,7 +205,7 @@ namespace MOBase {
    *
    */
   std::shared_ptr<IFileTree> IFileTree::addDirectory(QString path) {
-    QStringList parts = splitPath(path);
+    QList<QString> parts = splitPath(path);
     return createTree(parts.begin(), parts.end());
   }
 
@@ -309,7 +309,7 @@ namespace MOBase {
     const bool insertFolder = path.isEmpty() || path.endsWith("/") || path.endsWith("\\");
 
     // Retrieve the path:
-    QStringList parts = splitPath(path);
+    QList<QString> parts = splitPath(path);
 
     // Backup the entry name (in case the insertion fails), and update the
     // name:
@@ -436,7 +436,7 @@ namespace MOBase {
   /**
    *
    */
-  std::size_t IFileTree::removeAll(QStringList names) {
+  std::size_t IFileTree::removeAll(QList<QString> names) {
     return removeIf([this, &names](auto& entry) {
       return names.contains(entry->name(), Qt::CaseInsensitive); });
   }
@@ -457,7 +457,7 @@ namespace MOBase {
   /**
    *
    */
-  QStringList IFileTree::splitPath(QString path) {
+  QList<QString> IFileTree::splitPath(QString path) {
     // Using raw \\ instead of QDir::separator() since we are replacing by /
     // anyway, and this avoid pulling an extra header (like QDir) only
     // for the separator.
@@ -614,10 +614,10 @@ namespace MOBase {
   /**
    *
    */
-  std::shared_ptr<FileTreeEntry> IFileTree::fetchEntry(QStringList path, FileTypes matchTypes) {
+  std::shared_ptr<FileTreeEntry> IFileTree::fetchEntry(QList<QString> path, FileTypes matchTypes) {
     return std::const_pointer_cast<FileTreeEntry>(const_cast<const IFileTree*>(this)->fetchEntry(path, matchTypes));
   }
-  std::shared_ptr<const FileTreeEntry> IFileTree::fetchEntry(QStringList const& path, FileTypes matchTypes) const {
+  std::shared_ptr<const FileTreeEntry> IFileTree::fetchEntry(QList<QString> const& path, FileTypes matchTypes) const {
     // Check to ensure that the path contains at least one element:
     if (path.isEmpty()) {
       return nullptr;
@@ -703,7 +703,7 @@ namespace MOBase {
   /**
    *
    */
-  std::shared_ptr<IFileTree> IFileTree::createTree(QStringList::const_iterator begin, QStringList::const_iterator end) {
+  std::shared_ptr<IFileTree> IFileTree::createTree(QList<QString>::const_iterator begin, QList<QString>::const_iterator end) {
     // The current tree and entry:
     std::shared_ptr<IFileTree> tree = astree();
     for (auto it = begin; tree != nullptr && it != end; ++it) {

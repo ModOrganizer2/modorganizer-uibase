@@ -24,6 +24,7 @@
 #define JSON_H
 
 #include <QVariant>
+#include <QList>
 #include <QString>
 
 

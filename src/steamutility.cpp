@@ -23,6 +23,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 
 #include <QDir>
 #include <QSettings>
+#include <QList>
 #include <QString>
 #include <QTextStream>
 #include <QRegularExpression>
@@ -41,7 +42,7 @@ QString findSteam()
 
 QString findSteamGame(const QString &appName, const QString &validFile)
 {
-  QStringList libraryFolders; // list of Steam libraries to search
+  QList<QString> libraryFolders; // list of Steam libraries to search
   QDir steamDir(findSteam()); // Steam installation directory
 
   // Can do nothing if Steam doesn't exist

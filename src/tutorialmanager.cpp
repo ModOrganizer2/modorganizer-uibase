@@ -22,6 +22,7 @@ along with Mod Organizer.  If not, see <http://www.gnu.org/licenses/>.
 #include "utility.h"
 #include "log.h"
 #include <QDir>
+#include <QList>
 #include <QString>
 #include <QApplication>
 

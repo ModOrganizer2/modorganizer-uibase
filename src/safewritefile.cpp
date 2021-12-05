@@ -20,7 +20,8 @@ along with Mod Organizer.  If not, see <http://www.gnu.org/licenses/>.
 
 #include "safewritefile.h"
 #include "log.h"
-#include <QStringList>
+#include <QList>
+#include <QString>
 #include <QCryptographicHash>
 #include <QStorageInfo>
 

@@ -26,13 +26,13 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 #include <sstream>
 #include <QDir>
 #include <QBuffer>
-#include <QDesktopWidget>
+#include <QScreen>
 #include <QApplication>
 #include <QTextCodec>
 #include <QtDebug>
 #include <QUuid>
 #include <QCollator>
-#include <QtWinExtras/QtWin>
+#include <QImage>
 #define WIN32_LEAN_AND_MEAN
 #include <Windows.h>
 
@@ -89,7 +89,7 @@ bool copyDir(const QString &sourceName, const QString &destinationName, bool mer
     return false;
   }
 
-  QStringList files = sourceDir.entryList(QDir::Files);
+  QList<QString> files = sourceDir.entryList(QDir::Files);
   foreach (QString fileName, files) {
     QString srcName = sourceName + "/" + fileName;
     QString destName = destinationName + "/" + fileName;
@@ -98,7 +98,7 @@ bool copyDir(const QString &sourceName, const QString &destinationName, bool mer
 
   files.clear();
   // we leave out symlinks because that could cause an endless recursion
-  QStringList subDirs = sourceDir.entryList(QDir::AllDirs | QDir::NoDotAndDotDot | QDir::NoSymLinks);
+  QList<QString> subDirs = sourceDir.entryList(QDir::AllDirs | QDir::NoDotAndDotDot | QDir::NoSymLinks);
   foreach (QString subDir, subDirs) {
     QString srcName = sourceName + "/" + subDir;
     QString destName = destinationName + "/" + subDir;
@@ -141,7 +141,7 @@ static DWORD TranslateError(int error)
 
 
 static bool shellOp(
-  const QStringList &sourceNames, const QStringList &destinationNames,
+  const QList<QString> &sourceNames, const QList<QString> &destinationNames,
   QWidget *dialog, UINT operation, bool yesToAll, bool silent=false)
 {
   std::vector<wchar_t> fromBuffer;
@@ -218,35 +218,35 @@ static bool shellOp(
   }
 }
 
-bool shellCopy(const QStringList &sourceNames, const QStringList &destinationNames, QWidget *dialog)
+bool shellCopy(const QList<QString> &sourceNames, const QList<QString> &destinationNames, QWidget *dialog)
 {
   return shellOp(sourceNames, destinationNames, dialog, FO_COPY, false);
 }
 
 bool shellCopy(const QString &sourceNames, const QString &destinationNames, bool yesToAll, QWidget *dialog)
 {
-  return shellOp(QStringList() << sourceNames, QStringList() << destinationNames, dialog, FO_COPY, yesToAll);
+  return shellOp(QList<QString>() << sourceNames, QList<QString>() << destinationNames, dialog, FO_COPY, yesToAll);
 }
 
-bool shellMove(const QStringList &sourceNames, const QStringList &destinationNames, QWidget *dialog)
+bool shellMove(const QList<QString> &sourceNames, const QList<QString> &destinationNames, QWidget *dialog)
 {
   return shellOp(sourceNames, destinationNames, dialog, FO_MOVE, false);
 }
 
 bool shellMove(const QString &sourceNames, const QString &destinationNames, bool yesToAll, QWidget *dialog)
 {
-  return shellOp(QStringList() << sourceNames, QStringList() << destinationNames, dialog, FO_MOVE, yesToAll);
+  return shellOp(QList<QString>() << sourceNames, QList<QString>() << destinationNames, dialog, FO_MOVE, yesToAll);
 }
 
 bool shellRename(const QString &oldName, const QString &newName, bool yesToAll, QWidget *dialog)
 {
-  return shellOp(QStringList(oldName), QStringList(newName), dialog, FO_RENAME, yesToAll);
+  return shellOp(QList<QString>(oldName), QList<QString>(newName), dialog, FO_RENAME, yesToAll);
 }
 
-bool shellDelete(const QStringList &fileNames, bool recycle, QWidget *dialog)
+bool shellDelete(const QList<QString> &fileNames, bool recycle, QWidget *dialog)
 {
   const UINT op = static_cast<UINT>(recycle ? FO_RECYCLE : FO_DELETE);
-  return shellOp(fileNames, QStringList(), dialog, op, false);
+  return shellOp(fileNames, QList<QString>(), dialog, op, false);
 }
 
 
@@ -371,7 +371,7 @@ void LogShellFailure(
   const wchar_t* operation, const wchar_t* file, const wchar_t* params,
   DWORD error)
 {
-  QStringList s;
+  QList<QString> s;
 
   if (operation) {
     s << QString::fromWCharArray(operation);
@@ -444,7 +444,7 @@ Result Explore(const QFileInfo& info)
     const auto parent = info.dir();
 
     if (parent.exists()) {
-      return ExploreDirectory(parent.absolutePath());
+      return ExploreDirectory(QFileInfo(parent.absolutePath()));
     } else {
       return Result::makeFailure(ERROR_FILE_NOT_FOUND);
     }
@@ -619,7 +619,7 @@ Result CreateDirectories(const QDir& dir)
 
 Result DeleteDirectoryRecursive(const QDir& dir)
 {
-  if (!shellOp({dir.path()}, QStringList(), nullptr, FO_DELETE, true)) {
+  if (!shellOp({dir.path()}, QList<QString>(), nullptr, FO_DELETE, true)) {
     const auto e = GetLastError();
 
     return Result::makeFailure(
@@ -634,9 +634,9 @@ Result DeleteDirectoryRecursive(const QDir& dir)
 
 bool moveFileRecursive(const QString &source, const QString &baseDir, const QString &destination)
 {
-  QStringList pathComponents = destination.split("/");
+  QList<QString> pathComponents = destination.split("/");
   QString path = baseDir;
-  for (QStringList::Iterator iter = pathComponents.begin(); iter != pathComponents.end() - 1; ++iter) {
+  for (QList<QString>::Iterator iter = pathComponents.begin(); iter != pathComponents.end() - 1; ++iter) {
     path.append("/").append(*iter);
     if (!QDir(path).exists() && !QDir().mkdir(path)) {
       reportError(QObject::tr("failed to create directory \"%1\"").arg(path));
@@ -659,9 +659,9 @@ bool moveFileRecursive(const QString &source, const QString &baseDir, const QStr
 
 bool copyFileRecursive(const QString &source, const QString &baseDir, const QString &destination)
 {
-  QStringList pathComponents = destination.split("/");
+  QList<QString> pathComponents = destination.split("/");
   QString path = baseDir;
-  for (QStringList::Iterator iter = pathComponents.begin(); iter != pathComponents.end() - 1; ++iter) {
+  for (QList<QString>::Iterator iter = pathComponents.begin(); iter != pathComponents.end() - 1; ++iter) {
     path.append("/").append(*iter);
     if (!QDir(path).exists() && !QDir().mkdir(path)) {
       reportError(QObject::tr("failed to create directory \"%1\"").arg(path));
@@ -817,7 +817,7 @@ QString getStartMenuDirectory()
 bool shellDeleteQuiet(const QString &fileName, QWidget *dialog)
 {
   if (!QFile::remove(fileName)) {
-    return shellDelete(QStringList(fileName), false, dialog);
+    return shellDelete(QList<QString>(fileName), false, dialog);
   }
   return true;
 }
@@ -854,10 +854,10 @@ QString readFileText(const QString &fileName, QString *encoding)
 
 void removeOldFiles(const QString &path, const QString &pattern, int numToKeep, QDir::SortFlags sorting)
 {
-  QFileInfoList files = QDir(path).entryInfoList(QStringList(pattern), QDir::Files, sorting);
+  QFileInfoList files = QDir(path).entryInfoList(QList<QString>(pattern), QDir::Files, sorting);
 
   if (files.count() > numToKeep) {
-    QStringList deleteFiles;
+    QList<QString> deleteFiles;
     for (int i = 0; i < files.count() - numToKeep; ++i) {
       deleteFiles.append(files.at(i).absoluteFilePath());
     }
@@ -875,7 +875,8 @@ QIcon iconForExecutable(const QString &filePath)
   HICON winIcon;
   UINT res = ::ExtractIconExW(ToWString(filePath).c_str(), 0, &winIcon, nullptr, 1);
   if (res == 1) {
-    QIcon result = QIcon(QtWin::fromHICON(winIcon));
+    QImage image = QImage::fromHICON(winIcon);
+    QIcon result = QIcon(QPixmap::fromImage(image));
     ::DestroyIcon(winIcon);
     return result;
   } else {

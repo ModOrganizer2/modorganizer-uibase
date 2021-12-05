@@ -22,6 +22,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 #define IPLUGINPROXY_H
 
 #include <QDir>
+#include <QList>
 #include <QString>
 
 #include "iplugin.h"
@@ -42,7 +43,7 @@ public:
    *
    * @return list of plugin identifiers that supported by this proxy.
    */
-  virtual QStringList pluginList(const QDir& pluginPath) const = 0;
+  virtual QList<QString> pluginList(const QDir& pluginPath) const = 0;
 
   /**
    * @brief Load the plugins corresponding to the given identifier.

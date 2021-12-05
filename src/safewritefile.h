@@ -25,6 +25,7 @@ along with Mod Organizer.  If not, see <http://www.gnu.org/licenses/>.
 #include "utility.h"
 #include "dllimport.h"
 #include <QTemporaryFile>
+#include <QList>
 #include <QString>
 
 namespace MOBase {

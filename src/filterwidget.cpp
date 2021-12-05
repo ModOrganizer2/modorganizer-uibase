@@ -300,15 +300,15 @@ void FilterWidget::compile()
 
     compiled.push_back({QRegularExpression(m_text, flags)});
   } else {
-    const QStringList ORList = [&] {
+    const QList<QString> ORList = [&] {
       QString filterCopy = QString(m_text);
       filterCopy.replace("||", ";").replace("OR", ";").replace("|", ";");
-      return filterCopy.split(";", QString::SkipEmptyParts);
+      return filterCopy.split(";", Qt::SkipEmptyParts);
     }();
 
     // split in ORSegments that internally use AND logic
     for (const auto& ORSegment : ORList) {
-      const auto keywords = ORSegment.split(" ", QString::SkipEmptyParts);
+      const auto keywords = ORSegment.split(" ", Qt::SkipEmptyParts);
       QList<QRegularExpression> regexes;
 
       for (const auto& keyword : keywords) {

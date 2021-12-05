@@ -24,6 +24,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 #include <vector>
 #include <set>
 #include <algorithm>
+#include <QList>
 #include <QString>
 #include <QTextStream>
 #include <QDir>
@@ -83,7 +84,7 @@ QDLLEXPORT bool copyFileRecursive(const QString &source, const QString &baseDir,
  * @param dialog a dialog to be the parent of possible confirmation dialogs
  * @return true on success, false on error. Call ::GetLastError() to retrieve error code
  **/
-QDLLEXPORT bool shellCopy(const QStringList &sourceNames, const QStringList &destinationNames, QWidget *dialog = nullptr);
+QDLLEXPORT bool shellCopy(const QList<QString> &sourceNames, const QList<QString> &destinationNames, QWidget *dialog = nullptr);
 
 /**
  * @brief copy one or multiple files using a shell operation (this will ask the user for confirmation on overwrite
@@ -107,7 +108,7 @@ QDLLEXPORT bool shellCopy(const QString &sourceNames, const QString &destination
  * @param dialog a dialog to be the parent of possible confirmation dialogs
  * @return true on success, false on error. Call ::GetLastError() to retrieve error code
  **/
-QDLLEXPORT bool shellMove(const QStringList &sourceNames, const QStringList &destinationNames, QWidget *dialog = nullptr);
+QDLLEXPORT bool shellMove(const QList<QString> &sourceNames, const QList<QString> &destinationNames, QWidget *dialog = nullptr);
 
 /**
  * @brief move one files using a shell operation (this will ask the user for confirmation on overwrite
@@ -138,7 +139,7 @@ QDLLEXPORT bool shellRename(const QString &oldName, const QString &newName, bool
  * @param recycle if true, the file goes to the recycle bin instead of being permanently deleted
  * @return true on success, false on error. Call ::GetLastError() to retrieve error code
  **/
-QDLLEXPORT bool shellDelete(const QStringList &fileNames, bool recycle = false, QWidget *dialog = nullptr);
+QDLLEXPORT bool shellDelete(const QList<QString> &fileNames, bool recycle = false, QWidget *dialog = nullptr);
 
 /**
  * @brief delete a file. This tries a regular delete and falls back to a shell operation if that fails.

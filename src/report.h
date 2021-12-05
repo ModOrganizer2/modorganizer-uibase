@@ -22,7 +22,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 #define REPORT_H
 
 #include "dllimport.h"
-#include <QString>
+#include <QList>
 #include <QMessageBox>
 #include <QPlainTextEdit>
 #include <QComboBox>

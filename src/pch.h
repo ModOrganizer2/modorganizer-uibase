@@ -67,7 +67,7 @@
 #include <QCoreApplication>
 #include <QCryptographicHash>
 #include <QDateTime>
-#include <QDesktopWidget>
+#include <QScreen>
 #include <QDialog>
 #include <QDialogButtonBox>
 #include <QDir>
@@ -100,14 +100,13 @@
 #include <QQuickItem>
 #include <QQuickWidget>
 #include <QRect>
-#include <QRegExp>
 #include <QRegularExpression>
 #include <QResizeEvent>
 #include <QSettings>
 #include <QShortcutEvent>
 #include <QShowEvent>
+#include <QList>
 #include <QString>
-#include <QStringList>
 #include <QStyle>
 #include <QTableWidget>
 #include <QTabWidget>
@@ -121,7 +120,6 @@
 #include <QToolBar>
 #include <QToolButton>
 #include <QTreeWidget>
-#include <QtWinExtras/QtWin>
 #include <QUrl>
 #include <QUrlQuery>
 #include <QVariant>

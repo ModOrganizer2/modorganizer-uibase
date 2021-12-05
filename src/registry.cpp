@@ -18,6 +18,7 @@ along with Mod Organizer.  If not, see <http://www.gnu.org/licenses/>.
 #include "registry.h"
 #include "log.h"
 #include "report.h"
+#include <QList>
 #include <QString>
 #include <QMessageBox>
 #include <QApplication>
