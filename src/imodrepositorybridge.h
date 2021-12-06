@@ -91,7 +91,7 @@ Q_SIGNALS:
    * @note in the python interface use the onFilesAvailable call to register a callback for this signal. The signature of
    *       your callback must match the signature of this signal
    */
-  void filesAvailable(QString gameName, int modID, QVariant userData, const QList<ModRepositoryFileInfo> &resultData);
+  void filesAvailable(QString gameName, int modID, QVariant userData, const QList<ModRepositoryFileInfo*> &resultData);
 
   /**
    * @brief sent when information about a file is reported by the repository
