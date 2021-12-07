@@ -28,7 +28,6 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 #include <QBuffer>
 #include <QScreen>
 #include <QApplication>
-#include <QTextCodec>
 #include <QtDebug>
 #include <QUuid>
 #include <QCollator>
@@ -824,9 +823,8 @@ bool shellDeleteQuiet(const QString &fileName, QWidget *dialog)
 
 QString readFileText(const QString &fileName, QString *encoding)
 {
-  // the functions from QTextCodec we use are supposed to be reentrant so it's
-  // safe to use statics for that
-  static QTextCodec *utf8Codec = QTextCodec::codecForName("utf-8");
+  QStringEncoder encoder(QStringConverter::Encoding::Utf8);
+  QStringDecoder decoder(QStringConverter::Encoding::Utf8);
 
   QFile textFile(fileName);
   if (!textFile.open(QIODevice::ReadOnly)) {
@@ -834,19 +832,17 @@ QString readFileText(const QString &fileName, QString *encoding)
   }
 
   QByteArray buffer = textFile.readAll();
-  QTextCodec *codec = QTextCodec::codecForUtfText(buffer, utf8Codec);
-  QString text = codec->toUnicode(buffer);
+  QString text = decoder.decode(buffer);
 
   // check reverse conversion. If this was unicode text there can't be data loss
   // this assumes QString doesn't normalize the data in any way so this is a bit unsafe
-  if (codec->fromUnicode(text) != buffer) {
+  if (encoder.encode(text) != buffer) {
     log::debug("conversion failed assuming local encoding");
-    codec = QTextCodec::codecForLocale();
-    text = codec->toUnicode(buffer);
-  }
-
-  if (encoding != nullptr) {
-    *encoding = codec->name();
+    auto codec = QStringConverter::encodingForData(buffer);
+    if (codec.has_value()) {
+        decoder = QStringDecoder(codec.value());
+    }
+    text = decoder.decode(buffer);
   }
 
   return text;

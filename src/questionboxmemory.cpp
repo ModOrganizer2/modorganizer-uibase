@@ -120,7 +120,7 @@ QDialogButtonBox::StandardButton QuestionBoxMemory::queryImpl(
   if (button != NoButton) {
     log::debug(
       "{}: not asking because user always wants response {}",
-      windowName + (fileName ? QString("/") + fileName : ""),
+      windowName + (fileName ? QString("/") + *fileName : ""),
       buttonToString(button));
 
     return button;

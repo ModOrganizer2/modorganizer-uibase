@@ -96,8 +96,8 @@ namespace QtJson {
 
         if (!data.isValid()) { // invalid or null?
             str = "null";
-        } else if ((data.type() == QVariant::List) ||
-                   (data.type() == QVariant::StringList)) { // variant is a list?
+        } else if ((data.typeId() == QMetaType::Type::QVariantList) ||
+                   (data.typeId() == QMetaType::Type::QStringList)) { // variant is a list?
             QList<QByteArray> values;
             const QVariantList list = data.toList();
             Q_FOREACH(const QVariant& v, list) {
@@ -110,14 +110,14 @@ namespace QtJson {
             }
 
             str = "[ " + join( values, ", " ) + " ]";
-        } else if (data.type() == QVariant::Hash) { // variant is a hash?
+        } else if (data.typeId() == QMetaType::Type::QVariantHash) { // variant is a hash?
             str = serializeMap<>(data.toHash(), success);
-        } else if (data.type() == QVariant::Map) { // variant is a map?
+        } else if (data.typeId() == QMetaType::Type::QVariantMap) { // variant is a map?
             str = serializeMap<>(data.toMap(), success);
-        } else if ((data.type() == QVariant::String) ||
-                   (data.type() == QVariant::ByteArray)) {// a string or a byte array?
+        } else if ((data.typeId() == QMetaType::Type::QString) ||
+                   (data.typeId() == QMetaType::Type::QByteArray)) {// a string or a byte array?
             str = sanitizeString(data.toString()).toUtf8();
-        } else if (data.type() == QVariant::Double) { // double?
+        } else if (data.typeId() == QMetaType::Type::Double) { // double?
             double value = data.toDouble();
             if ((value - value) == 0.0) {
                 str = QByteArray::number(value, 'g');
@@ -127,9 +127,9 @@ namespace QtJson {
             } else {
                 success = false;
             }
-        } else if (data.type() == QVariant::Bool) { // boolean value?
+        } else if (data.typeId() == QMetaType::Type::Bool) { // boolean value?
             str = data.toBool() ? "true" : "false";
-        } else if (data.type() == QVariant::ULongLong) { // large unsigned number?
+        } else if (data.typeId() == QMetaType::Type::ULongLong) { // large unsigned number?
             str = QByteArray::number(data.value<qulonglong>());
         } else if (data.canConvert<qlonglong>()) { // any signed number?
             str = QByteArray::number(data.value<qlonglong>());

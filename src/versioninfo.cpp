@@ -20,7 +20,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 
 
 #include "versioninfo.h"
-#include <QRegExp>
+#include <QRegularExpression>
 #include <QVersionNumber>
 
 namespace MOBase {
@@ -300,13 +300,13 @@ void VersionInfo::parse(const QString &versionString, VersionScheme scheme, bool
     temp.remove(0, 1);
   }
 
-  QRegExp exp("^(\\d+)(\\.(\\d+))?(\\.(\\d+))?(\\.(\\d+))?");
-  int index = exp.indexIn(temp);
-  if (index > -1) {
-    m_Major = exp.cap(1).toInt();
-    m_Minor = exp.cap(3).toInt();
-    QString subMinor = exp.cap(5);
-    QString subSubMinor = exp.cap(7);
+  QRegularExpression exp("^(\\d+)(\\.(\\d+))?(\\.(\\d+))?(\\.(\\d+))?");
+  auto match = exp.match(temp);
+  if (match.hasMatch()) {
+    m_Major = match.captured(1).toInt();
+    m_Minor = match.captured(3).toInt();
+    QString subMinor = match.captured(5);
+    QString subSubMinor = match.captured(7);
     if (!subMinor.isEmpty() && (m_Scheme == SCHEME_DECIMALMARK)) {
       // nooooope, if there are two dots it can't be a decimal mark
       m_Scheme = SCHEME_REGULAR;
@@ -315,12 +315,12 @@ void VersionInfo::parse(const QString &versionString, VersionScheme scheme, bool
       m_SubMinor = subMinor.toInt();
       m_SubSubMinor = subSubMinor.toInt();
     }
-    if (subMinor.isEmpty() && (exp.cap(3).size() > 1) && exp.cap(3).startsWith('0')) {
+    if (subMinor.isEmpty() && (match.captured(3).size() > 1) && match.captured(3).startsWith('0')) {
       // this indicates a decimal scheme
       m_Scheme = SCHEME_DECIMALMARK;
-      m_DecimalPositions = exp.cap(3).size();
+      m_DecimalPositions = match.captured(3).size();
     }
-    temp.remove(index, exp.matchedLength());
+    temp.remove(exp);
   } else {
     m_Scheme = SCHEME_LITERAL;
   }

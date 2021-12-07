@@ -411,7 +411,7 @@ std::string converter<QString>::convert(const QString& s)
   return s.toStdString();
 }
 
-std::string converter<QStringRef>::convert(const QStringRef& s)
+std::string converter<QStringView>::convert(const QStringView& s)
 {
   return converter<QString>::convert(s.toString());
 }

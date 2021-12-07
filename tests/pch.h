@@ -99,7 +99,6 @@
 #include <QQuickItem>
 #include <QQuickWidget>
 #include <QRect>
-#include <QRegExp>
 #include <QRegularExpression>
 #include <QResizeEvent>
 #include <QSettings>
@@ -112,7 +111,6 @@
 #include <QTabWidget>
 #include <QtDebug>
 #include <QTemporaryFile>
-#include <QTextCodec>
 #include <QTextEdit>
 #include <QTextStream>
 #include <QTime>

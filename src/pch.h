@@ -112,7 +112,6 @@
 #include <QTabWidget>
 #include <QtDebug>
 #include <QTemporaryFile>
-#include <QTextCodec>
 #include <QTextEdit>
 #include <QTextStream>
 #include <QTime>

@@ -5,7 +5,7 @@
 #include <vector>
 #include <QList>
 #include <QString>
-#include <QStringRef>
+#include <QStringView>
 #include <QSize>
 #include <QRect>
 #include <QColor>
@@ -67,9 +67,9 @@ struct QDLLEXPORT converter<QString>
 };
 
 template <>
-struct QDLLEXPORT converter<QStringRef>
+struct QDLLEXPORT converter<QStringView>
 {
-  static std::string convert(const QStringRef& s);
+  static std::string convert(const QStringView& s);
 };
 
 
