@@ -91,7 +91,7 @@ QFileInfo ExecutableInfo::binary() const
   return m_Binary;
 }
 
-QList<QString> ExecutableInfo::arguments() const
+QStringList ExecutableInfo::arguments() const
 {
   return m_Arguments;
 }

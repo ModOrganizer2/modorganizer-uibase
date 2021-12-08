@@ -46,7 +46,7 @@ public:
   /**
    * @return the extensions of archives supported by this installation manager.
    */
-  virtual QList<QString> getSupportedExtensions() const = 0;
+  virtual QStringList getSupportedExtensions() const = 0;
 
   /**
    * @brief Extract the specified file from the currently opened archive to a temporary
@@ -82,13 +82,13 @@ public:
    * @note The temporary file is automatically cleaned up after the installation.
    * @note This call can be very slow if the archive is large and "solid".
    *
-   * The flatten argument is not present here while it is present in the deprecated QList<QString>
+   * The flatten argument is not present here while it is present in the deprecated QStringList
    * version for multiple reasons: 1) it was never used, 2) it is kind of fishy because there
    * is no way to know if a file is going to be overriden, 3) it is quite easy to flatten a 
    * IFileTree and thus to given a list of entries flattened (this was not possible with the
-   * QList<QString> version since these were based on the name of the file inside the archive).
+   * QStringList version since these were based on the name of the file inside the archive).
    */
-  virtual QList<QString> extractFiles(std::vector<std::shared_ptr<const FileTreeEntry>> const& entries, bool silent = false) = 0;
+  virtual QStringList extractFiles(std::vector<std::shared_ptr<const FileTreeEntry>> const& entries, bool silent = false) = 0;
 
   /**
    * @brief Create a new file on the disk corresponding to the given entry.

@@ -66,7 +66,7 @@ public:
   struct FileInfo {
     QString filePath;    /// full path to the file
     QString archive;     /// name of the archive if this file is in a BSA, otherwise this is empty.
-    QList<QString> origins; /// list of origins containing this file. the first one is the highest priority one
+    QStringList origins; /// list of origins containing this file. the first one is the highest priority one
   };
 
 public:
@@ -231,7 +231,7 @@ public:
    * @param directoryName relative path to the directory to list
    * @return a list of directory names
    */
-  virtual QList<QString> listDirectories(const QString &directoryName) const = 0;
+  virtual QStringList listDirectories(const QString &directoryName) const = 0;
 
   /**
    * @brief find files in the virtual directory matching the filename filter
@@ -239,7 +239,7 @@ public:
    * @param filter filter function to match against
    * @return a list of matching files
    */
-  virtual QList<QString> findFiles(const QString &path, const std::function<bool(const QString&)> &filter) const = 0;
+  virtual QStringList findFiles(const QString &path, const std::function<bool(const QString&)> &filter) const = 0;
 
   /**
    * @brief find files in the virtual directory matching the filename filter
@@ -247,14 +247,14 @@ public:
    * @param filters list of glob filters to match against
    * @return a list of matching files
    */
-  virtual QList<QString> findFiles(const QString& path, const QList<QString>& filters) const = 0;
+  virtual QStringList findFiles(const QString& path, const QStringList& filters) const = 0;
 
   /**
    * @brief retrieve the file origins for the speicified file. The origins are listed with their internal name
    * @return list of origins that contain the specified file, sorted by their priority
    * @note the internal name of a mod can differ from the display name for disambiguation
    */
-  virtual QList<QString> getFileOrigins(const QString &fileName) const = 0;
+  virtual QStringList getFileOrigins(const QString &fileName) const = 0;
 
   /**
    * @brief find files in the virtual directory matching the specified complex filter
@@ -322,7 +322,7 @@ public:
    */
   virtual HANDLE startApplication(
       const QString &executable,
-      const QList<QString> &args = QList<QString>(),
+      const QStringList &args = QStringList(),
       const QString &cwd = "",
       const QString &profile = "",
       const QString &forcedCustomOverwrite = "",

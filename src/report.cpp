@@ -412,7 +412,7 @@ QPixmap TaskDialog::standardIcon(QMessageBox::Icon icon) const
   const int iconSize = s->pixelMetric(
     QStyle::PM_MessageBoxIconSize, 0, m_dialog.get());
 
-  return i.pixmap(window, QSize(iconSize, iconSize));
+  return i.pixmap(QSize(iconSize, iconSize));
 }
 
 void TaskDialog::setVisibleLines(QPlainTextEdit* w, int lines)

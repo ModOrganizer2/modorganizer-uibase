@@ -237,7 +237,7 @@ namespace MOBase {
      *
      * @return true if this entry is a file and has the given suffix.
      */
-    bool hasSuffix(QList<QString> suffixes) const;
+    bool hasSuffix(QStringList suffixes) const;
 
     /**
      * @brief Retrieve the path from this entry up to the root of the tree.
@@ -816,7 +816,7 @@ namespace MOBase {
      *
      * @return the number of deleted entry.
      */
-    std::size_t removeAll(QList<QString> names);
+    std::size_t removeAll(QStringList names);
 
     /**
      * @brief Delete the entries that match the given predicate from the tree.
@@ -898,7 +898,7 @@ namespace MOBase {
      *
      * @return a list containing the section of the path.
      */
-    static QList<QString> splitPath(QString path);
+    static QStringList splitPath(QString path);
 
     /**
      * @brief Called before replacing an entry with another one.
@@ -1035,8 +1035,8 @@ namespace MOBase {
      *
      * @return the entry, or a null pointer if the entry did not exist.
      */
-    std::shared_ptr<FileTreeEntry> fetchEntry(QList<QString> path, FileTypes matchType);
-    std::shared_ptr<const FileTreeEntry> fetchEntry(QList<QString> const& path, FileTypes matchType) const;
+    std::shared_ptr<FileTreeEntry> fetchEntry(QStringList path, FileTypes matchType);
+    std::shared_ptr<const FileTreeEntry> fetchEntry(QStringList const& path, FileTypes matchType) const;
 
     /**
      * @brief Merge the source tree into the destination tree. On conflict, the source entries are always chosen.
@@ -1059,7 +1059,7 @@ namespace MOBase {
      *
      * @return the entry corresponding to the create tree, or a null pointer if the tree was not created.
      */
-    std::shared_ptr<IFileTree> createTree(QList<QString>::const_iterator begin, QList<QString>::const_iterator end);
+    std::shared_ptr<IFileTree> createTree(QStringList::const_iterator begin, QStringList::const_iterator end);
 
     // Indicate if this tree has been populated:
     mutable std::atomic<bool> m_Populated{ false };

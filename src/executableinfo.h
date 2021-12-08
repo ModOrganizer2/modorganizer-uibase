@@ -50,7 +50,7 @@ public:
 
   QString title() const;
   QFileInfo binary() const;
-  QList<QString> arguments() const;
+  QStringList arguments() const;
   QDir workingDirectory() const;
   QString steamAppID() const;
   bool isCustom() const;
@@ -59,7 +59,7 @@ private:
 
   QString m_Title;
   QFileInfo m_Binary;
-  QList<QString> m_Arguments;
+  QStringList m_Arguments;
   QDir m_WorkingDirectory;
   QString m_SteamAppID;
   bool m_Custom { false };

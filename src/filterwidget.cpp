@@ -300,7 +300,7 @@ void FilterWidget::compile()
 
     compiled.push_back({QRegularExpression(m_text, flags)});
   } else {
-    const QList<QString> ORList = [&] {
+    const QStringList ORList = [&] {
       QString filterCopy = QString(m_text);
       filterCopy.replace("||", ";").replace("OR", ";").replace("|", ";");
       return filterCopy.split(";", Qt::SkipEmptyParts);

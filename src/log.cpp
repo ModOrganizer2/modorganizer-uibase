@@ -443,7 +443,7 @@ std::string converter<QVariant>::convert(const QVariant& v)
 {
   return fmt::format(
     "QVariant(type={}, value='{}')",
-    v.typeName(), (v.type() == QVariant::ByteArray ?
+    v.typeName(), (v.typeId() == QMetaType::Type::QByteArray ?
       "(binary)" : v.toString().toStdString()));
 }
 

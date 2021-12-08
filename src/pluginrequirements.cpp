@@ -10,7 +10,7 @@ using namespace MOBase;
 
 // Plugin and Game dependencies
 
-PluginDependencyRequirement::PluginDependencyRequirement(QList<QString> const& pluginNames) :
+PluginDependencyRequirement::PluginDependencyRequirement(QStringList const& pluginNames) :
   m_PluginNames(pluginNames) { }
 
 std::optional<IPluginRequirement::Problem> PluginDependencyRequirement::check(IOrganizer* o) const
@@ -35,7 +35,7 @@ QString PluginDependencyRequirement::message() const
   }
 }
 
-GameDependencyRequirement::GameDependencyRequirement(QList<QString> const& gameNames) :
+GameDependencyRequirement::GameDependencyRequirement(QStringList const& gameNames) :
   m_GameNames(gameNames) { }
 
 std::optional<IPluginRequirement::Problem> GameDependencyRequirement::check(IOrganizer* o) const
@@ -74,7 +74,7 @@ std::optional<IPluginRequirement::Problem>  DiagnoseRequirement::check(IOrganize
     return {};
   }
 
-  QList<QString> shortDescriptions, longDescriptions;
+  QStringList shortDescriptions, longDescriptions;
   for (auto i : activeProblems) {
     shortDescriptions.append(m_Diagnose->shortDescription(i));
     longDescriptions.append(m_Diagnose->fullDescription(i));
@@ -105,13 +105,13 @@ private:
 // Factory
 
 std::shared_ptr<const IPluginRequirement> PluginRequirementFactory::pluginDependency(
-    QList<QString> const& pluginNames)
+    QStringList const& pluginNames)
 {
   return std::make_shared<PluginDependencyRequirement>(pluginNames);
 }
 
 std::shared_ptr<const IPluginRequirement> PluginRequirementFactory::gameDependency(
-    QList<QString> const& pluginGameNames)
+    QStringList const& pluginGameNames)
 {
   return std::make_shared<GameDependencyRequirement>(pluginGameNames);
 }

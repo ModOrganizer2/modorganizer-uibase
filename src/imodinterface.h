@@ -159,7 +159,7 @@ public: // Meta-related information:
   /**
    * @return the list of categories this mod belongs to.
    */
-  virtual QList<QString> categories() const = 0;
+  virtual QStringList categories() const = 0;
 
   /**
    * @return the tracked state of this mod.

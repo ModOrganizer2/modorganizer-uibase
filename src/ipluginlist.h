@@ -49,7 +49,7 @@ public:
   /**
    * @return list of plugin names
    */
-  virtual QList<QString> pluginNames() const = 0;
+  virtual QStringList pluginNames() const = 0;
 
   /**
    * @brief retrieve the state of a plugin
@@ -98,7 +98,7 @@ public:
    * @note plugins not included in the list will be placed at highest priority
    *       in the order they were before
    */
-  virtual void setLoadOrder(const QList<QString> &pluginList) = 0;
+  virtual void setLoadOrder(const QStringList &pluginList) = 0;
 
   /**
    * @brief determine if a plugin is a master file (basically a library, referenced by other plugins)
@@ -113,7 +113,7 @@ public:
    * @param name filename of the plugin (without path but with file extension)
    * @return list of masters (filenames with extension, no path)
    */
-  virtual QList<QString> masters(const QString &name) const = 0;
+  virtual QStringList masters(const QString &name) const = 0;
 
   /**
    * @brief retrieve the name of the origin of a plugin. This is either the (internal!) name of a mod or "overwrite" or "data"

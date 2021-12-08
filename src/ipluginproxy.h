@@ -43,7 +43,7 @@ public:
    *
    * @return list of plugin identifiers that supported by this proxy.
    */
-  virtual QList<QString> pluginList(const QDir& pluginPath) const = 0;
+  virtual QStringList pluginList(const QDir& pluginPath) const = 0;
 
   /**
    * @brief Load the plugins corresponding to the given identifier.
