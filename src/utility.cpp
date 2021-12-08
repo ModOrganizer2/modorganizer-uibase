@@ -839,11 +839,18 @@ QString readFileText(const QString &fileName, QString *encoding)
   // this assumes QString doesn't normalize the data in any way so this is a bit unsafe
   if (encoder.encode(text) != buffer) {
     log::debug("conversion failed assuming local encoding");
-    auto codec = QStringConverter::encodingForData(buffer);
-    if (codec.has_value()) {
-        decoder = QStringDecoder(codec.value());
+    auto codecSearch = QStringConverter::encodingForData(buffer);
+    if (codecSearch.has_value()) {
+        codec = codecSearch.value();
+        decoder = QStringDecoder(codec);
+    } else {
+        decoder = QStringDecoder(QStringConverter::Encoding::System);
     }
     text = decoder.decode(buffer);
+  }
+
+  if (encoding != nullptr) {
+    *encoding = QStringConverter::nameForEncoding(codec);
   }
 
   return text;
