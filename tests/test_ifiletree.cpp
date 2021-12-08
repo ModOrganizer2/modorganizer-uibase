@@ -19,7 +19,7 @@ using namespace MOBase;
   *
   */
 struct FileListTree : public IFileTree {
-  using File = std::pair<QList<QString>, bool>;
+  using File = std::pair<QStringList, bool>;
 
   std::shared_ptr<IFileTree> makeDirectory(std::shared_ptr<const IFileTree> parent, QString name, std::vector<File> &&files) const {
     return std::shared_ptr<FileListTree>(new FileListTree(parent, name, std::move(files)));
@@ -55,7 +55,7 @@ struct FileListTree : public IFileTree {
       }
       else {
         currentFiles.push_back({
-          QList<QString>(p.first.begin() + 1, p.first.end()), p.second
+          QStringList(p.first.begin() + 1, p.first.end()), p.second
           });
       }
     }
