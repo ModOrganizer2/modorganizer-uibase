@@ -2,6 +2,7 @@
 #include "log.h"
 #include "utility.h"
 #include <iostream>
+#include <boost/algorithm/string.hpp>
 
 #pragma warning(push)
 #pragma warning(disable: 4365)
@@ -290,7 +291,7 @@ void Logger::addToBlacklist(const std::string& filter, const std::string& replac
 
     bool present = false;
     for (BlacklistEntry& e : m_conf.blacklist) {
-        if (e.filter.compare(filter) == 0) {
+        if (boost::algorithm::iequals(e.filter, filter)) {
             e.replacement = replacement;
             present = true;
             break;
@@ -309,7 +310,7 @@ void Logger::removeFromBlacklist(const std::string& filter)
     }
 
     for (auto it = m_conf.blacklist.begin(); it != m_conf.blacklist.end(); ) {
-        if (it->filter.compare(filter) == 0) {
+        if (boost::algorithm::iequals(it->filter, filter)) {
             it = m_conf.blacklist.erase(it);
         }
         else {

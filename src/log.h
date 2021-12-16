@@ -8,6 +8,7 @@
 #include <QRect>
 #include <QColor>
 #include <fmt/format.h>
+#include <boost/algorithm/string.hpp>
 
 #include "dllimport.h"
 
@@ -120,17 +121,12 @@ void doLog(
 
     // check the blacklist
     for (const BlacklistEntry& entry : bl) {
-      std::string::iterator it = std::search(s.begin(), s.end(), entry.filter.begin(), entry.filter.end(), [](char a, char b) { return toupper(a) == toupper(b); });
-      while (it != s.end())
-      {
-        s.replace(it, it + (ptrdiff_t)entry.filter.length(), entry.replacement);
-        it = std::search(s.begin(), s.end(), entry.filter.begin(), entry.filter.end(), [](char a, char b) { return toupper(a) == toupper(b); });
-      }
+      boost::algorithm::ireplace_all(s, entry.filter, entry.replacement);
     }
   }
   catch(fmt::format_error&)
   {
-    s = "format error while logging";
+    s = "format error while logging"; 
     lv = Levels::Error;
   }
   catch(std::exception&)
