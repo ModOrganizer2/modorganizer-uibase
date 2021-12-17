@@ -500,6 +500,8 @@ QDLLEXPORT QString windowsErrorString(DWORD errorCode);
 QDLLEXPORT QString localizedByteSize(unsigned long long bytes);
 QDLLEXPORT QString localizedByteSpeed(unsigned long long bytesPerSecond);
 
+QDLLEXPORT QString localizedTimeRemaining(unsigned int msecs);
+
 template <class F>
 class Guard
 {

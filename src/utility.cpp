@@ -1093,6 +1093,76 @@ QDLLEXPORT QString localizedByteSpeed(unsigned long long bps)
     QObject::tr("%1 TB/s"));
 }
 
+QDLLEXPORT QString localizedTimeRemaining(unsigned int remaining)
+{
+    QString Result;
+    double interval;
+    qint64 intval;
+
+    // Hours
+    interval = 60.0 * 60.0 * 1000.0;
+    intval = (qint64)trunc((double)remaining / interval);
+    if (intval < 0)
+        intval = 0;
+    remaining -= (qint64)trunc(intval * interval);
+    qint32 hours = intval;
+
+    // Minutes
+    interval = 60.0 * 1000.0;
+    intval = (qint64)trunc((double)remaining / interval);
+    if (intval < 0)
+        intval = 0;
+    remaining -= (qint64)trunc(intval * interval);
+    qint32 minutes = intval;
+
+    // Seconds
+    interval = 1000.0;
+    intval = (qint64)trunc((double)remaining / interval);
+    if (intval < 0)
+        intval = 0;
+    remaining -= (qint64)trunc(intval * interval);
+    qint32 seconds = intval;
+
+    // Whatever is left over is milliseconds
+
+    char buffer[25];
+    memset(buffer, 0, 25);
+
+    if (hours > 0) {
+        if (hours < 10)
+            sprintf_s(buffer, "0%d", hours);
+        else
+            sprintf_s(buffer, "%d", hours);
+        Result.append(QString("%1:").arg(buffer));
+    }
+
+    if (minutes > 0 || hours > 0) {
+        if (minutes < 10 && hours > 0)
+            sprintf_s(buffer, "0%d", minutes);
+        else
+            sprintf_s(buffer, "%d", minutes);
+        Result.append(QString("%1:").arg(buffer));
+    }
+
+    if (seconds < 10)
+        sprintf_s(buffer, "0%d", seconds);
+    else
+        sprintf_s(buffer, "%d", seconds);
+    Result.append(QString("%1").arg(buffer));
+
+    if (hours > 0)
+        //: Time remaining hours
+        Result.append(QApplication::translate("uibase", "h"));
+    else if (minutes > 0)
+        //: Time remaining minutes
+        Result.append(QApplication::translate("uibase", "m"));
+    else
+        //: Time remaining seconds
+        Result.append(QApplication::translate("uibase", "s"));
+
+    return Result;
+}
+
 
 QDLLEXPORT void localizedByteSizeTests()
 {
