@@ -1144,7 +1144,7 @@ QDLLEXPORT QString localizedTimeRemaining(unsigned int remaining)
         Result.append(QString("%1:").arg(buffer));
     }
 
-    if (seconds < 10)
+    if (seconds < 10 && (minutes > 0 || hours > 0))
         sprintf_s(buffer, "0%d", seconds);
     else
         sprintf_s(buffer, "%d", seconds);
