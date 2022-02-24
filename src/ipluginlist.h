@@ -112,6 +112,34 @@ public:
   virtual bool isMaster(const QString &name) const = 0;
 
   /**
+   * @brief determine if a plugin is flagged as master (basically a library, referenced by other plugins)
+   * @param name filename of the plugin (without path but with file extension)
+   * @return true if the file is flagged as master, false if it isn't OR if the file doesn't exist.
+   * @note in gamebryo games, a master file will usually have a .esm file
+   * extension but technically an esp can be flagged as master and an esm might
+   * not be
+   */
+  virtual bool isMasterFlagged(const QString& name) const = 0;
+
+  /**
+   * @brief determine if a plugin is a light file
+   * @param name filename of the plugin (without path but with file extension)
+   * @return true if the file is a light, false if it isn't OR if the file doesn't exist.
+   * @note in gamebryo games, a light file will usually have a .esl file
+   * extension but technically an esp can be flagged as light and an esm might
+   * not be
+   */
+  virtual bool isLight(const QString& name) const = 0;
+
+  /**
+   * @brief determine if a plugin is flagged as light
+   * @param name filename of the plugin (without path but with file extension)
+   * @return true if the file is flagged as light, false if it isn't OR if the file doesn't exist.
+   * @note in gamebryo games, a light file will usually have a .esl file
+   */
+  virtual bool isLightFlagged(const QString& name) const = 0;
+
+  /**
    * @brief retrieve the list of masters required for this plugin
    * @param name filename of the plugin (without path but with file extension)
    * @return list of masters (filenames with extension, no path)
