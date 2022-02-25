@@ -105,11 +105,19 @@ public:
    * @brief determine if a plugin is a master file (basically a library, referenced by other plugins)
    * @param name filename of the plugin (without path but with file extension)
    * @return true if the file is a master, false if it isn't OR if the file doesn't exist.
+   * @note deprecated
+   */
+  [[deprecated]] virtual bool isMaster(const QString& name) const = 0;
+
+  /**
+   * @brief determine if a plugin is a master file (basically a library, referenced by other plugins)
+   * @param name filename of the plugin (without path but with file extension)
+   * @return true if the file is a master, false if it isn't OR if the file doesn't exist.
    * @note in gamebryo games, a master file will usually have a .esm file
    * extension but technically an esp can be flagged as master and an esm might
    * not be
    */
-  virtual bool isMaster(const QString &name) const = 0;
+  virtual bool isMasterFile(const QString &name) const = 0;
 
   /**
    * @brief determine if a plugin is flagged as master (basically a library, referenced by other plugins)
@@ -129,7 +137,7 @@ public:
    * extension but technically an esp can be flagged as light and an esm might
    * not be
    */
-  virtual bool isLight(const QString& name) const = 0;
+  virtual bool isLightFile(const QString& name) const = 0;
 
   /**
    * @brief determine if a plugin is flagged as light
