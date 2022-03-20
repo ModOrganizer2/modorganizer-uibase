@@ -79,7 +79,7 @@ public:
    * @param name Filename of the plugin (without path but with file extension).
    * @param newPriority New priority of the plugin.
    *
-   * @return true on success, false if the priority change was not possible. This is usually because 
+   * @return true on success, false if the priority change was not possible. This is usually because
    *     one of the parameters is invalid. The function returns true even if the plugin was not moved
    *     at the specified priority (e.g. when trying to move a non-master plugin before a master one).
    */
@@ -105,11 +105,9 @@ public:
    * @brief determine if a plugin is a master file (basically a library, referenced by other plugins)
    * @param name filename of the plugin (without path but with file extension)
    * @return true if the file is a master, false if it isn't OR if the file doesn't exist.
-   * @note in gamebryo games, a master file will usually have a .esm file
-   * extension but technically an esp can be flagged as master and an esm might
-   * not be
+   * @note deprecated
    */
-  virtual bool isMaster(const QString &name) const = 0;
+  [[deprecated]] virtual bool isMaster(const QString& name) const = 0;
 
   /**
    * @brief retrieve the list of masters required for this plugin
@@ -147,6 +145,44 @@ public:
    * @return true if the handler was successfully installed, false otherwise (there is as of now no known reason this should fail).
    */
   virtual bool onPluginStateChanged(const std::function<void(const std::map<QString, PluginStates>&)>& func) = 0;
+
+  /**
+   * @brief determine if a plugin has the .esm extension (basically a library, referenced by other plugins)
+   * @param name filename of the plugin (without path but with file extension)
+   * @return true if the file has the .esm extension, false if it isn't OR if the file doesn't exist.
+   * @note in gamebryo games, a master file will usually have a .esm file
+   * extension but technically an esp can be flagged as master and an esm might
+   * not be
+   */
+  virtual bool hasMasterExtension(const QString& name) const = 0;
+
+  /**
+   * @brief determine if a plugin has the .esl extension
+   * @param name filename of the plugin (without path but with file extension)
+   * @return true if the file has the .esl extension, false if it isn't OR if the file doesn't exist.
+   * @note in gamebryo games, a light file will usually have a .esl file
+   * extension but technically an esp can be flagged as light and an esm might
+   * not be
+   */
+  virtual bool hasLightExtension(const QString& name) const = 0;
+
+  /**
+   * @brief determine if a plugin is flagged as master (basically a library, referenced by other plugins)
+   * @param name filename of the plugin (without path but with file extension)
+   * @return true if the file is flagged as master, false if it isn't OR if the file doesn't exist.
+   * @note in gamebryo games, a master file will usually have a .esm file
+   * extension but technically an esp can be flagged as master and an esm might
+   * not be
+   */
+  virtual bool isMasterFlagged(const QString& name) const = 0;
+
+  /**
+   * @brief determine if a plugin is flagged as light
+   * @param name filename of the plugin (without path but with file extension)
+   * @return true if the file is flagged as light, false if it isn't OR if the file doesn't exist.
+   * @note in gamebryo games, a light file will usually have a .esl file
+   */
+  virtual bool isLightFlagged(const QString& name) const = 0;
 
 };
 
