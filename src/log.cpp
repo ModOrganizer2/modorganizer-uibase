@@ -2,11 +2,12 @@
 #include "log.h"
 #include "utility.h"
 #include <iostream>
+#include <format>
 #include <boost/algorithm/string.hpp>
 
 #pragma warning(push)
 #pragma warning(disable: 4365)
-namespace spdlog { using wstring_view_t = fmt::basic_string_view<wchar_t>; }
+#define SPDLOG_USE_STD_FORMAT 1
 #define SPDLOG_WCHAR_FILENAMES 1
 #include <spdlog/logger.h>
 #include <spdlog/sinks/stdout_color_sinks.h>
@@ -60,6 +61,7 @@ Levels fromSpdlog(spdlog::level::level_enum lv)
 
     case spdlog::level::info:  // fall-through
     case spdlog::level::off:
+    case spdlog::level::n_levels: // to please MSVC
     default:
       return Info;
   }
@@ -101,7 +103,7 @@ protected:
       Entry e;
       e.time = m.time;
       e.level = fromSpdlog(m.level);
-      e.message = fmt::to_string(m.payload);
+      e.message = m.payload;
 
       spdlog::memory_buf_t formatted;
       base_sink::formatter_->format(m, formatted);
@@ -110,7 +112,7 @@ protected:
         // remove \r\n
         e.formattedMessage.assign(formatted.begin(), formatted.end() - 2);
       } else {
-        e.formattedMessage = fmt::to_string(formatted);
+        e.formattedMessage = formatted;
       }
 
       (*m_f)(std::move(e));
@@ -334,8 +336,8 @@ void Logger::createLogger(const std::string& name)
       m_console.reset(new sink_type);
 
       if (auto* cs = dynamic_cast<sink_type*>(m_console.get())) {
-          cs->set_color(spdlog::level::info, cs->WHITE);
-          cs->set_color(spdlog::level::debug, cs->WHITE);
+          cs->set_color(spdlog::level::info, FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE);
+          cs->set_color(spdlog::level::debug, FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE);
       }
 
       addSink(m_console);
@@ -418,30 +420,30 @@ std::string converter<QStringRef>::convert(const QStringRef& s)
 
 std::string converter<QSize>::convert(const QSize& s)
 {
-  return fmt::format("QSize({}, {})", s.width(), s.height());
+  return std::format("QSize({}, {})", s.width(), s.height());
 }
 
 std::string converter<QRect>::convert(const QRect& r)
 {
-  return fmt::format(
+  return std::format(
     "QRect({},{}-{},{})", r.left(), r.top(), r.right(), r.bottom());
 }
 
 std::string converter<QColor>::convert(const QColor& c)
 {
-  return fmt::format(
+  return std::format(
     "QColor({}, {}, {}, {})",
     c.red(), c.green(), c.blue(), c.alpha());
 }
 
 std::string converter<QByteArray>::convert(const QByteArray& v)
 {
-  return fmt::format("QByteArray({} bytes)", v.size());
+  return std::format("QByteArray({} bytes)", v.size());
 }
 
 std::string converter<QVariant>::convert(const QVariant& v)
 {
-  return fmt::format(
+  return std::format(
     "QVariant(type={}, value='{}')",
     v.typeName(), (v.type() == QVariant::ByteArray ?
       "(binary)" : v.toString().toStdString()));
@@ -476,5 +478,12 @@ void doLogImpl(spdlog::logger& lg, Levels lv, const std::string& s) noexcept
     // eat it
   }
 }
+
+void ireplace_all(std::string& input, std::string const& search, std::string const& replace) noexcept
+{
+  // call boost here to avoid bringing the boost include in the header
+  boost::algorithm::ireplace_all(input, search, replace);
+}
+
 
 }	// namespace

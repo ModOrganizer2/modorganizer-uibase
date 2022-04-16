@@ -23,6 +23,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 #include "report.h"
 #include "log.h"
 #include <memory>
+#include <format>
 #include <sstream>
 #include <QDir>
 #include <QBuffer>
@@ -939,7 +940,7 @@ QString getProductVersion(QString const& filepath) {
   }
 
   WORD* lpw = (WORD*)lpb;
-  auto query = fmt::format(L"\\StringFileInfo\\{:04x}{:04x}\\ProductVersion", lpw[0], lpw[1]);
+  auto query = std::format(L"\\StringFileInfo\\{:04x}{:04x}\\ProductVersion", lpw[0], lpw[1]);
   if (!::VerQueryValueW(buff.data(), query.data(), (void**)&lpb, &uiSize) && uiSize > 0) {
     log::debug("VerQueryValue Error %d", ::GetLastError());
     return "";
