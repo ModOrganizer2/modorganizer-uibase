@@ -9,7 +9,7 @@
 #include <QSize>
 #include <QRect>
 #include <QColor>
-#include <format>
+#include <fmt/format.h>
 
 #include "dllimport.h"
 
@@ -102,15 +102,6 @@ struct QDLLEXPORT converter<QVariant>
   static std::string convert(const QVariant& v);
 };
 
-// std::format has issues with enum (maybe it's standard?), so we need a
-// custom converter for all Qt enums
-template <class Enum>
-struct QDLLEXPORT converter<Enum, std::enable_if_t<std::is_enum_v<Enum>>> {
-  static auto convert(const Enum& e) {
-    return static_cast<std::underlying_type_t<Enum>>(e);
-  }
-};
-
 void QDLLEXPORT doLogImpl(
   spdlog::logger& lg, Levels lv, const std::string& s) noexcept;
 
@@ -126,7 +117,7 @@ void doLog(
 
   try
   {
-    s = std::format(
+    s = fmt::format(
       std::forward<F>(format),
       converter<std::decay_t<Args>>::convert(std::forward<Args>(args))...);
 
@@ -135,7 +126,7 @@ void doLog(
       ireplace_all(s, entry.filter, entry.replacement);
     }
   }
-  catch(std::format_error&)
+  catch(fmt::format_error&)
   {
     s = "format error while logging";
     lv = Levels::Error;

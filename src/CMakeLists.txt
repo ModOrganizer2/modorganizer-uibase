@@ -1,20 +1,10 @@
 cmake_minimum_required(VERSION 3.16)
 
-find_package(Qt5 COMPONENTS Widgets Network Qml Quick QuickWidgets WinExtras REQUIRED)
-find_package(fmt REQUIRED)
-find_package(Boost REQUIRED COMPONENTS thread)
-
 add_library(uibase SHARED)
-mo2_configure_target(uibase TRANSLATIONS OFF)
-
+mo2_configure_uibase(uibase TRANSLATIONS OFF
+	PUBLIC_DEPENDS fmt Qt::Widgets Qt::Network Qt::QuickWidgets
+	PRIVATE_DEPENDS boost boost::thread Qt::WinExtras Qt::Qml Qt::Quick spdlog)
 target_compile_definitions(uibase PRIVATE -DUIBASE_EXPORT)
-target_include_directories(uibase
-	PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}
-	PRIVATE ${Boost_INCLUDE_DIRS} ${SPDLOG_ROOT}/include)
-target_link_libraries(uibase
-	PUBLIC Qt5::Widgets Qt5::Network Qt5::QuickWidgets
-	PRIVATE Qt5::WinExtras Qt5::Qml Qt5::Quick fmt::fmt Version)
-
 mo2_install_target(uibase)
 
 mo2_add_filter(NAME src/interfaces GROUPS

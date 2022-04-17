@@ -2,12 +2,10 @@
 #include "log.h"
 #include "utility.h"
 #include <iostream>
-#include <format>
 #include <boost/algorithm/string.hpp>
 
 #pragma warning(push)
 #pragma warning(disable: 4365)
-#define SPDLOG_USE_STD_FORMAT 1
 #define SPDLOG_WCHAR_FILENAMES 1
 #include <spdlog/logger.h>
 #include <spdlog/sinks/stdout_color_sinks.h>
@@ -103,7 +101,7 @@ protected:
       Entry e;
       e.time = m.time;
       e.level = fromSpdlog(m.level);
-      e.message = m.payload;
+      e.message = fmt::to_string(m.payload);
 
       spdlog::memory_buf_t formatted;
       base_sink::formatter_->format(m, formatted);
@@ -112,7 +110,7 @@ protected:
         // remove \r\n
         e.formattedMessage.assign(formatted.begin(), formatted.end() - 2);
       } else {
-        e.formattedMessage = formatted;
+        e.formattedMessage = fmt::to_string(formatted);
       }
 
       (*m_f)(std::move(e));
@@ -420,30 +418,30 @@ std::string converter<QStringView>::convert(const QStringView& s)
 
 std::string converter<QSize>::convert(const QSize& s)
 {
-  return std::format("QSize({}, {})", s.width(), s.height());
+  return fmt::format("QSize({}, {})", s.width(), s.height());
 }
 
 std::string converter<QRect>::convert(const QRect& r)
 {
-  return std::format(
+  return fmt::format(
     "QRect({},{}-{},{})", r.left(), r.top(), r.right(), r.bottom());
 }
 
 std::string converter<QColor>::convert(const QColor& c)
 {
-  return std::format(
+  return fmt::format(
     "QColor({}, {}, {}, {})",
     c.red(), c.green(), c.blue(), c.alpha());
 }
 
 std::string converter<QByteArray>::convert(const QByteArray& v)
 {
-  return std::format("QByteArray({} bytes)", v.size());
+  return fmt::format("QByteArray({} bytes)", v.size());
 }
 
 std::string converter<QVariant>::convert(const QVariant& v)
 {
-  return std::format(
+  return fmt::format(
     "QVariant(type={}, value='{}')",
     v.typeName(), (v.typeId() == QMetaType::Type::QByteArray ?
       "(binary)" : v.toString().toStdString()));
