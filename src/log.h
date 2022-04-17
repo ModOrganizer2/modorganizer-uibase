@@ -102,6 +102,16 @@ struct QDLLEXPORT converter<QVariant>
   static std::string convert(const QVariant& v);
 };
 
+// custom converter for enum and enum class that seems to not work with latest fmt
+template <typename T>
+struct QDLLEXPORT converter<T, std::enable_if_t<std::is_enum_v<T>>>
+{
+  static auto convert(const T& v)
+  {
+    return static_cast<std::underlying_type_t<T>>(v);
+  }
+};
+
 void QDLLEXPORT doLogImpl(
   spdlog::logger& lg, Levels lv, const std::string& s) noexcept;
 
