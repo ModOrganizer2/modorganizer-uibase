@@ -2,7 +2,11 @@
 #include "log.h"
 #include "utility.h"
 #include <iostream>
+
+#pragma warning(push)
+#pragma warning(disable: 4668)
 #include <boost/algorithm/string.hpp>
+#pragma warning(pop)
 
 #pragma warning(push)
 #pragma warning(disable: 4365)

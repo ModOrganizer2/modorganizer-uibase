@@ -9,7 +9,12 @@
 #include <QSize>
 #include <QRect>
 #include <QColor>
+
+#pragma warning(push)
+#pragma warning(disable : 4061 4459 4574 4582)
 #include <fmt/format.h>
+#include <fmt/xchar.h>
+#pragma warning(pop)
 
 #include "dllimport.h"
 
@@ -127,9 +132,15 @@ void doLog(
 
   try
   {
-    s = fmt::format(
-      std::forward<F>(format),
-      converter<std::decay_t<Args>>::convert(std::forward<Args>(args))...);
+    if constexpr (sizeof... (Args) == 0) {
+      s = fmt::format("{}", std::forward<F>(format));
+    }
+    else {
+      s = fmt::vformat(
+        std::forward<F>(format),
+        fmt::make_format_args(
+          converter<std::decay_t<Args>>::convert(std::forward<Args>(args))...));
+    }
 
     // check the blacklist
     for (const BlacklistEntry& entry : bl) {

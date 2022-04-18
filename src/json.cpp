@@ -367,7 +367,7 @@ namespace QtJson {
                 } else if (c == 't') {
                     s.append('\t');
                 } else if (c == 'u') {
-                    int remainingLength = json.size() - index;
+                    qsizetype remainingLength = json.size() - index;
                     if (remainingLength >= 4) {
                         QString unicodeStr = json.mid(index, 4);
 
