@@ -9,7 +9,7 @@ namespace MOBase {
     m_Parent(parent), m_Name(name) { }
 
   QString FileTreeEntry::suffix() const {
-    const int idx = m_Name.lastIndexOf(".");
+    const qsizetype idx = m_Name.lastIndexOf(".");
     return (isDir() || idx == -1) ? "" : m_Name.mid(idx + 1);
   }
 

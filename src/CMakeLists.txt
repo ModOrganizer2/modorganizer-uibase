@@ -3,7 +3,7 @@ cmake_minimum_required(VERSION 3.16)
 add_library(uibase SHARED)
 mo2_configure_uibase(uibase TRANSLATIONS OFF
 	PUBLIC_DEPENDS fmt Qt::Widgets Qt::Network Qt::QuickWidgets
-	PRIVATE_DEPENDS boost boost::thread Qt::WinExtras Qt::Qml Qt::Quick spdlog)
+	PRIVATE_DEPENDS boost boost::thread Qt::Qml Qt::Quick spdlog)
 target_compile_definitions(uibase PRIVATE -DUIBASE_EXPORT)
 mo2_install_target(uibase)
 

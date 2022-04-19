@@ -221,7 +221,7 @@ QString VersionInfo::parseReleaseType(QString versionString)
   int offset = -1;
 
   for (; (typeIter != typeStrings.end()) && (offset == -1); ++typeIter) {
-    offset = versionString.indexOf(typeIter->first, Qt::CaseInsensitive);
+    offset = (int)versionString.indexOf(typeIter->first, Qt::CaseInsensitive);
     if (offset != -1) {
       m_ReleaseType = typeIter->second;
       break;
@@ -231,7 +231,7 @@ QString VersionInfo::parseReleaseType(QString versionString)
   int length = 0;
 
   if (typeIter != typeStrings.end()) {
-    length = typeIter->first.length();
+    length = (int) typeIter->first.length();
   }
 
   if (m_Scheme == SCHEME_REGULAR) {
@@ -318,7 +318,7 @@ void VersionInfo::parse(const QString &versionString, VersionScheme scheme, bool
     if (subMinor.isEmpty() && (match.captured(3).size() > 1) && match.captured(3).startsWith('0')) {
       // this indicates a decimal scheme
       m_Scheme = SCHEME_DECIMALMARK;
-      m_DecimalPositions = match.captured(3).size();
+      m_DecimalPositions = (int) match.captured(3).size();
     }
     temp.remove(exp);
   } else {

@@ -487,7 +487,7 @@ namespace QtJson {
         }
         index--; // ^ WTF?
 
-        int remainingLength = json.size() - index;
+        qsizetype remainingLength = json.size() - index;
 
         // True
         if (remainingLength >= 4) {
