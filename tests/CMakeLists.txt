@@ -2,4 +2,7 @@ cmake_minimum_required(VERSION 3.16)
 
 project(uibasetests)
 
-mo2_requires_project(uibase)
+find_package(GTest REQUIRED)
+
+add_executable(uibasetests)
+mo2_configure_tests(uibasetests TRANSLATIONS OFF)
