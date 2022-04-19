@@ -1,14 +1,11 @@
 #ifndef LOCALSAVEGAMES_H
 #define LOCALSAVEGAMES_H
 
+#include <QDir>
 
 #include "filemapping.h"
 
-namespace MOBase {
-  class IProfile;
-}
-
-class QDir;
+namespace MOBase { class IProfile; }
 
 class LocalSavegames {
 

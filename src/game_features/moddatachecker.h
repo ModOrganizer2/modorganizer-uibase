@@ -3,11 +3,7 @@
 
 #include <memory>
 
-namespace MOBase {
-
-  class IFileTree;
-
-};
+namespace MOBase { class IFileTree; }
 
 class ModDataChecker {
 public:

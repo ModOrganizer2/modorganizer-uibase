@@ -7,11 +7,7 @@
 
 #include <QString>
 
-namespace MOBase {
-
-  class IFileTree;
-
-};
+namespace MOBase { class IFileTree; }
 
 /**
  * The ModDataContent feature is used (when available) to indicate to users the content

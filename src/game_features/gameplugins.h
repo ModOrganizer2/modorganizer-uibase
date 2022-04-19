@@ -3,9 +3,7 @@
 
 #include <QStringList>
 
-namespace MOBase {
-  class IPluginList;
-}
+namespace MOBase { class IPluginList; }
 
 
 class GamePlugins {

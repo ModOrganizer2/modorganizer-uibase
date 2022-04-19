@@ -5,10 +5,9 @@ namespace MOBase { class ISaveGame; }
 namespace MOBase { class ISaveGameInfoWidget; }
 
 #include <QMap>
-
-class QString;
-class QStringList;
-class QWidget;
+#include <QString>
+#include <QStringList>
+#include <QWidget>
 
 /** Feature to get hold of stuff to do with save games */
 class SaveGameInfo

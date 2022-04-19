@@ -3,8 +3,8 @@
 
 #include <windows.h>
 
-class QString;
-class QStringList;
+#include <QString>
+#include <QStringList>
 
 class ScriptExtender {
 

@@ -1,9 +1,9 @@
 #ifndef UNMANAGEDMODS_H
 #define UNMANAGEDMODS_H
 
-class QString;
-class QFileInfo;
-class QStringList;
+#include <QFileInfo>
+#include <QString>
+#include <QStringList>
 
 
 class UnmanagedMods {
