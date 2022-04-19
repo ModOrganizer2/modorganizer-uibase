@@ -17,6 +17,7 @@
 
 #pragma warning(push, 3)
 #pragma warning(disable: 4365)  // signed/unsigned mismatch
+#pragma warning(disable: 4668)  // preprocessor macro used but not defined
 #pragma warning(disable: 4774)  // bad format string
 #pragma warning(disable: 4946)  // reinterpret_cast used between related classes
 #pragma warning(disable: 4800)  // implicit conversion
@@ -42,9 +43,6 @@
 #include <vector>
 #include <wchar.h>
 #include <cwctype>
-
-// fmt
-#include <fmt/format.h>
 
 // windows
 #ifndef NOMINMAX
