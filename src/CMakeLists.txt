@@ -1,10 +1,13 @@
 cmake_minimum_required(VERSION 3.16)
-if(DEFINED DEPENDENCIES_DIR)
-	include(${DEPENDENCIES_DIR}/modorganizer_super/cmake_common/src.cmake)
-else()
-	include(../../cmake_common/src.cmake)
-endif()
-add_filter(NAME src/interfaces GROUPS
+
+add_library(uibase SHARED)
+mo2_configure_uibase(uibase TRANSLATIONS OFF
+	PUBLIC_DEPENDS fmt Qt::Widgets Qt::Network Qt::QuickWidgets
+	PRIVATE_DEPENDS boost boost::thread Qt::Qml Qt::Quick spdlog)
+target_compile_definitions(uibase PRIVATE -DUIBASE_EXPORT)
+mo2_install_target(uibase)
+
+mo2_add_filter(NAME src/interfaces GROUPS
 	ifiletree
 	imoinfo
 	installationtester
@@ -29,13 +32,13 @@ add_filter(NAME src/interfaces GROUPS
 	imodrepositorybridge
 )
 
-add_filter(NAME src/tutorials GROUPS
+mo2_add_filter(NAME src/tutorials GROUPS
 	tutorabledialog
 	tutorialcontrol
 	tutorialmanager
 )
 
-add_filter(NAME src/widgets GROUPS
+mo2_add_filter(NAME src/widgets GROUPS
 	finddialog
 	lineeditclear
 	questionboxmemory
@@ -48,4 +51,10 @@ add_filter(NAME src/widgets GROUPS
 	widgetutility
 )
 
-add_definitions(-DUIBASE_EXPORT)
+get_target_property(game_features uibase SOURCES)
+list(FILTER game_features INCLUDE REGEX ".*game_features.*")
+list(TRANSFORM game_features REPLACE ".*game_features[/\\](.*)[.]h" "game_features/\\1")
+
+mo2_add_filter(NAME src/game_features GROUPS
+	${game_features}
+)

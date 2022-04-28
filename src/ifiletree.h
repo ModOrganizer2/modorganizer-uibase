@@ -854,7 +854,7 @@ namespace MOBase {
       return std::dynamic_pointer_cast<const IFileTree>(shared_from_this());
     }
 
-  protected: // Destructor:
+  public: // Destructor:
 
     virtual ~IFileTree() {
     }

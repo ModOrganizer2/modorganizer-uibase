@@ -2,11 +2,14 @@
 #include "log.h"
 #include "utility.h"
 #include <iostream>
+
+#pragma warning(push)
+#pragma warning(disable: 4668)
 #include <boost/algorithm/string.hpp>
+#pragma warning(pop)
 
 #pragma warning(push)
 #pragma warning(disable: 4365)
-namespace spdlog { using wstring_view_t = fmt::basic_string_view<wchar_t>; }
 #define SPDLOG_WCHAR_FILENAMES 1
 #include <spdlog/logger.h>
 #include <spdlog/sinks/stdout_color_sinks.h>
@@ -60,6 +63,7 @@ Levels fromSpdlog(spdlog::level::level_enum lv)
 
     case spdlog::level::info:  // fall-through
     case spdlog::level::off:
+    case spdlog::level::n_levels: // to please MSVC
     default:
       return Info;
   }
@@ -334,8 +338,8 @@ void Logger::createLogger(const std::string& name)
       m_console.reset(new sink_type);
 
       if (auto* cs = dynamic_cast<sink_type*>(m_console.get())) {
-          cs->set_color(spdlog::level::info, cs->WHITE);
-          cs->set_color(spdlog::level::debug, cs->WHITE);
+          cs->set_color(spdlog::level::info, FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE);
+          cs->set_color(spdlog::level::debug, FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE);
       }
 
       addSink(m_console);
@@ -476,5 +480,12 @@ void doLogImpl(spdlog::logger& lg, Levels lv, const std::string& s) noexcept
     // eat it
   }
 }
+
+void ireplace_all(std::string& input, std::string const& search, std::string const& replace) noexcept
+{
+  // call boost here to avoid bringing the boost include in the header
+  boost::algorithm::ireplace_all(input, search, replace);
+}
+
 
 }	// namespace

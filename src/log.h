@@ -9,8 +9,12 @@
 #include <QSize>
 #include <QRect>
 #include <QColor>
+
+#pragma warning(push)
+#pragma warning(disable : 4061 4459 4574 4582)
 #include <fmt/format.h>
-#include <boost/algorithm/string.hpp>
+#include <fmt/xchar.h>
+#pragma warning(pop)
 
 #include "dllimport.h"
 
@@ -45,7 +49,7 @@ namespace MOBase::log::details
 // those are kept in this namespace so they don't leak all over the place;
 // they're used directly by doLog() below
 
-template <class T>
+template <class T, class = void>
 struct converter
 {
   static const T& convert(const T& t)
@@ -103,9 +107,20 @@ struct QDLLEXPORT converter<QVariant>
   static std::string convert(const QVariant& v);
 };
 
+// custom converter for enum and enum class that seems to not work with latest fmt
+template <typename T>
+struct QDLLEXPORT converter<T, std::enable_if_t<std::is_enum_v<T>>>
+{
+  static auto convert(const T& v)
+  {
+    return static_cast<std::underlying_type_t<T>>(v);
+  }
+};
 
 void QDLLEXPORT doLogImpl(
   spdlog::logger& lg, Levels lv, const std::string& s) noexcept;
+
+void QDLLEXPORT ireplace_all(std::string& input, std::string const& search, std::string const& replace) noexcept;
 
 template <class F, class... Args>
 void doLog(
@@ -117,18 +132,24 @@ void doLog(
 
   try
   {
-    s = fmt::format(
-      std::forward<F>(format),
-      converter<std::decay_t<Args>>::convert(std::forward<Args>(args))...);
+    if constexpr (sizeof... (Args) == 0) {
+      s = fmt::format("{}", std::forward<F>(format));
+    }
+    else {
+      s = fmt::vformat(
+        std::forward<F>(format),
+        fmt::make_format_args(
+          converter<std::decay_t<Args>>::convert(std::forward<Args>(args))...));
+    }
 
     // check the blacklist
     for (const BlacklistEntry& entry : bl) {
-      boost::algorithm::ireplace_all(s, entry.filter, entry.replacement);
+      ireplace_all(s, entry.filter, entry.replacement);
     }
   }
   catch(fmt::format_error&)
   {
-    s = "format error while logging"; 
+    s = "format error while logging";
     lv = Levels::Error;
   }
   catch(std::exception&)

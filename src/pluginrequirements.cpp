@@ -58,7 +58,7 @@ QString GameDependencyRequirement::message() const
 {
   return QObject::tr(
     "This plugin can only be enabled for the following game(s): %1.", "",
-    m_GameNames.size()).arg(m_GameNames.join(", "));
+    static_cast<int>(m_GameNames.size())).arg(m_GameNames.join(", "));
 }
 
 // Diagnose requirements

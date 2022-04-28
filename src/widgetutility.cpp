@@ -1,6 +1,5 @@
 #include "widgetutility.h"
 #include "eventfilter.h"
-#include "log.h"
 #include <QHeaderView>
 #include <QCheckBox>
 #include <QWidgetAction>

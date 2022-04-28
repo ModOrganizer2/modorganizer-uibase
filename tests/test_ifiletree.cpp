@@ -138,7 +138,7 @@ std::vector<std::shared_ptr<const FileTreeEntry>> getAllEntries(std::shared_ptr<
  * @brief Check that the given file tree match the given entries.
  *
  * This is probably pretty slow but it is only for unit testing. This will check
- * both way: all entries in the vector must be in the tree at the right place, and 
+ * both way: all entries in the vector must be in the tree at the right place, and
  * all entries in the tree must be in the vector.
  *
  * @param fileTree The tree to check.
@@ -518,7 +518,7 @@ TEST(IFileTreeTest, AddOperations) {
     auto a_p = fileTree->addFile("a/p");
     EXPECT_NE(a_p, nullptr);
     EXPECT_EQ(a_p->parent(), map["a"]);
-    
+
     auto e_q_ct = fileTree->addFile("e/q/c.t", true);
     EXPECT_NE(e_q_ct, nullptr);
     EXPECT_EQ(e_q_ct->parent(), map["e/q"]);
@@ -854,7 +854,7 @@ TEST(IFileTreeTest, TreeWalkOperations) {
       {"e/q/c.t", false},
       {"e/q/p", true}
       });
-    
+
     auto map = createMapping(fileTree);
 
     // Populate the vector:

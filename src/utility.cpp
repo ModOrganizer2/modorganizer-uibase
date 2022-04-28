@@ -1104,24 +1104,24 @@ QDLLEXPORT QString localizedTimeRemaining(unsigned int remaining)
     intval = (qint64)trunc((double)remaining / interval);
     if (intval < 0)
         intval = 0;
-    remaining -= (qint64)trunc(intval * interval);
-    qint32 hours = intval;
+    remaining -= static_cast<unsigned int>(trunc((double)intval * interval));
+    qint64 hours = intval;
 
     // Minutes
     interval = 60.0 * 1000.0;
     intval = (qint64)trunc((double)remaining / interval);
     if (intval < 0)
         intval = 0;
-    remaining -= (qint64)trunc(intval * interval);
-    qint32 minutes = intval;
+    remaining -= static_cast<unsigned int>(trunc((double)intval * interval));
+    qint64 minutes = intval;
 
     // Seconds
     interval = 1000.0;
     intval = (qint64)trunc((double)remaining / interval);
     if (intval < 0)
         intval = 0;
-    remaining -= (qint64)trunc(intval * interval);
-    qint32 seconds = intval;
+    remaining -= static_cast<unsigned int>(trunc((double)intval * interval));
+    qint64 seconds = intval;
 
     // Whatever is left over is milliseconds
 
@@ -1130,24 +1130,24 @@ QDLLEXPORT QString localizedTimeRemaining(unsigned int remaining)
 
     if (hours > 0) {
         if (hours < 10)
-            sprintf_s(buffer, "0%d", hours);
+            sprintf_s(buffer, "0%lld", hours);
         else
-            sprintf_s(buffer, "%d", hours);
+            sprintf_s(buffer, "%lld", hours);
         Result.append(QString("%1:").arg(buffer));
     }
 
     if (minutes > 0 || hours > 0) {
         if (minutes < 10 && hours > 0)
-            sprintf_s(buffer, "0%d", minutes);
+            sprintf_s(buffer, "0%lld", minutes);
         else
-            sprintf_s(buffer, "%d", minutes);
+            sprintf_s(buffer, "%lld", minutes);
         Result.append(QString("%1:").arg(buffer));
     }
 
     if (seconds < 10 && (minutes > 0 || hours > 0))
-        sprintf_s(buffer, "0%d", seconds);
+        sprintf_s(buffer, "0%lld", seconds);
     else
-        sprintf_s(buffer, "%d", seconds);
+        sprintf_s(buffer, "%lld", seconds);
     Result.append(QString("%1").arg(buffer));
 
     if (hours > 0)
