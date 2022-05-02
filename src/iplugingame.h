@@ -317,7 +317,7 @@ public:
   /**
    * @brief Get a URL for the support page for the game
    */
-  virtual QString getSupportURL() const = 0;
+  virtual QString getSupportURL() const { return ""; }
 
 protected:
 
