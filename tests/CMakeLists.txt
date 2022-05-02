@@ -1,6 +1,5 @@
 cmake_minimum_required(VERSION 3.16)
 
-project(uibasetests)
-
-add_executable(uibasetests)
-mo2_configure_tests(uibasetests WARNINGS OFF)
+add_executable(uibase_tests)
+mo2_configure_tests(uibase_tests
+    WARNINGS OFF DEPENDS uibase)
