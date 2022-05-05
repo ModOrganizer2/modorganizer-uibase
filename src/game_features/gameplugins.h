@@ -10,6 +10,8 @@ class GamePlugins {
 
 public:
 
+  virtual ~GamePlugins() {}
+
   virtual void writePluginLists(const MOBase::IPluginList *pluginList) = 0;
   virtual void readPluginLists(MOBase::IPluginList *pluginList) = 0;
   virtual QStringList getLoadOrder() = 0;
