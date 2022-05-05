@@ -16,11 +16,14 @@
 #pragma warning(disable: 5045)  // spectre mitigation
 
 #pragma warning(push, 3)
+#pragma warning(disable: 4242)  // uint -> const quint8
 #pragma warning(disable: 4365)  // signed/unsigned mismatch
 #pragma warning(disable: 4668)  // preprocessor macro used but not defined
 #pragma warning(disable: 4774)  // bad format string
 #pragma warning(disable: 4946)  // reinterpret_cast used between related classes
 #pragma warning(disable: 4800)  // implicit conversion
+#pragma warning(disable: 5219)  // implicit int -> float conversion
+#pragma warning(disable: 5249)  // named enumerators with values outside of bit field width
 
 #define _SILENCE_CXX17_CODECVT_HEADER_DEPRECATION_WARNING 1
 
