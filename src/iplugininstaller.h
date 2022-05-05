@@ -84,7 +84,10 @@ public:
    *     or name).
    * @note The default implementation does nothing.
    */
-  virtual void onInstallationStart(QString const& archive, bool reinstallation, IModInterface* currentMod) { }
+  virtual void onInstallationStart(
+      [[maybe_unused]] QString const &archive,
+      [[maybe_unused]] bool reinstallation,
+      [[maybe_unused]] IModInterface *currentMod) {}
 
   /**
    * @brief Method calls at the end of the installation process. This method is only called once
@@ -96,7 +99,9 @@ public:
    *
    * @note The default implementation does nothing.
    */
-  virtual void onInstallationEnd(EInstallResult result, IModInterface* newMod) { }
+  virtual void onInstallationEnd(
+      [[maybe_unused]] EInstallResult result,
+      [[maybe_unused]] IModInterface *newMod) {}
 
   /**
    * @brief Test if the archive represented by the tree parameter can be installed through this 
