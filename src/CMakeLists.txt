@@ -11,6 +11,7 @@ set(root_headers
 	../include/uibase/eventfilter.h
 	../include/uibase/exceptions.h
 	../include/uibase/executableinfo.h
+	../include/uibase/extension.h
 	../include/uibase/filemapping.h
 	../include/uibase/filesystemutilities.h
 	../include/uibase/guessedvalue.h
@@ -108,6 +109,7 @@ mo2_target_sources(uibase
 	errorcodes.cpp
 	eventfilter.cpp
 	executableinfo.cpp
+	extension.cpp
 	filesystemutilities.cpp
 	guessedvalue.cpp
 	json.cpp
