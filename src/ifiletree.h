@@ -22,6 +22,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 #define IFILETREE_H
 
 #include <atomic>
+#include <iterator>
 #include <map>
 #include <memory>
 #include <mutex>
@@ -397,10 +398,8 @@ public:  // Iterators:
    * wrapper to create iterators to shared pointer of const-object to have proper
    * immutability when IFileTree is const-qualified.
    *
-   * Note: convert_iterator satisfies InputIterator but not ForwardIterator since
-   * dereferencing it does not return a reference, even if it can likely be used
-   * exactly in the same way since it returns a pointer-like type (U is a shared
-   * pointer).
+   * Note: convert_iterator satisfies std::forward_iterator concept but not
+   * ForwardIterator since dereferencing does not return an lvalue.
    */
   template <class U, class V>
   struct convert_iterator
@@ -430,12 +429,19 @@ public:  // Iterators:
       return *this;
     }
 
-    value_type operator++(int)
+    convert_iterator operator++(int)
     {
       value_type value = *(*this);
       (*this)++;
       return *this;
     }
+
+  public:
+    convert_iterator()                        = default;
+    convert_iterator(convert_iterator const&) = default;
+    convert_iterator(convert_iterator&&)      = default;
+    convert_iterator& operator=(convert_iterator const&) = default;
+    convert_iterator& operator=(convert_iterator&&) = default;
 
   protected:
     V v;
@@ -459,34 +465,41 @@ public:  // Iterators:
       std::shared_ptr<const FileTreeEntry>,
       std::vector<std::shared_ptr<FileTreeEntry>>::const_reverse_iterator>;
 
+#if __cplusplus > 201703L
+  static_assert(std::forward_iterator<iterator>);
+  static_assert(std::forward_iterator<const_iterator>);
+  static_assert(std::forward_iterator<reverse_iterator>);
+  static_assert(std::forward_iterator<const_reverse_iterator>);
+#endif
+
 public:  // Access methods:
   /**
    *
    */
-  iterator begin() { return {std::cbegin(entries())}; };
-  const_iterator begin() const { return {std::cbegin(entries())}; };
-  const_iterator cbegin() const { return {std::cbegin(entries())}; };
+  iterator begin() { return {std::cbegin(entries())}; }
+  const_iterator begin() const { return {std::cbegin(entries())}; }
+  const_iterator cbegin() const { return {std::cbegin(entries())}; }
 
   /**
    *
    */
-  reverse_iterator rbegin() { return {std::crbegin(entries())}; };
-  const_reverse_iterator rbegin() const { return {std::crbegin(entries())}; };
-  const_reverse_iterator crbegin() const { return {std::crbegin(entries())}; };
+  reverse_iterator rbegin() { return {std::crbegin(entries())}; }
+  const_reverse_iterator rbegin() const { return {std::crbegin(entries())}; }
+  const_reverse_iterator crbegin() const { return {std::crbegin(entries())}; }
 
   /**
    *
    */
-  iterator end() { return {std::cend(entries())}; };
-  const_iterator end() const { return {std::cend(entries())}; };
-  const_iterator cend() const { return {std::cend(entries())}; };
+  iterator end() { return {std::cend(entries())}; }
+  const_iterator end() const { return {std::cend(entries())}; }
+  const_iterator cend() const { return {std::cend(entries())}; }
 
   /**
    *
    */
-  reverse_iterator rend() { return {std::crend(entries())}; };
-  const_reverse_iterator rend() const { return {std::crend(entries())}; };
-  const_reverse_iterator crend() const { return {std::crend(entries())}; };
+  reverse_iterator rend() { return {std::crend(entries())}; }
+  const_reverse_iterator rend() const { return {std::crend(entries())}; }
+  const_reverse_iterator crend() const { return {std::crend(entries())}; }
 
   /**
    * @brief Retrieve the number of entries in this tree.
