@@ -18,13 +18,12 @@ License along with this library; if not, write to the Free Software
 Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 */
 
-
 #include "report.h"
-#include "utility.h"
 #include "expanderwidget.h"
-#include "ui_taskdialog.h"
-#include "questionboxmemory.h"
 #include "log.h"
+#include "questionboxmemory.h"
+#include "ui_taskdialog.h"
+#include "utility.h"
 #include <QComboBox>
 #include <QRadioButton>
 #include <Windows.h>
@@ -57,41 +56,34 @@ void criticalOnTop(const QString& message)
   mb.exec();
 }
 
-void reportError(const QString &message)
+void reportError(const QString& message)
 {
   log::error("{}", message);
 
   if (QApplication::topLevelWidgets().count() != 0) {
-    if (auto* mw=topLevelWindow()) {
+    if (auto* mw = topLevelWindow()) {
       QMessageBox::warning(mw, QObject::tr("Error"), message, QMessageBox::Ok);
     } else {
       criticalOnTop(message);
     }
   } else {
-    ::MessageBoxW(
-      0, message.toStdWString().c_str(),
-      QObject::tr("Error").toStdWString().c_str(),
-      MB_ICONERROR | MB_OK);
+    ::MessageBoxW(0, message.toStdWString().c_str(),
+                  QObject::tr("Error").toStdWString().c_str(), MB_ICONERROR | MB_OK);
   }
 }
 
-
 TaskDialogButton::TaskDialogButton(QString t, QString d, QMessageBox::StandardButton b)
-  : text(std::move(t)), description(std::move(d)), button(b)
-{
-}
+    : text(std::move(t)), description(std::move(d)), button(b)
+{}
 
 TaskDialogButton::TaskDialogButton(QString t, QMessageBox::StandardButton b)
-  : TaskDialogButton(std::move(t), {}, b)
-{
-}
+    : TaskDialogButton(std::move(t), {}, b)
+{}
 
-
-TaskDialog::TaskDialog(QWidget* parent, QString title) :
-  m_dialog(new QDialog(parent)), ui(new Ui::TaskDialog),
-  m_title(std::move(title)), m_icon(QMessageBox::NoIcon),
-  m_result(QMessageBox::Cancel), m_width(-1),
-  m_rememberCheck(nullptr), m_rememberCombo(nullptr)
+TaskDialog::TaskDialog(QWidget* parent, QString title)
+    : m_dialog(new QDialog(parent)), ui(new Ui::TaskDialog), m_title(std::move(title)),
+      m_icon(QMessageBox::NoIcon), m_result(QMessageBox::Cancel), m_width(-1),
+      m_rememberCheck(nullptr), m_rememberCombo(nullptr)
 {
   ui->setupUi(m_dialog.get());
 }
@@ -137,7 +129,7 @@ TaskDialog& TaskDialog::button(TaskDialogButton b)
 TaskDialog& TaskDialog::remember(const QString& action, const QString& file)
 {
   m_rememberAction = action;
-  m_rememberFile = file;
+  m_rememberFile   = file;
   return *this;
 }
 
@@ -198,17 +190,14 @@ QMessageBox::StandardButton TaskDialog::checkMemory() const
 
   const auto b = QuestionBoxMemory::getMemory(m_rememberAction, m_rememberFile);
 
-  const auto logName =
-    m_rememberAction +
-    (m_rememberFile.isEmpty() ? "" : QString("/") + m_rememberFile);
+  const auto logName = m_rememberAction +
+                       (m_rememberFile.isEmpty() ? "" : QString("/") + m_rememberFile);
 
   if (b == QDialogButtonBox::NoButton) {
-    log::debug(
-      "{}: asking because the user has not set a choice before", logName);
+    log::debug("{}: asking because the user has not set a choice before", logName);
   } else {
-    log::debug(
-      "{}: not asking because user always wants response {}",
-      logName, QuestionBoxMemory::buttonToString(b));
+    log::debug("{}: not asking because user always wants response {}", logName,
+               QuestionBoxMemory::buttonToString(b));
   }
 
   return static_cast<QMessageBox::StandardButton>(b);
@@ -263,9 +252,9 @@ void TaskDialog::setStandardButtons()
 
   ui->standardButtons->addButton(QDialogButtonBox::Ok);
 
-  QObject::connect(ui->standardButtons, &QDialogButtonBox::clicked, [&](auto* b){
+  QObject::connect(ui->standardButtons, &QDialogButtonBox::clicked, [&](auto* b) {
     m_result = static_cast<QMessageBox::StandardButton>(
-      ui->standardButtons->standardButton(b));
+        ui->standardButtons->standardButton(b));
 
     m_dialog->accept();
   });
@@ -281,7 +270,7 @@ void TaskDialog::setCommandButtons()
   for (auto&& b : m_buttons) {
     auto* cb = new QCommandLinkButton(b.text, b.description);
 
-    QObject::connect(cb, &QAbstractButton::clicked, [&]{
+    QObject::connect(cb, &QAbstractButton::clicked, [&] {
       m_result = b.button;
       m_dialog->accept();
     });
@@ -305,9 +294,9 @@ void TaskDialog::setDetails()
   const QColor bg = detailsColor();
 
   ui->detailsPanel->setStyleSheet(QString("background-color: rgb(%1, %2, %3)")
-    .arg(bg.redF() * 255)
-    .arg(bg.greenF() * 255)
-    .arg(bg.blueF() * 255));
+                                      .arg(bg.redF() * 255)
+                                      .arg(bg.greenF() * 255)
+                                      .arg(bg.blueF() * 255));
 }
 
 void TaskDialog::setDialog()
@@ -347,8 +336,8 @@ void TaskDialog::setChoices()
   deleteChildWidgets(ui->rememberPanel);
 
   const auto tooltip = QObject::tr(
-    "You can reset these choices by clicking \"Reset Dialog Choices\" in the "
-    "General tab of the Settings");
+      "You can reset these choices by clicking \"Reset Dialog Choices\" in the "
+      "General tab of the Settings");
 
   if (!m_rememberAction.isEmpty() && !m_rememberFile.isEmpty()) {
     // both
@@ -357,7 +346,8 @@ void TaskDialog::setChoices()
 
     m_rememberCombo->addItem(QObject::tr("Always ask"));
     m_rememberCombo->addItem(QObject::tr("Remember my choice"));
-    m_rememberCombo->addItem(QObject::tr("Remember my choice for %1").arg(m_rememberFile));
+    m_rememberCombo->addItem(
+        QObject::tr("Remember my choice for %1").arg(m_rememberFile));
 
     ui->rememberPanel->layout()->setAlignment(Qt::AlignLeft);
     ui->rememberPanel->layout()->addWidget(m_rememberCombo);
@@ -382,35 +372,34 @@ QPixmap TaskDialog::standardIcon(QMessageBox::Icon icon) const
   QIcon i;
 
   switch (icon) {
-    case QMessageBox::Information:
-      i = s->standardIcon(QStyle::SP_MessageBoxInformation, 0, m_dialog.get());
-      break;
-    case QMessageBox::Warning:
-      i = s->standardIcon(QStyle::SP_MessageBoxWarning, 0, m_dialog.get());
-      break;
-    case QMessageBox::Critical:
-      i = s->standardIcon(QStyle::SP_MessageBoxCritical, 0, m_dialog.get());
-      break;
-    case QMessageBox::Question:
-      i = s->standardIcon(QStyle::SP_MessageBoxQuestion, 0, m_dialog.get());
+  case QMessageBox::Information:
+    i = s->standardIcon(QStyle::SP_MessageBoxInformation, 0, m_dialog.get());
+    break;
+  case QMessageBox::Warning:
+    i = s->standardIcon(QStyle::SP_MessageBoxWarning, 0, m_dialog.get());
+    break;
+  case QMessageBox::Critical:
+    i = s->standardIcon(QStyle::SP_MessageBoxCritical, 0, m_dialog.get());
+    break;
+  case QMessageBox::Question:
+    i = s->standardIcon(QStyle::SP_MessageBoxQuestion, 0, m_dialog.get());
 
-    case QMessageBox::NoIcon:  // fall-through
-    default:
-      break;
+  case QMessageBox::NoIcon:  // fall-through
+  default:
+    break;
   }
 
   if (i.isNull()) {
     return {};
   }
 
-  QWindow *window = m_dialog->windowHandle();
+  QWindow* window = m_dialog->windowHandle();
   if (!window) {
-    if (const QWidget *nativeParent = m_dialog->nativeParentWidget())
+    if (const QWidget* nativeParent = m_dialog->nativeParentWidget())
       window = nativeParent->windowHandle();
   }
 
-  const int iconSize = s->pixelMetric(
-    QStyle::PM_MessageBoxIconSize, 0, m_dialog.get());
+  const int iconSize = s->pixelMetric(QStyle::PM_MessageBoxIconSize, 0, m_dialog.get());
 
   return i.pixmap(QSize(iconSize, iconSize));
 }
@@ -425,7 +414,7 @@ void TaskDialog::setVisibleLines(QPlainTextEdit* w, int lines)
   double height = 0;
 
   // lines
-  height += fm.lineSpacing () * lines;
+  height += fm.lineSpacing() * lines;
 
   // top and bottom margins for document and frame
   height += (d->documentMargin() + ui->details->frameWidth()) * 2;
@@ -449,4 +438,4 @@ void TaskDialog::setFontPercent(QWidget* w, double p)
   w->setFont(f);
 }
 
-} // namespace MOBase
+}  // namespace MOBase

@@ -1,14 +1,15 @@
 #pragma once
 
-#include <string>
 #include <filesystem>
+#include <string>
 #include <vector>
+
+#include <QColor>
 #include <QList>
+#include <QRect>
+#include <QSize>
 #include <QString>
 #include <QStringView>
-#include <QSize>
-#include <QRect>
-#include <QColor>
 
 #pragma warning(push)
 #pragma warning(disable : 4061 4459 4574 4582)
@@ -18,8 +19,14 @@
 
 #include "dllimport.h"
 
-namespace spdlog { class logger; }
-namespace spdlog::sinks { class sink; }
+namespace spdlog
+{
+class logger;
+}
+namespace spdlog::sinks
+{
+class sink;
+}
 
 namespace MOBase::log
 {
@@ -34,12 +41,11 @@ enum Levels
 
 struct BlacklistEntry
 {
-    std::string filter;
-    std::string replacement;
+  std::string filter;
+  std::string replacement;
 };
 
-} // namespace
-
+}  // namespace MOBase::log
 
 namespace MOBase::log::details
 {
@@ -52,10 +58,7 @@ namespace MOBase::log::details
 template <class T, class = void>
 struct converter
 {
-  static const T& convert(const T& t)
-  {
-    return t;
-  }
+  static const T& convert(const T& t) { return t; }
 };
 
 template <>
@@ -75,7 +78,6 @@ struct QDLLEXPORT converter<QStringView>
 {
   static std::string convert(const QStringView& s);
 };
-
 
 template <>
 struct QDLLEXPORT converter<QSize>
@@ -111,63 +113,51 @@ struct QDLLEXPORT converter<QVariant>
 template <typename T>
 struct QDLLEXPORT converter<T, std::enable_if_t<std::is_enum_v<T>>>
 {
-  static auto convert(const T& v)
-  {
-    return static_cast<std::underlying_type_t<T>>(v);
-  }
+  static auto convert(const T& v) { return static_cast<std::underlying_type_t<T>>(v); }
 };
 
-void QDLLEXPORT doLogImpl(
-  spdlog::logger& lg, Levels lv, const std::string& s) noexcept;
+void QDLLEXPORT doLogImpl(spdlog::logger& lg, Levels lv, const std::string& s) noexcept;
 
-void QDLLEXPORT ireplace_all(std::string& input, std::string const& search, std::string const& replace) noexcept;
+void QDLLEXPORT ireplace_all(std::string& input, std::string const& search,
+                             std::string const& replace) noexcept;
 
 template <class F, class... Args>
-void doLog(
-  spdlog::logger& logger, Levels lv, const std::vector<MOBase::log::BlacklistEntry> bl, F&& format, Args&&... args) noexcept
+void doLog(spdlog::logger& logger, Levels lv,
+           const std::vector<MOBase::log::BlacklistEntry> bl, F&& format,
+           Args&&... args) noexcept
 {
   std::string s;
 
   // format errors are logged without much information to avoid throwing again
 
-  try
-  {
-    if constexpr (sizeof... (Args) == 0) {
+  try {
+    if constexpr (sizeof...(Args) == 0) {
       s = fmt::format("{}", std::forward<F>(format));
-    }
-    else {
-      s = fmt::vformat(
-        std::forward<F>(format),
-        fmt::make_format_args(
-          converter<std::decay_t<Args>>::convert(std::forward<Args>(args))...));
+    } else {
+      s = fmt::vformat(std::forward<F>(format),
+                       fmt::make_format_args(converter<std::decay_t<Args>>::convert(
+                           std::forward<Args>(args))...));
     }
 
     // check the blacklist
     for (const BlacklistEntry& entry : bl) {
       ireplace_all(s, entry.filter, entry.replacement);
     }
-  }
-  catch(fmt::format_error&)
-  {
-    s = "format error while logging";
+  } catch (fmt::format_error&) {
+    s  = "format error while logging";
     lv = Levels::Error;
-  }
-  catch(std::exception&)
-  {
-    s = "exception while formatting for logging";
+  } catch (std::exception&) {
+    s  = "exception while formatting for logging";
     lv = Levels::Error;
-  }
-  catch(...)
-  {
-    s = "unknown exception while formatting for logging";
+  } catch (...) {
+    s  = "unknown exception while formatting for logging";
     lv = Levels::Error;
   }
 
   doLogImpl(logger, lv, s);
 }
 
-} // namespace
-
+}  // namespace MOBase::log::details
 
 namespace MOBase::log
 {
@@ -187,8 +177,8 @@ public:
 
   static File daily(std::filesystem::path file, int hour, int minute);
 
-  static File rotating(
-    std::filesystem::path file, std::size_t maxSize, std::size_t maxFiles);
+  static File rotating(std::filesystem::path file, std::size_t maxSize,
+                       std::size_t maxFiles);
 
   static File single(std::filesystem::path file);
 
@@ -198,7 +188,6 @@ public:
   int dailyHour, dailyMinute;
 };
 
-
 struct Entry
 {
   std::chrono::system_clock::time_point time;
@@ -207,7 +196,7 @@ struct Entry
   std::string formattedMessage;
 };
 
-using Callback = void (Entry);
+using Callback = void(Entry);
 
 struct LoggerConfiguration
 {
@@ -217,7 +206,6 @@ struct LoggerConfiguration
   bool utc = false;
   std::vector<BlacklistEntry> blacklist;
 };
-
 
 class QDLLEXPORT Logger
 {
@@ -263,8 +251,8 @@ public:
   template <class F, class... Args>
   void log(Levels lv, F&& format, Args&&... args) noexcept
   {
-    details::doLog(
-      *m_logger, lv, m_conf.blacklist, std::forward<F>(format), std::forward<Args>(args)...);
+    details::doLog(*m_logger, lv, m_conf.blacklist, std::forward<F>(format),
+                   std::forward<Args>(args)...);
   }
 
 private:
@@ -280,44 +268,37 @@ private:
 QDLLEXPORT void createDefault(LoggerConfiguration conf);
 QDLLEXPORT Logger& getDefault();
 
-
 template <class F, class... Args>
 void debug(F&& format, Args&&... args) noexcept
 {
-  getDefault().debug(
-    std::forward<F>(format), std::forward<Args>(args)...);
+  getDefault().debug(std::forward<F>(format), std::forward<Args>(args)...);
 }
 
 template <class F, class... Args>
 void info(F&& format, Args&&... args) noexcept
 {
-  getDefault().info(
-    std::forward<F>(format), std::forward<Args>(args)...);
+  getDefault().info(std::forward<F>(format), std::forward<Args>(args)...);
 }
 
 template <class F, class... Args>
 void warn(F&& format, Args&&... args) noexcept
 {
-  getDefault().warn(
-    std::forward<F>(format), std::forward<Args>(args)...);
+  getDefault().warn(std::forward<F>(format), std::forward<Args>(args)...);
 }
 
 template <class F, class... Args>
 void error(F&& format, Args&&... args) noexcept
 {
-  getDefault().error(
-    std::forward<F>(format), std::forward<Args>(args)...);
+  getDefault().error(std::forward<F>(format), std::forward<Args>(args)...);
 }
 
 template <class F, class... Args>
 void log(Levels lv, F&& format, Args&&... args) noexcept
 {
-  getDefault().log(
-    lv, std::forward<F>(format), std::forward<Args>(args)...);
+  getDefault().log(lv, std::forward<F>(format), std::forward<Args>(args)...);
 }
-
 
 //
 QDLLEXPORT QString levelToString(Levels level);
 
-} // namespace
+}  // namespace MOBase::log

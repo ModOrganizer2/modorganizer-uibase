@@ -1,50 +1,52 @@
 /*
-Copyright (C) 2014 Sebastian Herbord. All rights reserved.
+Mod Organizer shared UI functionality
 
-This file is part of Mod Organizer.
+Copyright (C) 2012 Sebastian Herbord. All rights reserved.
 
-Mod Organizer is free software: you can redistribute it and/or modify
-it under the terms of the GNU General Public License as published by
-the Free Software Foundation, either version 3 of the License, or
-(at your option) any later version.
+This library is free software; you can redistribute it and/or
+modify it under the terms of the GNU Lesser General Public
+License as published by the Free Software Foundation; either
+version 3 of the License, or (at your option) any later version.
 
-Mod Organizer is distributed in the hope that it will be useful,
+This library is distributed in the hope that it will be useful,
 but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-GNU General Public License for more details.
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+Lesser General Public License for more details.
 
-You should have received a copy of the GNU General Public License
-along with Mod Organizer.  If not, see <http://www.gnu.org/licenses/>.
+You should have received a copy of the GNU Lesser General Public
+License along with this library; if not, write to the Free Software
+Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 */
-
 
 #ifndef SAFEWRITEFILE_H
 #define SAFEWRITEFILE_H
 
-
-#include "utility.h"
-#include "dllimport.h"
-#include <QTemporaryFile>
 #include <QList>
 #include <QString>
+#include <QTemporaryFile>
 
-namespace MOBase {
+#include "dllimport.h"
+#include "utility.h"
+
+namespace MOBase
+{
 
 /**
- * @brief a wrapper for QFile that ensures the file is only actually (over-)written if writing was successful
+ * @brief a wrapper for QFile that ensures the file is only actually (over-)written
+ * if writing was successful
  */
-class QDLLEXPORT SafeWriteFile {
+class QDLLEXPORT SafeWriteFile
+{
 public:
-  SafeWriteFile(const QString &fileName);
+  SafeWriteFile(const QString& fileName);
 
-  QFile *operator->();
+  QFile* operator->();
 
   void commit();
 
-  bool commitIfDifferent(QByteArray &hash);
+  bool commitIfDifferent(QByteArray& hash);
 
 private:
-
   QByteArray hash();
 
 private:
@@ -52,6 +54,6 @@ private:
   QTemporaryFile m_TempFile;
 };
 
-}
+}  // namespace MOBase
 
-#endif // SAFEWRITEFILE_H
+#endif  // SAFEWRITEFILE_H

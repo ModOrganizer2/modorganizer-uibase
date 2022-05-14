@@ -21,20 +21,22 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 #ifndef QUESTIONBOXMEMORY_H
 #define QUESTIONBOXMEMORY_H
 
-#include "dllimport.h"
-
+#include <QAbstractButton>
 #include <QDialog>
 #include <QDialogButtonBox>
-#include <QObject>
 #include <QList>
+#include <QMutex>
+#include <QObject>
+#include <QSettings>
 #include <QString>
+#include <QWidget>
 
-class QAbstractButton;
-class QMutex;
-class QSettings;
-class QWidget;
+#include "dllimport.h"
 
-namespace Ui { class QuestionBoxMemory; }
+namespace Ui
+{
+class QuestionBoxMemory;
+}
 
 namespace MOBase
 {
@@ -44,12 +46,12 @@ class QDLLEXPORT QuestionBoxMemory : public QDialog
   Q_OBJECT
 
 public:
-  using Button = QDialogButtonBox::StandardButton;
+  using Button               = QDialogButtonBox::StandardButton;
   static const auto NoButton = QDialogButtonBox::NoButton;
 
-  using GetButton = std::function<Button (const QString&, const QString&)>;
-  using SetWindowButton = std::function<void (const QString&, Button)>;
-  using SetFileButton = std::function<void (const QString&, const QString&, Button)>;
+  using GetButton       = std::function<Button(const QString&, const QString&)>;
+  using SetWindowButton = std::function<void(const QString&, Button)>;
+  using SetFileButton   = std::function<void(const QString&, const QString&, Button)>;
 
   ~QuestionBoxMemory();
 
@@ -57,51 +59,53 @@ public:
   // the modorganizer project; the only way to avoid accessing the ini file
   // directly is to use callbacks registered in Settings' constructor
   //
-  static void setCallbacks(
-    GetButton get, SetWindowButton setWindow, SetFileButton setFile);
+  static void setCallbacks(GetButton get, SetWindowButton setWindow,
+                           SetFileButton setFile);
 
-  static Button query(
-    QWidget *parent, const QString &windowName,
-    const QString &title, const QString &text,
-    QDialogButtonBox::StandardButtons buttons = QDialogButtonBox::Yes | QDialogButtonBox::No,
-    QDialogButtonBox::StandardButton defaultButton = QDialogButtonBox::NoButton);
+  static Button
+  query(QWidget* parent, const QString& windowName, const QString& title,
+        const QString& text,
+        QDialogButtonBox::StandardButtons buttons = QDialogButtonBox::Yes |
+                                                    QDialogButtonBox::No,
+        QDialogButtonBox::StandardButton defaultButton = QDialogButtonBox::NoButton);
 
-  static Button query(
-    QWidget *parent, const QString &windowName, const QString &fileName,
-    const QString &title, const QString &text,
-    QDialogButtonBox::StandardButtons buttons = QDialogButtonBox::Yes | QDialogButtonBox::No,
-    QDialogButtonBox::StandardButton defaultButton = QDialogButtonBox::NoButton);
+  static Button
+  query(QWidget* parent, const QString& windowName, const QString& fileName,
+        const QString& title, const QString& text,
+        QDialogButtonBox::StandardButtons buttons = QDialogButtonBox::Yes |
+                                                    QDialogButtonBox::No,
+        QDialogButtonBox::StandardButton defaultButton = QDialogButtonBox::NoButton);
 
   static void setWindowMemory(const QString& windowName, Button b);
 
-  static void setFileMemory(
-    const QString& windowName, const QString& filename, Button b);
+  static void setFileMemory(const QString& windowName, const QString& filename,
+                            Button b);
 
-  static Button getMemory(
-    const QString& windowName, const QString& filename);
+  static Button getMemory(const QString& windowName, const QString& filename);
 
   static QString buttonToString(Button b);
 
 private slots:
-  void buttonClicked(QAbstractButton *button);
+  void buttonClicked(QAbstractButton* button);
 
 private:
-  explicit QuestionBoxMemory(
-    QWidget *parent, const QString &title, const QString &text,
-    const QString *filename, const QDialogButtonBox::StandardButtons buttons,
-    QDialogButtonBox::StandardButton defaultButton);
+  explicit QuestionBoxMemory(QWidget* parent, const QString& title, const QString& text,
+                             const QString* filename,
+                             const QDialogButtonBox::StandardButtons buttons,
+                             QDialogButtonBox::StandardButton defaultButton);
 
 private:
   static Button queryImpl(
-    QWidget *parent, const QString &windowName, const QString *fileName,
-    const QString &title, const QString &text,
-    QDialogButtonBox::StandardButtons buttons = QDialogButtonBox::Yes | QDialogButtonBox::No,
-    QDialogButtonBox::StandardButton defaultButton = QDialogButtonBox::NoButton);
+      QWidget* parent, const QString& windowName, const QString* fileName,
+      const QString& title, const QString& text,
+      QDialogButtonBox::StandardButtons buttons = QDialogButtonBox::Yes |
+                                                  QDialogButtonBox::No,
+      QDialogButtonBox::StandardButton defaultButton = QDialogButtonBox::NoButton);
 
   std::unique_ptr<Ui::QuestionBoxMemory> ui;
   QDialogButtonBox::StandardButton m_Button;
 };
 
-} // namespace
+}  // namespace MOBase
 
-#endif // QUESTIONBOXMEMORY_H
+#endif  // QUESTIONBOXMEMORY_H

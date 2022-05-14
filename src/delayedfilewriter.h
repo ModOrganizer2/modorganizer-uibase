@@ -1,19 +1,21 @@
 #ifndef DELAYEDFILEWRITER_H
 #define DELAYEDFILEWRITER_H
 
-
-#include "dllimport.h"
-#include <QString>
-#include <QTimer>
 #include <functional>
 
+#include <QString>
+#include <QTimer>
 
-namespace MOBase {
+#include "dllimport.h"
+
+namespace MOBase
+{
 
 /**
  * The purpose of this class is to aggregate changes to a file before writing it out
  */
-class QDLLEXPORT DelayedFileWriterBase : public QObject {
+class QDLLEXPORT DelayedFileWriterBase : public QObject
+{
 
   Q_OBJECT
 
@@ -54,18 +56,21 @@ private:
   QTimer m_Timer;
 };
 
-
-class QDLLEXPORT DelayedFileWriter : public DelayedFileWriterBase {
+class QDLLEXPORT DelayedFileWriter : public DelayedFileWriterBase
+{
 public:
   typedef std::function<void()> WriterFunc;
+
 public:
   DelayedFileWriter(WriterFunc func, int delay = 200);
+
 private:
   void doWrite();
+
 private:
   WriterFunc m_Func;
 };
 
-}
+}  // namespace MOBase
 
-#endif // DELAYEDFILEWRITER_H
+#endif  // DELAYEDFILEWRITER_H

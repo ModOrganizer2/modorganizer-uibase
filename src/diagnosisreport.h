@@ -21,30 +21,31 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 #ifndef DIAGNOSISREPORT_H
 #define DIAGNOSISREPORT_H
 
-
 #include <QString>
 
-namespace MOBase {
-
+namespace MOBase
+{
 
 /**
  * @brief report for a single problem reported by a plugin
  */
 struct ProblemReport
 {
-  QString key;  // a plugin-defined unique key for the issue. This is used to refer to the problem
-  enum {
-    SEVERITY_REPORT,      // the issue should be reported but nothing more
-    SEVERITY_BREAKPLUGIN, // the issue breaks the plugin (the plugin has to disable itself)
-    SEVERITY_BREAKGAME    // the issue will (likely) break the game. The user will be
-                          // warned about this every time he tries to start
+  QString key;  // a plugin-defined unique key for the issue. This is used to refer to
+                // the problem
+  enum
+  {
+    SEVERITY_REPORT,       // the issue should be reported but nothing more
+    SEVERITY_BREAKPLUGIN,  // the issue breaks the plugin (the plugin has to disable
+                           // itself)
+    SEVERITY_BREAKGAME     // the issue will (likely) break the game. The user will be
+                           // warned about this every time he tries to start
   } severity;
-  bool guidedFix;           // if true, the plugin provides a guide to fixing the issue
-  QString shortDescription; // short description text for the overview
-  QString longDescription;  //
+  bool guidedFix;            // if true, the plugin provides a guide to fixing the issue
+  QString shortDescription;  // short description text for the overview
+  QString longDescription;   //
 };
 
+}  // namespace MOBase
 
-} // namespace MOBase
-
-#endif // DIAGNOSISREPORT_H
+#endif  // DIAGNOSISREPORT_H

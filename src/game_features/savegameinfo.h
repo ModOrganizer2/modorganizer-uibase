@@ -1,33 +1,39 @@
 #ifndef SAVEGAMEINFO_H
 #define SAVEGAMEINFO_H
 
-namespace MOBase { class ISaveGame; }
-namespace MOBase { class ISaveGameInfoWidget; }
+namespace MOBase
+{
+class ISaveGame;
+}
+namespace MOBase
+{
+class ISaveGameInfoWidget;
+}
 
 #include <QMap>
 #include <QString>
 #include <QStringList>
 #include <QWidget>
 
-/** Feature to get hold of stuff to do with save games */
+/**
+ * @brief Feature to get hold of stuff to do with save games
+ */
 class SaveGameInfo
 {
 public:
-  virtual ~SaveGameInfo() {}
-
-  typedef QStringList ProvidingModules;
-  typedef QMap<QString, ProvidingModules> MissingAssets;
+  using ProvidingModules = QStringList;
+  using MissingAssets    = QMap<QString, ProvidingModules>;
 
   /**
    * @brief Get missing items from a save.
+   *
+   * In the situation where 'module' and 'asset' are indistinguishable, both still have
+   * to be supplied.
    *
    * @param save The save to retrieve missing assets from.
    *
    * @returns a collection of missing assets and the modules that can supply those
    * assets.
-   *
-   * Note that in the situation where 'module' and 'asset' are indistinguishable,
-   * both still have to be supplied.
    */
   virtual MissingAssets getMissingAssets(MOBase::ISaveGame const& save) const = 0;
 
@@ -36,13 +42,13 @@ public:
    *
    * @param parent The parent widget.
    *
-   * @returns a Qt widget to display saves Widget.
-   *
-   * It is permitted to return a null pointer to indicate the plugin does not have a
-   * nice visual way of displaying save game contents.
+   * @returns a Qt widget to display saves Widget. A null pointer can be returned to
+   * indicate the plugin does not have a nice visual way of displaying save game
+   * contents.
    */
-  virtual MOBase::ISaveGameInfoWidget *getSaveGameWidget(QWidget *parent = 0) const = 0;
+  virtual MOBase::ISaveGameInfoWidget* getSaveGameWidget(QWidget* parent = 0) const = 0;
+
+  virtual ~SaveGameInfo() {}
 };
 
-#endif // SAVEGAMEINFO_H
-
+#endif  // SAVEGAMEINFO_H

@@ -6,12 +6,9 @@
 #include <QString>
 #include <QStringList>
 
-class ScriptExtender {
-
+class ScriptExtender
+{
 public:
-
-  virtual ~ScriptExtender() {}
-
   /** Get the name of the script extender binary */
   virtual QString BinaryName() const = 0;
 
@@ -35,7 +32,8 @@ public:
 
   /** Get CPU platform of extender */
   virtual WORD getArch() const = 0;
+
+  virtual ~ScriptExtender() {}
 };
 
-#endif // SCRIPTEXTENDER
-
+#endif  // SCRIPTEXTENDER

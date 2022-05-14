@@ -11,7 +11,7 @@ namespace MOBase
  * @brief fix a directory name so it can be dealt with by windows explorer
  * @return false if there was no way to convert the name into a valid one
  **/
-QDLLEXPORT bool fixDirectoryName(QString &name);
+QDLLEXPORT bool fixDirectoryName(QString& name);
 
 /**
  * @brief ensures a file name is valid
@@ -20,7 +20,8 @@ QDLLEXPORT bool fixDirectoryName(QString &name);
  * @param replacement invalid characters are replaced with this string
  * @return the sanitized file name
  **/
-QDLLEXPORT QString sanitizeFileName(const QString& name, const QString& replacement = QString(""));
+QDLLEXPORT QString sanitizeFileName(const QString& name,
+                                    const QString& replacement = QString(""));
 
 /**
  * @brief checks file name validity per sanitizeFileName
@@ -30,6 +31,6 @@ QDLLEXPORT QString sanitizeFileName(const QString& name, const QString& replacem
  **/
 QDLLEXPORT bool validFileName(const QString& name);
 
-} // namespace MOBase
+}  // namespace MOBase
 
-#endif // FILESYSTEM_H
+#endif  // FILESYSTEM_H

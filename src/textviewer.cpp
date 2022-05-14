@@ -18,47 +18,46 @@ License along with this library; if not, write to the Free Software
 Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 */
 
-
 #include "textviewer.h"
-#include "ui_textviewer.h"
-#include "utility.h"
-#include "report.h"
 #include "finddialog.h"
 #include "log.h"
+#include "report.h"
+#include "ui_textviewer.h"
+#include "utility.h"
+#include <QAction>
 #include <QFile>
-#include <QVBoxLayout>
-#include <QTextEdit>
-#include <QPushButton>
 #include <QFileInfo>
 #include <QMessageBox>
+#include <QPushButton>
 #include <QShortcutEvent>
-#include <QAction>
+#include <QTextEdit>
+#include <QVBoxLayout>
 
-namespace MOBase {
+namespace MOBase
+{
 
-
-TextViewer::TextViewer(const QString &title, QWidget *parent)
-  : QDialog(parent), ui(new Ui::TextViewer), m_FindDialog(nullptr)
+TextViewer::TextViewer(const QString& title, QWidget* parent)
+    : QDialog(parent), ui(new Ui::TextViewer), m_FindDialog(nullptr)
 {
   ui->setupUi(this);
   setWindowTitle(title);
   m_EditorTabs = findChild<QTabWidget*>("editorTabs");
-
 }
-
 
 TextViewer::~TextViewer()
 {
   delete ui;
 }
 
-void TextViewer::closeEvent(QCloseEvent *event)
+void TextViewer::closeEvent(QCloseEvent* event)
 {
   if (!m_Modified.empty()) {
-    for (std::set<QTextEdit*>::iterator iter = m_Modified.begin(); iter != m_Modified.end(); ++iter) {
-      QMessageBox::StandardButton res = QMessageBox::question(this, tr("Save changes?"),
-              tr("Do you want to save changes to %1?").arg((*iter)->documentTitle()),
-              QMessageBox::Yes | QMessageBox::No | QMessageBox::Cancel);
+    for (std::set<QTextEdit*>::iterator iter = m_Modified.begin();
+         iter != m_Modified.end(); ++iter) {
+      QMessageBox::StandardButton res = QMessageBox::question(
+          this, tr("Save changes?"),
+          tr("Do you want to save changes to %1?").arg((*iter)->documentTitle()),
+          QMessageBox::Yes | QMessageBox::No | QMessageBox::Cancel);
       if (res == QMessageBox::Yes) {
         saveFile(*iter);
       } else if (res == QMessageBox::Cancel) {
@@ -69,26 +68,24 @@ void TextViewer::closeEvent(QCloseEvent *event)
   }
 }
 
-
 void TextViewer::find()
 {
-   if (!m_FindDialog) {
-     m_FindDialog = new FindDialog(this);
-     connect(m_FindDialog, SIGNAL(findNext()), this, SLOT(findNext()));
-     connect(m_FindDialog, SIGNAL(patternChanged(QString)), this, SLOT(patternChanged(QString)));
-   }
+  if (!m_FindDialog) {
+    m_FindDialog = new FindDialog(this);
+    connect(m_FindDialog, SIGNAL(findNext()), this, SLOT(findNext()));
+    connect(m_FindDialog, SIGNAL(patternChanged(QString)), this,
+            SLOT(patternChanged(QString)));
+  }
 
-   m_FindDialog->show();
-   m_FindDialog->raise();
-   m_FindDialog->activateWindow();
+  m_FindDialog->show();
+  m_FindDialog->raise();
+  m_FindDialog->activateWindow();
 }
-
 
 void TextViewer::patternChanged(QString newPattern)
 {
   m_FindPattern = newPattern;
 }
-
 
 void TextViewer::findNext()
 {
@@ -97,7 +94,7 @@ void TextViewer::findNext()
   }
 
   QWidget* currentPage = m_EditorTabs->currentWidget();
-  QTextEdit *editor = currentPage->findChild<QTextEdit*>("editorView");
+  QTextEdit* editor    = currentPage->findChild<QTextEdit*>("editorView");
 
   if (editor->find(m_FindPattern)) {
     // found text
@@ -123,11 +120,10 @@ void TextViewer::findNext()
   }
 }
 
-
-bool TextViewer::eventFilter(QObject* object, QEvent *event)
+bool TextViewer::eventFilter(QObject* object, QEvent* event)
 {
   if (event->type() == QEvent::ShortcutOverride) {
-    QKeyEvent *keyEvent = static_cast<QKeyEvent*>(event);
+    QKeyEvent* keyEvent = static_cast<QKeyEvent*>(event);
     if (keyEvent->matches(QKeySequence::Find)) {
       find();
     } else if (keyEvent->matches(QKeySequence::FindNext)) {
@@ -137,40 +133,35 @@ bool TextViewer::eventFilter(QObject* object, QEvent *event)
   return QDialog::eventFilter(object, event);
 }
 
-
-void TextViewer::setDescription(const QString &description)
+void TextViewer::setDescription(const QString& description)
 {
-  QLabel *descriptionLabel = findChild<QLabel*>("descriptionLabel");
+  QLabel* descriptionLabel = findChild<QLabel*>("descriptionLabel");
   descriptionLabel->setText(description);
 }
 
-
-void TextViewer::saveFile(const QTextEdit *editor)
+void TextViewer::saveFile(const QTextEdit* editor)
 {
-  bool write = true;
+  bool write                                = true;
   QMessageBox::StandardButton buttonPressed = QMessageBox::Ignore;
   QFile file(editor->documentTitle());
   if (!file.open(QIODevice::WriteOnly | QIODevice::Truncate)) {
     write = false;
     QFileInfo fileInfo(file.fileName());
-    buttonPressed = MOBase::TaskDialog(
-        qApp->activeModalWidget(),
-        QObject::tr("INI file is read-only"))
-      .main(QObject::tr("INI file is read-only"))
-      .content(QObject::tr("Mod Organizer is attempting to write to \"%1\" which is currently set to read-only.").arg(fileInfo.fileName()))
-      .icon(QMessageBox::Warning)
-      .button({
-        QObject::tr("Clear the read-only flag"),
-        QMessageBox::Yes})
-      .button({
-        QObject::tr("Allow the write once"),
-        QObject::tr("The file will be set to read-only again."),
-        QMessageBox::Ignore})
-      .button({
-        QObject::tr("Skip this file"),
-        QMessageBox::No})
-      .remember("clearReadOnly", fileInfo.fileName())
-      .exec();
+    buttonPressed =
+        MOBase::TaskDialog(qApp->activeModalWidget(),
+                           QObject::tr("INI file is read-only"))
+            .main(QObject::tr("INI file is read-only"))
+            .content(QObject::tr("Mod Organizer is attempting to write to \"%1\" which "
+                                 "is currently set to read-only.")
+                         .arg(fileInfo.fileName()))
+            .icon(QMessageBox::Warning)
+            .button({QObject::tr("Clear the read-only flag"), QMessageBox::Yes})
+            .button({QObject::tr("Allow the write once"),
+                     QObject::tr("The file will be set to read-only again."),
+                     QMessageBox::Ignore})
+            .button({QObject::tr("Skip this file"), QMessageBox::No})
+            .remember("clearReadOnly", fileInfo.fileName())
+            .exec();
 
     if (buttonPressed & (QMessageBox::Yes | QMessageBox::Ignore)) {
       file.setPermissions(file.permissions() | QFile::WriteUser);
@@ -193,27 +184,24 @@ void TextViewer::saveFile(const QTextEdit *editor)
   }
 }
 
-
 void TextViewer::saveFile()
 {
   QWidget* currentPage = m_EditorTabs->currentWidget();
-  QTextEdit *editor = currentPage->findChild<QTextEdit*>("editorView");
+  QTextEdit* editor    = currentPage->findChild<QTextEdit*>("editorView");
   saveFile(editor);
 
   m_Modified.erase(editor);
 }
 
-
 void TextViewer::modified()
 {
   QWidget* currentPage = m_EditorTabs->currentWidget();
-  QTextEdit *editor = currentPage->findChild<QTextEdit*>("editorView");
+  QTextEdit* editor    = currentPage->findChild<QTextEdit*>("editorView");
 
   m_Modified.insert(editor);
 }
 
-
-void TextViewer::addFile(const QString &fileName, bool writable)
+void TextViewer::addFile(const QString& fileName, bool writable)
 {
   QFile file(fileName);
   if (!file.open(QIODevice::ReadOnly)) {
@@ -221,9 +209,9 @@ void TextViewer::addFile(const QString &fileName, bool writable)
   }
   QByteArray temp = file.readAll();
 
-  QWidget *page = new QWidget();
-  QVBoxLayout *layout = new QVBoxLayout(page);
-  QTextEdit *editor = new QTextEdit(page);
+  QWidget* page       = new QWidget();
+  QVBoxLayout* layout = new QVBoxLayout(page);
+  QTextEdit* editor   = new QTextEdit(page);
   editor->setAcceptRichText(false);
   editor->setPlainText(QString(temp));
   editor->setLineWrapMode(QTextEdit::NoWrap);
@@ -232,23 +220,26 @@ void TextViewer::addFile(const QString &fileName, bool writable)
   editor->installEventFilter(this);
   editor->setReadOnly(!writable);
 
-  // set text highlighting color in inactive window equal to text hightlighting color in active window
+  // set text highlighting color in inactive window equal to text hightlighting color in
+  // active window
   QPalette palette = editor->palette();
-  palette.setColor(QPalette::Inactive, QPalette::Highlight, palette.color(QPalette::Active, QPalette::Highlight));
-  palette.setColor(QPalette::Inactive, QPalette::HighlightedText, palette.color(QPalette::Active, QPalette::HighlightedText));
+  palette.setColor(QPalette::Inactive, QPalette::Highlight,
+                   palette.color(QPalette::Active, QPalette::Highlight));
+  palette.setColor(QPalette::Inactive, QPalette::HighlightedText,
+                   palette.color(QPalette::Active, QPalette::HighlightedText));
   editor->setPalette(palette);
 
   // add hotkeys for searching through the document
-  QAction *findAction = new QAction(QString("&Find"), editor);
+  QAction* findAction = new QAction(QString("&Find"), editor);
   findAction->setShortcut(QKeySequence::Find);
   editor->addAction(findAction);
-  QAction *findNextAction = new QAction(QString("Find &Next"), editor);
+  QAction* findNextAction = new QAction(QString("Find &Next"), editor);
   findAction->setShortcut(QKeySequence::FindNext);
   editor->addAction(findNextAction);
 
   layout->addWidget(editor);
   if (writable) {
-    QPushButton *saveBtn = new QPushButton(tr("Save"), page);
+    QPushButton* saveBtn = new QPushButton(tr("Save"), page);
     layout->addWidget(saveBtn);
     connect(saveBtn, SIGNAL(clicked()), this, SLOT(saveFile()));
     connect(editor, SIGNAL(textChanged()), this, SLOT(modified()));
@@ -256,4 +247,4 @@ void TextViewer::addFile(const QString &fileName, bool writable)
   page->setLayout(layout);
   m_EditorTabs->addTab(page, QFileInfo(fileName).fileName());
 }
-} // namespace MOBase
+}  // namespace MOBase

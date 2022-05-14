@@ -1,7 +1,7 @@
 /*
 Mod Organizer shared UI functionality
 
-Copyright (C) 2019 MO2 Contributors. All rights reserved.
+Copyright (C) 2012 Sebastian Herbord, 2022 MO2 Team. All rights reserved.
 
 This library is free software; you can redistribute it and/or
 modify it under the terms of the GNU Lesser General Public
@@ -18,21 +18,22 @@ License along with this library; if not, write to the Free Software
 Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 */
 
-
 #include "steamutility.h"
 
 #include <QDir>
-#include <QSettings>
 #include <QList>
+#include <QRegularExpression>
+#include <QSettings>
 #include <QString>
 #include <QTextStream>
-#include <QRegularExpression>
 
-namespace MOBase {
+namespace MOBase
+{
 
 // Lines that contains libraries are in the format:
 //    "1" "Path\to\library"
-static const QRegularExpression kSteamLibraryFilter("^\\s*\"(?<idx>[0-9]+)\"\\s*\"(?<path>.*)\"");
+static const QRegularExpression
+    kSteamLibraryFilter("^\\s*\"(?<idx>[0-9]+)\"\\s*\"(?<path>.*)\"");
 
 QString findSteam()
 {
@@ -40,10 +41,10 @@ QString findSteam()
   return steamRegistry.value("SteamPath").toString();
 }
 
-QString findSteamGame(const QString &appName, const QString &validFile)
+QString findSteamGame(const QString& appName, const QString& validFile)
 {
-  QStringList libraryFolders; // list of Steam libraries to search
-  QDir steamDir(findSteam()); // Steam installation directory
+  QStringList libraryFolders;  // list of Steam libraries to search
+  QDir steamDir(findSteam());  // Steam installation directory
 
   // Can do nothing if Steam doesn't exist
   if (!steamDir.exists())
@@ -57,7 +58,7 @@ QString findSteamGame(const QString &appName, const QString &validFile)
   if (libraryFoldersFile.open(QIODevice::ReadOnly | QIODevice::Text)) {
     QTextStream in(&libraryFoldersFile);
     while (!in.atEnd()) {
-      QString line = in.readLine();
+      QString line                  = in.readLine();
       QRegularExpressionMatch match = kSteamLibraryFilter.match(line);
       if (match.hasMatch()) {
         QString folder = match.captured("path");

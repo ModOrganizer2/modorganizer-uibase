@@ -18,21 +18,20 @@ License along with this library; if not, write to the Free Software
 Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 */
 
-
 #ifndef IPLUGINTOOL_H
 #define IPLUGINTOOL_H
 
-
-#include "iplugin.h"
 #include <QIcon>
 
-namespace MOBase {
+#include "iplugin.h"
 
+namespace MOBase
+{
 
-class IPluginTool : public QObject, public virtual IPlugin {
+class IPluginTool : public QObject, public virtual IPlugin
+{
   Q_INTERFACES(IPlugin)
 public:
-
   IPluginTool() : m_ParentWidget(nullptr) {}
 
   /**
@@ -61,7 +60,7 @@ public:
    *        it creates a new modal dialog
    * @param widget the new parent widget
    */
-  virtual void setParentWidget(QWidget *widget) { m_ParentWidget = widget; }
+  virtual void setParentWidget(QWidget* widget) { m_ParentWidget = widget; }
 
 public Q_SLOTS:
 
@@ -72,22 +71,18 @@ public Q_SLOTS:
   virtual void display() const = 0;
 
 protected:
-
   /**
    * @brief getter for the parent widget
    * @return parent widget
    */
-  QWidget *parentWidget() const { return m_ParentWidget; }
+  QWidget* parentWidget() const { return m_ParentWidget; }
 
 private:
-
-  QWidget *m_ParentWidget;
-
+  QWidget* m_ParentWidget;
 };
 
-
-} // namespace MOBase
+}  // namespace MOBase
 
 Q_DECLARE_INTERFACE(MOBase::IPluginTool, "com.tannin.ModOrganizer.PluginTool/1.0")
 
-#endif // IPLUGINTOOL_H
+#endif  // IPLUGINTOOL_H

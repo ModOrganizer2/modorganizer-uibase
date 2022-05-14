@@ -1,24 +1,24 @@
 #ifndef EXECUTABLEINFO_H
 #define EXECUTABLEINFO_H
 
+#include <QDir>
+#include <QFileInfo>
+#include <QList>
+#include <QString>
 
 #include "dllimport.h"
-#include <QString>
-#include <QList>
-#include <QFileInfo>
-#include <QDir>
 
-
-namespace MOBase {
+namespace MOBase
+{
 
 class QDLLEXPORT ExecutableForcedLoadSetting
 {
 public:
-  ExecutableForcedLoadSetting(const QString &process, const QString &library);
+  ExecutableForcedLoadSetting(const QString& process, const QString& library);
 
-  ExecutableForcedLoadSetting &withForced(bool forced=true);
+  ExecutableForcedLoadSetting& withForced(bool forced = true);
 
-  ExecutableForcedLoadSetting &withEnabled(bool enabled=true);
+  ExecutableForcedLoadSetting& withEnabled(bool enabled = true);
 
   bool enabled() const;
   bool forced() const;
@@ -35,16 +35,15 @@ private:
 class QDLLEXPORT ExecutableInfo
 {
 public:
+  ExecutableInfo(const QString& title, const QFileInfo& binary);
 
-  ExecutableInfo(const QString &title, const QFileInfo &binary);
+  ExecutableInfo& withArgument(const QString& argument);
 
-  ExecutableInfo &withArgument(const QString &argument);
+  ExecutableInfo& withWorkingDirectory(const QDir& workingDirectory);
 
-  ExecutableInfo &withWorkingDirectory(const QDir &workingDirectory);
+  ExecutableInfo& withSteamAppId(const QString& appId);
 
-  ExecutableInfo &withSteamAppId(const QString &appId);
-
-  ExecutableInfo &asCustom();
+  ExecutableInfo& asCustom();
 
   bool isValid() const;
 
@@ -56,16 +55,14 @@ public:
   bool isCustom() const;
 
 private:
-
   QString m_Title;
   QFileInfo m_Binary;
   QStringList m_Arguments;
   QDir m_WorkingDirectory;
   QString m_SteamAppID;
-  bool m_Custom { false };
-
+  bool m_Custom{false};
 };
 
-} // namespace MOBase
+}  // namespace MOBase
 
-#endif // EXECUTABLEINFO_H
+#endif  // EXECUTABLEINFO_H

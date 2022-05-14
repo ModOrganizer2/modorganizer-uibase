@@ -6,7 +6,8 @@
 class QString;
 class QDateTime;
 
-namespace MOBase {
+namespace MOBase
+{
 
 /** Base class for information about what is in a save game */
 class ISaveGame
@@ -16,7 +17,8 @@ public:
 
   /**
    * @return the path of the (main) save file, either as an absolute file or
-   *     relative to the save folder for which this save was created.
+   *
+   * relative to the save folder for which this save was created.
    */
   virtual QString getFilepath() const = 0;
 
@@ -24,35 +26,37 @@ public:
    * @brief Retrieve the creation time of the save.
    *
    * Note that this might not be the same as the creation time of the file.
+   *
+   * @return the creation time of the save.
    */
   virtual QDateTime getCreationTime() const = 0;
 
   /**
    * @brief Retrieve the name of this save.
    *
-   * @return the name of this save.
+   * @return the name of this
+   * save.
    */
   virtual QString getName() const = 0;
 
   /**
    * @brief Get a name which can be used to identify sets of saves.
    *
-   * This is usually the PC name for RPG games. The name can contain '/' that
-   * are considered separate section for better visualization (not yet implemented).
+   * This is usually the player name for RPG games. The name can contain '/' that are
+   * considered separate section for better visualization (not yet implemented).
    */
   virtual QString getSaveGroupIdentifier() const = 0;
 
   /**
    * @brief Gets all the files related to this save
    *
-   * Note: This must return the actual list, not the potential list.
+   * @return This must return the actual list, not the potential list.
    */
   virtual QStringList allFiles() const = 0;
-
 };
 
-}
+}  // namespace MOBase
 
-Q_DECLARE_METATYPE(MOBase::ISaveGame const *)
+Q_DECLARE_METATYPE(MOBase::ISaveGame const*)
 
-#endif // SAVEGAMEINFO_H
+#endif  // SAVEGAMEINFO_H

@@ -18,62 +18,63 @@ License along with this library; if not, write to the Free Software
 Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 */
 
-
 #ifndef FINDDIALOG_H
 #define FINDDIALOG_H
 
 #include <QDialog>
 
-namespace Ui {
-    class FindDialog;
+namespace Ui
+{
+class FindDialog;
 }
 
-namespace MOBase {
+namespace MOBase
+{
 
 /**
  * @brief Find dialog used in the TextView dialog
- **/
+ */
 class FindDialog : public QDialog
 {
 
   Q_OBJECT
 
 public:
-
   /**
    * @brief constructor
    *
    * @param parent parent widget
-   **/
-  explicit FindDialog(QWidget *parent = 0);
+   */
+  explicit FindDialog(QWidget* parent = 0);
 
   ~FindDialog();
 
 signals:
 
   /**
-   * @brief emitted when the user wants to jump to the next location matching the pattern
-   **/
+   * @brief emitted when the user wants to jump to the next location matching the
+   * pattern
+   */
   void findNext();
 
   /**
    * @brief emitted when the user changes the pattern to search for
    *
    * @param pattern the new search pattern
-   **/
-  void patternChanged(const QString &pattern);
+   */
+  void patternChanged(const QString& pattern);
 
 private slots:
   void on_nextBtn_clicked();
 
-  void on_patternEdit_textChanged(const QString &arg1);
+  void on_patternEdit_textChanged(const QString& arg1);
 
   void on_closeBtn_clicked();
 
 private:
-    Ui::FindDialog *ui;
+  Ui::FindDialog* ui;
 };
 
-} // namespace MOBase
+}  // namespace MOBase
 
-#endif // FINDDIALOG_H
+#endif  // FINDDIALOG_H

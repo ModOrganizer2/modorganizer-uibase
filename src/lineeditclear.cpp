@@ -7,16 +7,14 @@
 **
 ****************************************************************************/
 
-
 #include "lineeditclear.h"
-#include <QToolButton>
 #include <QStyle>
+#include <QToolButton>
 
-namespace MOBase {
+namespace MOBase
+{
 
-
-LineEditClear::LineEditClear(QWidget *parent)
-  : QLineEdit(parent)
+LineEditClear::LineEditClear(QWidget* parent) : QLineEdit(parent)
 {
   clearButton = new QToolButton(this);
   QPixmap pixmap(":/MO/gui/edit_clear");
@@ -26,21 +24,22 @@ LineEditClear::LineEditClear(QWidget *parent)
   clearButton->setStyleSheet("QToolButton { border: none; padding: 0px; }");
   clearButton->hide();
   connect(clearButton, SIGNAL(clicked()), this, SLOT(clear()));
-  connect(this, SIGNAL(textChanged(const QString&)), this, SLOT(updateCloseButton(const QString&)));
+  connect(this, SIGNAL(textChanged(const QString&)), this,
+          SLOT(updateCloseButton(const QString&)));
   int frameWidth = style()->pixelMetric(QStyle::PM_DefaultFrameWidth);
-  setStyleSheet(QString("QLineEdit { padding-right: %1px; } ").arg(clearButton->sizeHint().width() + frameWidth + 1));
-/*  QSize msz = minimumSizeHint();
-  setMinimumSize(qMax(msz.width(), clearButton->sizeHint().height() + frameWidth * 2 + 2),
-                 qMax(msz.height(), clearButton->sizeHint().height() + frameWidth * 2 + 2));*/
+  setStyleSheet(QString("QLineEdit { padding-right: %1px; } ")
+                    .arg(clearButton->sizeHint().width() + frameWidth + 1));
+  /*  QSize msz = minimumSizeHint();
+  setMinimumSize(qMax(msz.width(), clearButton->sizeHint().height() + frameWidth * 2 +
+  2), qMax(msz.height(), clearButton->sizeHint().height() + frameWidth * 2 + 2));*/
 }
 
-
-void LineEditClear::resizeEvent(QResizeEvent *)
+void LineEditClear::resizeEvent(QResizeEvent*)
 {
-  QSize sz = clearButton->sizeHint();
+  QSize sz       = clearButton->sizeHint();
   int frameWidth = style()->pixelMetric(QStyle::PM_DefaultFrameWidth);
   clearButton->move(rect().right() - frameWidth - sz.width(),
-                    (rect().bottom() + 1 - sz.height())/2);
+                    (rect().bottom() + 1 - sz.height()) / 2);
 }
 
 void LineEditClear::updateCloseButton(const QString& text)
@@ -48,4 +47,4 @@ void LineEditClear::updateCloseButton(const QString& text)
   clearButton->setVisible(!text.isEmpty());
 }
 
-} // namespace MOBase
+}  // namespace MOBase

@@ -1,23 +1,23 @@
 #ifndef IPLUGINGAME_H
 #define IPLUGINGAME_H
 
-
-#include "iplugin.h"
-#include "isavegame.h"
-#include "executableinfo.h"
-
-class QIcon;
-class QUrl;
-class QString;
-
 #include <any>
 #include <cstdint>
+#include <memory>
 #include <typeindex>
 #include <unordered_map>
-#include <memory>
 #include <vector>
 
-namespace MOBase {
+#include <QIcon>
+#include <QString>
+#include <QUrl>
+
+#include "executableinfo.h"
+#include "iplugin.h"
+#include "isavegame.h"
+
+namespace MOBase
+{
 
 // Game plugins can be loaded without an IOrganizer being available, in which
 // case detectGame() is called, but not init().
@@ -38,19 +38,22 @@ class IPluginGame : public QObject, public IPlugin
   Q_INTERFACES(IPlugin)
 
 public:
-  enum class LoadOrderMechanism {
+  enum class LoadOrderMechanism
+  {
     FileTime,
     PluginsTxt
   };
 
-  enum class SortMechanism {
+  enum class SortMechanism
+  {
     NONE,
     MLOX,
     BOSS,
     LOOT
   };
 
-  enum ProfileSetting {
+  enum ProfileSetting
+  {
     MODS            = 0x01,
     CONFIGURATION   = 0x02,
     SAVEGAMES       = 0x04,
@@ -60,9 +63,12 @@ public:
   Q_DECLARE_FLAGS(ProfileSettings, ProfileSetting)
 
 public:
-
   // Game plugin should not have requirements:
-  std::vector<std::shared_ptr<const IPluginRequirement>> requirements() const final override { return {}; }
+  std::vector<std::shared_ptr<const IPluginRequirement>>
+  requirements() const final override
+  {
+    return {};
+  }
 
   // Game plugin can not be disabled
   bool enabledByDefault() const final override { return true; }
@@ -75,7 +81,8 @@ public:
   virtual QString gameName() const = 0;
 
   template <typename T>
-  T *feature() const {
+  T* feature() const
+  {
     auto list = featureList();
     auto iter = list.find(typeid(T));
     if (iter != list.end()) {
@@ -84,9 +91,8 @@ public:
       } catch (const std::bad_any_cast&) {
         // don't use log::error() here so log.h and fmt aren't pulled into
         // plugins
-        qCritical(
-          "failed to retrieve feature type %s (got %s)",
-          typeid(T).name(), typeid(iter->second).name());
+        qCritical("failed to retrieve feature type %s (got %s)", typeid(T).name(),
+                  typeid(iter->second).name());
         return nullptr;
       }
     } else {
@@ -114,11 +120,14 @@ public:
    * @brief initialize a profile for this game
    * @param directory the directory where the profile is to be initialized
    * @param settings parameters for how the profile should be initialized
-   * @note the MO app does not yet support virtualizing only specific aspects but plugins should be written with this future functionality in mind
-   * @note this function will be used to initially create a profile, potentially to repair it or upgrade/downgrade it so the implementations
-   *       have to gracefully handle the case that the directory already contains files!
+   * @note the MO app does not yet support virtualizing only specific aspects but
+   * plugins should be written with this future functionality in mind
+   * @note this function will be used to initially create a profile, potentially to
+   * repair it or upgrade/downgrade it so the implementations have to gracefully handle
+   * the case that the directory already contains files!
    */
-  virtual void initializeProfile(const QDir &directory, ProfileSettings settings) const = 0;
+  virtual void initializeProfile(const QDir& directory,
+                                 ProfileSettings settings) const = 0;
 
   /**
    * @brief List save games in the specified folder.
@@ -130,7 +139,8 @@ public:
   /**
    * @return file extension of save games for this game
    */
-  virtual std::vector<std::shared_ptr<const ISaveGame>> listSaves(QDir folder) const = 0;
+  virtual std::vector<std::shared_ptr<const ISaveGame>>
+  listSaves(QDir folder) const = 0;
 
   /**
    * this function may be called before init()
@@ -163,13 +173,15 @@ public:
   /**
    * @brief set the path to the managed game
    * @param path to the game
-   * @note this will be called by by MO to set the concrete path of the game. This is particularly
-   *       relevant if the path wasn't auto-detected but had to be set manually by the user
+   * @note this will be called by by MO to set the concrete path of the game. This is
+   * particularly relevant if the path wasn't auto-detected but had to be set manually
+   * by the user
    */
-  virtual void setGamePath(const QString &path) = 0;
+  virtual void setGamePath(const QString& path) = 0;
 
   /**
-   * @return directory of the documents folder where configuration files and such for this game reside
+   * @return directory of the documents folder where configuration files and such for
+   * this game reside
    */
   virtual QDir documentsDirectory() const = 0;
 
@@ -179,7 +191,8 @@ public:
   virtual QDir savesDirectory() const = 0;
 
   /**
-   * @return list of automatically discovered executables of the game itself and tools surrounding it
+   * @return list of automatically discovered executables of the game itself and tools
+   * surrounding it
    */
   virtual QList<ExecutableInfo> executables() const = 0;
 
@@ -189,9 +202,10 @@ public:
   virtual QList<ExecutableForcedLoadSetting> executableForcedLoads() const = 0;
 
   /**
-   * @return steam app id for this game. Should be empty for games not available on steam
-   * @note if a game is available in multiple versions those might have different app ids.
-   *       the plugin should try to return the right one
+   * @return steam app id for this game. Should be empty for games not available on
+   * steam
+   * @note if a game is available in multiple versions those might have different app
+   * ids. the plugin should try to return the right one
    */
   virtual QString steamAPPId() const = 0;
 
@@ -204,18 +218,18 @@ public:
    * this function may be called before init()
    *
    * @return list of game variants
-   * @note if there are multiple variants of a game (and the variants make a difference to the
-   *       plugin) like a regular one and a GOTY-edition the plugin can return a list of them and
-   *       the user gets to chose which one he owns.
+   * @note if there are multiple variants of a game (and the variants make a difference
+   * to the plugin) like a regular one and a GOTY-edition the plugin can return a list
+   * of them and the user gets to chose which one he owns.
    */
   virtual QStringList gameVariants() const = 0;
 
   /**
-   * @brief if there are multiple game variants (returned by gameVariants) this will get called
-   *        on start with the user-selected game edition
+   * @brief if there are multiple game variants (returned by gameVariants) this will get
+   * called on start with the user-selected game edition
    * @param variant the game edition selected by the user
    */
-  virtual void setGameVariant(const QString &variant) = 0;
+  virtual void setGameVariant(const QString& variant) = 0;
 
   /**
    * @brief Get the name of the executable that gets run
@@ -233,8 +247,9 @@ public:
   /**
    * @brief Get any primary alternative 'short' name for the game
    *
-   * this is used to determine if a Nexus (or other) download source should be considered
-   * a 'primary' source for the game so that it isn't flagged as an alternative source
+   * this is used to determine if a Nexus (or other) download source should be
+   * considered a 'primary' source for the game so that it isn't flagged as an
+   * alternative source
    */
   virtual QStringList primarySources() const = 0;
 
@@ -245,12 +260,12 @@ public:
    * not all game variants have their own nexus pages and others can handle downloads
    * from other nexus game pages and should be allowed
    *
-   * the short name should be considered the primary handler for a directly supported game
-   * for puroses of auto-launching an instance
+   * the short name should be considered the primary handler for a directly supported
+   * game for puroses of auto-launching an instance
    */
   virtual QStringList validShortNames() const = 0;
 
-   /**
+  /**
    * @brief Get the 'short' name of the game
    *
    * the short name of the game is used for - save ames, registry entries and
@@ -302,7 +317,7 @@ public:
    *
    * @brief See if the supplied directory looks like a valid game
    */
-  virtual bool looksValid(QDir const &) const = 0;
+  virtual bool looksValid(QDir const&) const = 0;
 
   /**
    * @brief Get version of program
@@ -320,16 +335,14 @@ public:
   virtual QString getSupportURL() const { return ""; }
 
 protected:
-
   virtual std::map<std::type_index, std::any> featureList() const = 0;
-
 };
 
 Q_DECLARE_OPERATORS_FOR_FLAGS(IPluginGame::ProfileSettings)
 
-} // namespace MOBase
+}  // namespace MOBase
 
 Q_DECLARE_INTERFACE(MOBase::IPluginGame, "com.tannin.ModOrganizer.PluginGame/2.0")
-Q_DECLARE_METATYPE(MOBase::IPluginGame const *)
+Q_DECLARE_METATYPE(MOBase::IPluginGame const*)
 
-#endif // IPLUGINGAME_H
+#endif  // IPLUGINGAME_H

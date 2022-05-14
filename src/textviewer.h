@@ -18,38 +18,40 @@ License along with this library; if not, write to the Free Software
 Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 */
 
-
 #ifndef TEXTVIEWER_H
 #define TEXTVIEWER_H
 
-#include "dllimport.h"
+#include <set>
+
 #include <QDialog>
 #include <QTabWidget>
 #include <QTextEdit>
-#include <set>
 
-namespace Ui {
-    class TextViewer;
+#include "dllimport.h"
+
+namespace Ui
+{
+class TextViewer;
 }
 
-namespace MOBase {
+namespace MOBase
+{
 
 class FindDialog;
 
 /**
  * @brief rudimentary tabbed text editor
- **/
+ */
 class QDLLEXPORT TextViewer : public QDialog
 {
   Q_OBJECT
 
 public:
-
   /**
    * @brief constructor
    * @param parent parent widget
-   **/
-  explicit TextViewer(const QString &title, QWidget *parent = 0);
+   */
+  explicit TextViewer(const QString& title, QWidget* parent = 0);
 
   ~TextViewer();
 
@@ -57,21 +59,20 @@ public:
    * @brief set the description text to inform the user what he's editing
    *
    * @param description the description to set
-   **/
-  void setDescription(const QString &description);
+   */
+  void setDescription(const QString& description);
 
   /**
    * @brief add a new tab with the specified file open
    *
    * @param fileName name of the file to open
    * @param writable if true, the file can be modified
-   **/
-  void addFile(const QString &fileName, bool writable);
+   */
+  void addFile(const QString& fileName, bool writable);
 
 protected:
-
-  void closeEvent(QCloseEvent *event);
-  bool eventFilter(QObject *obj, QEvent *event);
+  void closeEvent(QCloseEvent* event);
+  bool eventFilter(QObject* obj, QEvent* event);
 
 private slots:
 
@@ -81,20 +82,17 @@ private slots:
   void findNext();
 
 private:
-
-  void saveFile(const QTextEdit *editor);
+  void saveFile(const QTextEdit* editor);
   void find();
 
 private:
-
-  Ui::TextViewer *ui;
-  QTabWidget *m_EditorTabs;
+  Ui::TextViewer* ui;
+  QTabWidget* m_EditorTabs;
   std::set<QTextEdit*> m_Modified;
-  FindDialog *m_FindDialog;
+  FindDialog* m_FindDialog;
   QString m_FindPattern;
-
 };
 
-} // namespace MOBase
+}  // namespace MOBase
 
-#endif // TEXTVIEWER_H
+#endif  // TEXTVIEWER_H

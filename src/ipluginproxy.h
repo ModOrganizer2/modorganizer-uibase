@@ -27,12 +27,12 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 
 #include "iplugin.h"
 
+namespace MOBase
+{
 
-namespace MOBase {
-
-class IPluginProxy : public IPlugin {
+class IPluginProxy : public IPlugin
+{
 public:
-
   IPluginProxy() : m_ParentWidget(nullptr) {}
 
   /**
@@ -67,21 +67,17 @@ public:
    *
    * @param widget The new parent widget.
    */
-  void setParentWidget(QWidget *widget) { m_ParentWidget = widget; }
+  void setParentWidget(QWidget* widget) { m_ParentWidget = widget; }
 
 protected:
-
-  QWidget *parentWidget() const { return m_ParentWidget; }
+  QWidget* parentWidget() const { return m_ParentWidget; }
 
 private:
-
-  QWidget *m_ParentWidget;
-
+  QWidget* m_ParentWidget;
 };
 
-
-} // namespace MOBase
+}  // namespace MOBase
 
 Q_DECLARE_INTERFACE(MOBase::IPluginProxy, "com.tannin.ModOrganizer.PluginProxy/1.0")
 
-#endif // IPLUGINPROXY_H
+#endif  // IPLUGINPROXY_H

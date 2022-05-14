@@ -2,10 +2,7 @@
 
 QColor LinkLabel::m_linkColor;
 
-LinkLabel::LinkLabel(QWidget* parent)
-  : QLabel(parent)
-{
-}
+LinkLabel::LinkLabel(QWidget* parent) : QLabel(parent) {}
 
 QColor LinkLabel::linkColor() const
 {

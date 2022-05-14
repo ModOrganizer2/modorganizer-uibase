@@ -2,34 +2,34 @@
 #define IDOWNLOADMANAGER_H
 
 #include <functional>
-#include "dllimport.h"
+
 #include <QList>
-#include <QString>
 #include <QObject>
+#include <QString>
 
+#include "dllimport.h"
 
-namespace MOBase {
+namespace MOBase
+{
 
 class QDLLEXPORT IDownloadManager : public QObject
 {
   Q_OBJECT
 
 public:
-
-  IDownloadManager(QObject *parent = nullptr)
-    : QObject(parent)
-  {}
+  IDownloadManager(QObject* parent = nullptr) : QObject(parent) {}
 
   /**
    * @brief download a file by url. The list can contain alternative URLs to allow the
-   *        download manager to switch in case of download problems
+   * download manager to switch in case of download problems
    * @param urls list of urls to download from
    * @return an id by which the download will be identified
    */
-  virtual int startDownloadURLs(const QStringList &urls) = 0;
+  virtual int startDownloadURLs(const QStringList& urls) = 0;
 
   /**
-   * @brief download a file from www.nexusmods.com/<game>. <game> is always the game currently being managed
+   * @brief download a file from www.nexusmods.com/<game>. <game> is always the game
+   * currently being managed
    * @param modID id of the mod for which to download a file
    * @param fileID id of the file to download
    * @return an id by which the download will be identified
@@ -39,29 +39,30 @@ public:
   /**
    * @brief get the (absolute) file path of the specified download.
    * @param id id of the download as returned by the download... functions
-   * @return absoute path to the downloaded file. This file may not yet exist if the download is incomplete
+   * @return absoute path to the downloaded file. This file may not yet exist if the
+   * download is incomplete
    */
   virtual QString downloadPath(int id) = 0;
 
-   /**
-    * @brief Installs a handler to be called when a download complete.
-    *
-    * @param callback The function to be called when a download complete. The argument is
-    *     the download ID.
-    *
-    * @return true if the handler was successfully installed (there is as of now no known reason
-    *     this should fail).
-    */
-  virtual bool onDownloadComplete(const std::function<void(int)> &callback) = 0;
+  /**
+   * @brief Installs a handler to be called when a download complete.
+   *
+   * @param callback The function to be called when a download complete. The argument is
+   * the download ID.
+   *
+   * @return true if the handler was successfully installed (there is as of now no known
+   * reason this should fail).
+   */
+  virtual bool onDownloadComplete(const std::function<void(int)>& callback) = 0;
 
   /**
    * @brief Installs a handler to be called when a download is paused.
    *
-   * @param callback The function to be called when a download is paused. The argument is
-   *     the download ID.
+   * @param callback The function to be called when a download is paused. The argument
+   * is the download ID.
    *
-   * @return true if the handler was successfully installed (there is as of now no known reason
-   *     this should fail).
+   * @return true if the handler was successfully installed (there is as of now no known
+   * reason this should fail).
    */
   virtual bool onDownloadPaused(const std::function<void(int)>& callback) = 0;
 
@@ -69,26 +70,25 @@ public:
    * @brief Installs a handler to be called when a download fails.
    *
    * @param callback The function to be called when a download fails. The argument is
-   *     the download ID.
+   * the download ID.
    *
-   * @return true if the handler was successfully installed (there is as of now no known reason
-   *     this should fail).
+   * @return true if the handler was successfully installed (there is as of now no known
+   * reason this should fail).
    */
   virtual bool onDownloadFailed(const std::function<void(int)>& callback) = 0;
 
   /**
    * @brief Installs a handler to be called when a download is removed.
    *
-   * @param callback The function to be called when a download is removed. The argument is
-   *     the download ID (which is no longer valid).
+   * @param callback The function to be called when a download is removed. The argument
+   * is the download ID (which is no longer valid).
    *
-   * @return true if the handler was successfully installed (there is as of now no known reason
-   *     this should fail).
+   * @return true if the handler was successfully installed (there is as of now no known
+   * reason this should fail).
    */
   virtual bool onDownloadRemoved(const std::function<void(int)>& callback) = 0;
-
 };
 
-}
+}  // namespace MOBase
 
-#endif // IDOWNLOADMANAGER_H
+#endif  // IDOWNLOADMANAGER_H

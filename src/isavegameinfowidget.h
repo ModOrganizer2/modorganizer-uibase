@@ -1,31 +1,32 @@
 #ifndef ISAVEGAMEINFOWIDGET_H
 #define ISAVEGAMEINFOWIDGET_H
 
+#include <QFile>
 #include <QWidget>
 
 #include "isavegame.h"
 
-class QFile;
+namespace MOBase
+{
 
-namespace MOBase {
-
-/** Base class for a save game info widget.
+/**
+ * @brief Base class for a save game info widget.
  *
  * This supports something or other
  */
 class ISaveGameInfoWidget : public QWidget
 {
 public:
-  ISaveGameInfoWidget(QWidget *parent = 0) :
-    QWidget(parent)
-  {}
+  ISaveGameInfoWidget(QWidget* parent = 0) : QWidget(parent) {}
+
+  /**
+   * @brief Set the save file to display in the widget.
+   */
+  virtual void setSave(ISaveGame const&) = 0;
 
   virtual ~ISaveGameInfoWidget() {}
-
-  /** Set the save file to display in the widget */
-  virtual void setSave(ISaveGame const &) = 0;
 };
 
-}
+}  // namespace MOBase
 
-#endif // ISAVEGAMEINFOWIDGET_H
+#endif  // ISAVEGAMEINFOWIDGET_H

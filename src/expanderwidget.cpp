@@ -1,25 +1,25 @@
 #include "expanderwidget.h"
 
-namespace MOBase {
-
-ExpanderWidget::ExpanderWidget()
-  : m_button(nullptr), m_content(nullptr), opened_(false)
+namespace MOBase
 {
-}
 
-ExpanderWidget::ExpanderWidget(QToolButton* button, QWidget* content)
-  : ExpanderWidget()
+ExpanderWidget::ExpanderWidget() : m_button(nullptr), m_content(nullptr), opened_(false)
+{}
+
+ExpanderWidget::ExpanderWidget(QToolButton* button, QWidget* content) : ExpanderWidget()
 {
   set(button, content);
 }
 
 void ExpanderWidget::set(QToolButton* button, QWidget* content, bool o)
 {
-  m_button = button;
+  m_button  = button;
   m_content = content;
 
   m_button->setToolButtonStyle(Qt::ToolButtonTextBesideIcon);
-  QObject::connect(m_button, &QToolButton::clicked, [&]{ toggle(); });
+  QObject::connect(m_button, &QToolButton::clicked, [&] {
+    toggle();
+  });
 
   toggle(o);
 }
@@ -28,8 +28,7 @@ void ExpanderWidget::toggle()
 {
   if (opened()) {
     toggle(false);
-  }
-  else {
+  } else {
     toggle(true);
   }
 }
@@ -90,4 +89,4 @@ QToolButton* ExpanderWidget::button() const
   return m_button;
 }
 
-} // namespace
+}  // namespace MOBase
