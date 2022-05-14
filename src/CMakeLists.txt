@@ -12,6 +12,7 @@ mo2_install_target(uibase)
 
 mo2_add_filter(NAME src/interfaces GROUPS
 	idownloadmanager
+	extension
 	ifiletree
 	iinstallationmanager
 	imodinterface
