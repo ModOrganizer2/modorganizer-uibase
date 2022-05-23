@@ -736,10 +736,20 @@ QString ToQString(const std::string& source)
   return QString::fromStdString(source);
 }
 
+QString ToQString(std::string_view source)
+{
+  return QString::fromUtf8(source.data(), static_cast<qsizetype>(source.size()));
+}
+
 QString ToQString(const std::wstring& source)
 {
   // return QString::fromWCharArray(source.c_str());
   return QString::fromStdWString(source);
+}
+
+QString ToQString(std::wstring_view source)
+{
+  return QString::fromWCharArray(source.data(), static_cast<qsizetype>(source.size()));
 }
 
 QString ToString(const SYSTEMTIME& time)

@@ -11,7 +11,6 @@ set(root_headers
 	../include/uibase/eventfilter.h
 	../include/uibase/exceptions.h
 	../include/uibase/executableinfo.h
-	../include/uibase/extension.h
 	../include/uibase/filemapping.h
 	../include/uibase/filesystemutilities.h
 	../include/uibase/guessedvalue.h
@@ -33,6 +32,11 @@ set(root_headers
 	../include/uibase/utility.h
 	../include/uibase/versioning.h
 	../include/uibase/versioninfo.h
+)
+set(extension_headers
+	../include/uibase/extension.h
+	../include/uibase/theme.h
+	../include/uibase/translation.h
 )
 set(interface_headers
 	../include/uibase/ifiletree.h
@@ -130,6 +134,14 @@ mo2_target_sources(uibase
 )
 
 mo2_target_sources(uibase
+	FOLDER src/extensions
+	PRIVATE
+	${extension_headers}
+	extension.cpp
+	theme.cpp
+)
+
+mo2_target_sources(uibase
 	FOLDER src/interfaces
 	PRIVATE
 	${interface_headers}
@@ -183,6 +195,7 @@ target_sources(uibase
 		BASE_DIRS ${CMAKE_CURRENT_LIST_DIR}/../include
 		FILES
 			${root_headers}
+			${extension_headers}
 			${interface_headers}
 			${tutorial_headers}
 			${widget_headers}

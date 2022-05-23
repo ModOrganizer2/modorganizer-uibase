@@ -8,6 +8,9 @@
 #include <QJsonObject>
 #include <QTranslator>
 
+#include "dllimport.h"
+#include "theme.h"
+#include "translation.h"
 #include "versioninfo.h"
 
 namespace MOBase
@@ -22,7 +25,7 @@ class GameRequirement
 class ExtensionRequirement
 {};
 
-class ExtensionMetaData
+class QDLLEXPORT ExtensionMetaData
 {
 public:
   ExtensionMetaData(const IExtension* extension, QJsonObject const& jsonData);
@@ -72,7 +75,7 @@ private:
 private:
   // these functions are only for IExtension
   //
-  friend class Extension;
+  friend class IExtension;
 
   // retrieve the prefix translations, if there is one, e.g., translations/foo
   //
@@ -98,24 +101,9 @@ private:
   ExtensionRequirement m_ExtensionRequirement;
 };
 
-class IExtension
+class QDLLEXPORT IExtension
 {
 public:
-  /**
-   * @brief Retrieve the plugins from this extension. If the plugins have not been
-   * loaded yet, the plugins are loaded.
-   *
-   * @return the list of plugins from this extension.
-   */
-  std::vector<QObject*> plugins() const;
-
-  /**
-   * @brief Load the plugins from this extension.
-   *
-   * @return the list of plugins from this extension.
-   */
-  std::vector<QObject*> loadPlugins();
-
   /**
    * @brief Retrieve the path to this extension folder.
    *
@@ -131,18 +119,24 @@ public:
   const auto& metadata() const { return m_MetaData; }
 
   /**
-   * @brief Retrieve the translator of this extension for the given language.
+   * @brief Retrieve the plugins from this extension. If the plugins have not been
+   * loaded yet, the plugins are loaded.
    *
-   * @param language Language to create a translator for, e.g., es, fr, fr_FR, etc.
-   *
-   * @return a translator for the given language, or an empty one if none exists.
+   * @return the list of plugins from this extension.
    */
-  QTranslator translator(QString const& language) const;
+  std::vector<QObject*> plugins() const;
 
   /**
-   * @brief Retrieve the stylesheet of this extension.
+   * @brief Load the plugins from this extension.
+   *
+   * @return the list of plugins from this extension.
    */
-  const QString& stylesheet() const { return m_StyleSheet; }
+  std::vector<QObject*> loadPlugins();
+
+  const auto& themes() const { return m_Themes; }
+  const auto& themeAdditions() const { return m_ThemeAdditions; }
+  const auto& translations() const { return m_Translations; }
+  const auto& translationAdditions() const { return m_TranslationAdditions; }
 
   virtual ~IExtension() {}
 
@@ -154,15 +148,14 @@ protected:
   virtual std::vector<QObject*> fetchPlugins() const = 0;
 
 private:
-  static QString createStyleSheet(std::filesystem::path const& path);
-  static QString createTranslator(std::filesystem::path const& prefix,
-                                  QString const& language);
-
-private:
   std::filesystem::path m_Path;
   ExtensionMetaData m_MetaData;
 
-  QString m_StyleSheet;
+  // theme and translations
+  std::vector<std::shared_ptr<const Theme>> m_Themes;
+  std::vector<std::shared_ptr<const ThemeAddition>> m_ThemeAdditions;
+  std::vector<std::shared_ptr<const Translation>> m_Translations;
+  std::vector<std::shared_ptr<const TranslationAddition>> m_TranslationAdditions;
 
   mutable bool m_Loaded{false};
   mutable std::vector<QObject*> m_Plugins;
