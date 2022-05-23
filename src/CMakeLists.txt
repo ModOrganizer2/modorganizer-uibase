@@ -10,8 +10,13 @@ mo2_configure_uibase(uibase
 target_compile_definitions(uibase PRIVATE -DUIBASE_EXPORT)
 mo2_install_target(uibase)
 
-mo2_add_filter(NAME src/interfaces GROUPS
+mo2_add_filter(NAME src/extensions GROUPS
 	extension
+	theme
+	translation
+)
+
+mo2_add_filter(NAME src/interfaces GROUPS
 	ifiletree
 	imoinfo
 	installationtester
