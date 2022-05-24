@@ -217,6 +217,17 @@ public:
   const auto& themeAdditions() const { return m_ThemeAdditions; }
   const auto& translationAdditions() const { return m_TranslationAdditions; }
 
+protected:
+  PluginExtension(
+      std::filesystem::path path, ExtensionMetaData metadata, bool autodetect,
+      std::vector<std::filesystem::path> plugins,
+      std::vector<std::shared_ptr<const ThemeAddition>> themeAdditions,
+      std::vector<std::shared_ptr<const TranslationAddition>> translationAdditions);
+
+  friend class ExtensionFactory;
+  static std::unique_ptr<PluginExtension> loadExtension(std::filesystem::path path,
+                                                        ExtensionMetaData metadata);
+
 private:
   // auto-detect plugins
   bool m_AutoDetect;
@@ -234,8 +245,12 @@ private:
 //
 class QDLLEXPORT GameExtension : public PluginExtension
 {
-public:
-  using PluginExtension::PluginExtension;
+private:
+  GameExtension(PluginExtension&& pluginExtension);
+
+  friend class ExtensionFactory;
+  static std::unique_ptr<GameExtension> loadExtension(std::filesystem::path path,
+                                                      ExtensionMetaData metadata);
 };
 
 }  // namespace MOBase
