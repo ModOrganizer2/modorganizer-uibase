@@ -10,6 +10,34 @@
 namespace MOBase
 {
 
+namespace
+{
+  // retrieve all files matching one of the glob pattern in globPatterns, assuming paths
+  // (in patterns) are relative to basePath
+  //
+  auto globExtensionFiles(std::filesystem::path basePath,
+                          QStringList const& globPatterns)
+  {
+    std::vector<std::filesystem::path> files;
+
+    for (const auto& globFile : globPatterns) {
+      // use a QFileInfo to extract the name (glob) and the directory - we currently do
+      // not handle recursive glob (**)
+      QFileInfo globFileInfo(basePath, globFile);
+
+      QDirIterator dirIterator(globFileInfo.absolutePath(), {globFileInfo.fileName()},
+                               QDir::Files);
+      while (dirIterator.hasNext()) {
+        dirIterator.next();
+        files.push_back(dirIterator.fileInfo().filesystemAbsoluteFilePath());
+      }
+    }
+
+    return files;
+  }
+
+}  // namespace
+
 ExtensionMetaData::ExtensionMetaData(QJsonObject const& jsonData) : m_JsonData{jsonData}
 {
   // read basic fields
@@ -182,9 +210,9 @@ TranslationExtension::loadExtension(std::filesystem::path path,
   std::vector<std::shared_ptr<const Translation>> translations;
   const auto& jsonTranslations = metadata.json()["translations"].toObject();
   for (auto it = jsonTranslations.begin(); it != jsonTranslations.end(); ++it) {
-    const auto theme = parseTranslation(path, it.key(), it.value().toObject());
-    if (theme) {
-      translations.push_back(theme);
+    const auto translation = parseTranslation(path, it.key(), it.value().toObject());
+    if (translation) {
+      translations.push_back(translation);
     } else {
       log::warn("failed to parse translation '{}' from '{}'", it.key(), path.native());
     }
@@ -207,19 +235,8 @@ TranslationExtension::parseTranslation(std::filesystem::path const& extensionFol
   const auto name          = jsonTranslation["name"].toString();
   const auto jsonGlobFiles = jsonTranslation["files"].toVariant().toStringList();
 
-  std::vector<std::filesystem::path> qm_files;
-  for (const auto& globFile : jsonGlobFiles) {
-    // use a QFileInfo to extract the name (glob) and the directory - we currently do
-    // not handle recursive glob (**)
-    QFileInfo globFileInfo(extensionFolder, globFile);
-
-    QDirIterator dirIterator(globFileInfo.absolutePath(), {globFileInfo.fileName()},
-                             QDir::Files);
-    while (dirIterator.hasNext()) {
-      dirIterator.next();
-      qm_files.push_back(dirIterator.fileInfo().filesystemAbsoluteFilePath());
-    }
-  }
+  std::vector<std::filesystem::path> qm_files =
+      globExtensionFiles(extensionFolder, jsonGlobFiles);
 
   if (name.isEmpty() || qm_files.empty()) {
     return nullptr;
@@ -242,9 +259,56 @@ PluginExtension::PluginExtension(
 std::unique_ptr<PluginExtension>
 PluginExtension::loadExtension(std::filesystem::path path, ExtensionMetaData metadata)
 {
-  // TODO
+  // load themes
+  std::vector<std::shared_ptr<const ThemeAddition>> themes;
+  {
+    const auto& jsonThemes = metadata.json()["themes"].toObject();
+    for (auto it = jsonThemes.begin(); it != jsonThemes.end(); ++it) {
+      for (auto& file : globExtensionFiles(path, it.value().toVariant().toStringList()))
+        themes.push_back(std::make_shared<ThemeAddition>(it.key().toStdString(), file));
+    }
+  }
+
+  // load translations
+  std::vector<std::shared_ptr<const TranslationAddition>> translations;
+  {
+    const auto& jsonTranslations = metadata.json()["translations"].toObject();
+
+    // * is a custom entry
+    if (jsonTranslations.contains("*")) {
+      std::map<QString, std::vector<std::filesystem::path>> filesPerLanguage;
+      const auto prefixes = jsonTranslations["*"].toVariant().toStringList();
+
+      for (auto& prefix : prefixes) {
+        const auto filePrefix = QFileInfo(prefix).fileName();
+        auto files            = globExtensionFiles(path, {prefix + "*.qm"});
+        for (auto& file : files) {
+          // extract the identifier from the match, e.g., if the prefix is
+          // translations/installer_manual_, the filePrefix is installer_manual_,
+          // and glob will be like translations/installer_manual_fr.qm
+          const auto identifier =
+              QFileInfo(file).fileName().replace(".qm", "").replace(filePrefix, "");
+          filesPerLanguage[identifier].push_back(file);
+        }
+      }
+
+      for (auto& [language, files] : filesPerLanguage) {
+        translations.push_back(std::make_shared<TranslationAddition>(
+            language.toStdString(), std::move(files)));
+      }
+
+    } else {
+      for (auto it = jsonTranslations.begin(); it != jsonTranslations.end(); ++it) {
+        translations.push_back(std::make_shared<TranslationAddition>(
+            it.key().toStdString(),
+            globExtensionFiles(path, it.value().toVariant().toStringList())));
+      }
+    }
+  }
+
   return std::unique_ptr<PluginExtension>(
-      new PluginExtension(std::move(path), std::move(metadata), true, {}, {}, {}));
+      new PluginExtension(std::move(path), std::move(metadata), true, {},
+                          std::move(themes), std::move(translations)));
 }
 
 GameExtension::GameExtension(PluginExtension&& pluginExtension)
