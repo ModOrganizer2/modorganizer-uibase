@@ -35,6 +35,7 @@ set(root_headers
 )
 set(extension_headers
 	../include/uibase/extension.h
+	../include/uibase/ipluginloader.h
 	../include/uibase/theme.h
 	../include/uibase/translation.h
 )
@@ -56,7 +57,6 @@ set(interface_headers
 	../include/uibase/ipluginlist.h
 	../include/uibase/ipluginmodpage.h
 	../include/uibase/ipluginpreview.h
-	../include/uibase/ipluginproxy.h
 	../include/uibase/iplugintool.h
 	../include/uibase/iprofile.h
 	../include/uibase/isavegame.h

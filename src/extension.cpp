@@ -114,7 +114,9 @@ ExtensionFactory::loadExtension(std::filesystem::path directory,
     return TranslationExtension::loadExtension(std::move(directory),
                                                std::move(metadata));
   case ExtensionType::PLUGIN:
+    return PluginExtension::loadExtension(std::move(directory), std::move(metadata));
   case ExtensionType::GAME:
+    return GameExtension::loadExtension(std::move(directory), std::move(metadata));
   case ExtensionType::INVALID:
   default:
     log::warn("failed to load extension from '{}': invalid type", directory.native());
@@ -197,7 +199,6 @@ TranslationExtension::loadExtension(std::filesystem::path path,
       new TranslationExtension(path, metadata, std::move(translations))};
 }
 
-#pragma optimize("", off)
 std::shared_ptr<const Translation>
 TranslationExtension::parseTranslation(std::filesystem::path const& extensionFolder,
                                        const QString& identifier,
@@ -227,6 +228,36 @@ TranslationExtension::parseTranslation(std::filesystem::path const& extensionFol
   return std::make_shared<Translation>(identifier.toStdString(), name.toStdString(),
                                        std::move(qm_files));
 }
-#pragma optimize("", on)
+
+PluginExtension::PluginExtension(
+    std::filesystem::path path, ExtensionMetaData metadata, bool autodetect,
+    std::vector<std::filesystem::path> plugins,
+    std::vector<std::shared_ptr<const ThemeAddition>> themeAdditions,
+    std::vector<std::shared_ptr<const TranslationAddition>> translationAdditions)
+    : IExtension(std::move(path), std::move(metadata)), m_AutoDetect{autodetect},
+      m_Plugins{std::move(plugins)}, m_ThemeAdditions{std::move(themeAdditions)},
+      m_TranslationAdditions{std::move(translationAdditions)}
+{}
+
+std::unique_ptr<PluginExtension>
+PluginExtension::loadExtension(std::filesystem::path path, ExtensionMetaData metadata)
+{
+  // TODO
+  return std::unique_ptr<PluginExtension>(
+      new PluginExtension(std::move(path), std::move(metadata), true, {}, {}, {}));
+}
+
+GameExtension::GameExtension(PluginExtension&& pluginExtension)
+    : PluginExtension(std::move(pluginExtension))
+{}
+
+std::unique_ptr<GameExtension> GameExtension::loadExtension(std::filesystem::path path,
+                                                            ExtensionMetaData metadata)
+{
+  auto extension = PluginExtension::loadExtension(std::move(path), std::move(metadata));
+  return extension
+             ? std::unique_ptr<GameExtension>(new GameExtension(std::move(*extension)))
+             : nullptr;
+}
 
 }  // namespace MOBase
