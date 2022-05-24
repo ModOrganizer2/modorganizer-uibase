@@ -412,6 +412,11 @@ std::string converter<QVariant>::convert(const QVariant& v)
                           : v.toString().toStdString()));
 }
 
+std::string converter<std::filesystem::path>::convert(const std::filesystem::path& v)
+{
+  return v.string();
+}
+
 void doLogImpl(spdlog::logger& lg, Levels lv, const std::string& s) noexcept
 {
   try {

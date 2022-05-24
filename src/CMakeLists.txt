@@ -14,6 +14,7 @@ mo2_add_filter(NAME src/extensions GROUPS
 	extension
 	theme
 	translation
+	ipluginloader
 )
 
 mo2_add_filter(NAME src/interfaces GROUPS
@@ -30,7 +31,6 @@ mo2_add_filter(NAME src/interfaces GROUPS
 	ipluginlist
 	ipluginmodpage
 	ipluginpreview
-	ipluginproxy
 	iplugintool
 	iprofile
 	isavegame
