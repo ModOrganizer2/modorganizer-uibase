@@ -248,7 +248,7 @@ TranslationExtension::parseTranslation(std::filesystem::path const& extensionFol
 
 PluginExtension::PluginExtension(
     std::filesystem::path path, ExtensionMetaData metadata, bool autodetect,
-    std::vector<std::filesystem::path> plugins,
+    std::map<std::string, std::filesystem::path> plugins,
     std::vector<std::shared_ptr<const ThemeAddition>> themeAdditions,
     std::vector<std::shared_ptr<const TranslationAddition>> translationAdditions)
     : IExtension(std::move(path), std::move(metadata)), m_AutoDetect{autodetect},
@@ -259,10 +259,30 @@ PluginExtension::PluginExtension(
 std::unique_ptr<PluginExtension>
 PluginExtension::loadExtension(std::filesystem::path path, ExtensionMetaData metadata)
 {
+  // load plugins
+  std::optional<bool> autodetect;
+  std::map<std::string, std::filesystem::path> plugins;
+  {
+    auto jsonPlugins = metadata.json()["plugins"].toObject();
+    if (jsonPlugins.contains("autodetect")) {
+      autodetect = jsonPlugins["autodetect"].toBool();
+    }
+    jsonPlugins.remove("autodetect");
+
+    for (auto it = jsonPlugins.begin(); it != jsonPlugins.end(); ++it) {
+      plugins[it.key().toStdString()] =
+          QFileInfo(path, it.value().toString()).filesystemAbsoluteFilePath();
+    }
+
+    if (!autodetect.has_value()) {
+      autodetect = plugins.empty();
+    }
+  }
+
   // load themes
   std::vector<std::shared_ptr<const ThemeAddition>> themes;
   {
-    const auto& jsonThemes = metadata.json()["themes"].toObject();
+    auto jsonThemes = metadata.json()["themes"].toObject();
     for (auto it = jsonThemes.begin(); it != jsonThemes.end(); ++it) {
       for (auto& file : globExtensionFiles(path, it.value().toVariant().toStringList()))
         themes.push_back(std::make_shared<ThemeAddition>(it.key().toStdString(), file));
@@ -272,7 +292,7 @@ PluginExtension::loadExtension(std::filesystem::path path, ExtensionMetaData met
   // load translations
   std::vector<std::shared_ptr<const TranslationAddition>> translations;
   {
-    const auto& jsonTranslations = metadata.json()["translations"].toObject();
+    auto jsonTranslations = metadata.json()["translations"].toObject();
 
     // * is a custom entry
     if (jsonTranslations.contains("*")) {
@@ -306,9 +326,9 @@ PluginExtension::loadExtension(std::filesystem::path path, ExtensionMetaData met
     }
   }
 
-  return std::unique_ptr<PluginExtension>(
-      new PluginExtension(std::move(path), std::move(metadata), true, {},
-                          std::move(themes), std::move(translations)));
+  return std::unique_ptr<PluginExtension>(new PluginExtension(
+      std::move(path), std::move(metadata), *autodetect, std::move(plugins),
+      std::move(themes), std::move(translations)));
 }
 
 GameExtension::GameExtension(PluginExtension&& pluginExtension)

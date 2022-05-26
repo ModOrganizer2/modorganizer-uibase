@@ -220,7 +220,7 @@ public:
 protected:
   PluginExtension(
       std::filesystem::path path, ExtensionMetaData metadata, bool autodetect,
-      std::vector<std::filesystem::path> plugins,
+      std::map<std::string, std::filesystem::path> plugins,
       std::vector<std::shared_ptr<const ThemeAddition>> themeAdditions,
       std::vector<std::shared_ptr<const TranslationAddition>> translationAdditions);
 
@@ -233,7 +233,7 @@ private:
   bool m_AutoDetect;
 
   // forced plugins
-  std::vector<std::filesystem::path> m_Plugins;
+  std::map<std::string, std::filesystem::path> m_Plugins;
 
   // theme and translations additions
   std::vector<std::shared_ptr<const ThemeAddition>> m_ThemeAdditions;
