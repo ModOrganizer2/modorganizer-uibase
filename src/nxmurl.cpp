@@ -19,25 +19,26 @@ along with Mod Organizer.  If not, see <http://www.gnu.org/licenses/>.
 
 #include "nxmurl.h"
 #include "utility.h"
-#include <QRegularExpression>
 #include <QList>
+#include <QRegularExpression>
 #include <QString>
 #include <QUrl>
 #include <QUrlQuery>
 
-NXMUrl::NXMUrl(const QString &url)
+NXMUrl::NXMUrl(const QString& url)
 {
   QUrl nxm(url);
   QUrlQuery query(nxm);
-  QRegularExpression exp("nxm://[a-z0-9]+/mods/(\\d+)/files/(\\d+)", QRegularExpression::CaseInsensitiveOption);
+  QRegularExpression exp("nxm://[a-z0-9]+/mods/(\\d+)/files/(\\d+)",
+                         QRegularExpression::CaseInsensitiveOption);
   auto match = exp.match(url);
   if (!match.hasMatch()) {
     throw MOBase::InvalidNXMLinkException(url);
   }
-  m_Game = nxm.host();
-  m_ModId = match.captured(1).toInt();
-  m_FileId = match.captured(2).toInt();
-  m_Key = query.queryItemValue("key");
+  m_Game    = nxm.host();
+  m_ModId   = match.captured(1).toInt();
+  m_FileId  = match.captured(2).toInt();
+  m_Key     = query.queryItemValue("key");
   m_Expires = query.queryItemValue("expires").toInt();
-  m_UserId = query.queryItemValue("user_id").toInt();
+  m_UserId  = query.queryItemValue("user_id").toInt();
 }

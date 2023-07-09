@@ -25,7 +25,8 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 #include <QList>
 #include <QString>
 
-namespace MOBase {
+namespace MOBase
+{
 
 /**
  * @brief Gets the installation path to Steam according to the registy
@@ -39,8 +40,8 @@ QDLLEXPORT QString findSteam();
  * @param validFile If the given file exists in the found installation path, the game is
           consider to be valid.  May be blank.
  **/
-QDLLEXPORT QString findSteamGame(const QString &appName, const QString &validFile);
+QDLLEXPORT QString findSteamGame(const QString& appName, const QString& validFile);
 
-} // namespace MOBase
+}  // namespace MOBase
 
-#endif // STEAMUTILITY_H
+#endif  // STEAMUTILITY_H

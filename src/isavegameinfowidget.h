@@ -7,7 +7,8 @@
 
 class QFile;
 
-namespace MOBase {
+namespace MOBase
+{
 
 /** Base class for a save game info widget.
  *
@@ -16,16 +17,14 @@ namespace MOBase {
 class ISaveGameInfoWidget : public QWidget
 {
 public:
-  ISaveGameInfoWidget(QWidget *parent = 0) :
-    QWidget(parent)
-  {}
+  ISaveGameInfoWidget(QWidget* parent = 0) : QWidget(parent) {}
 
   virtual ~ISaveGameInfoWidget() {}
 
   /** Set the save file to display in the widget */
-  virtual void setSave(ISaveGame const &) = 0;
+  virtual void setSave(ISaveGame const&) = 0;
 };
 
-}
+}  // namespace MOBase
 
-#endif // ISAVEGAMEINFOWIDGET_H
+#endif  // ISAVEGAMEINFOWIDGET_H

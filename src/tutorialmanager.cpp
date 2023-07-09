@@ -18,29 +18,24 @@ along with Mod Organizer.  If not, see <http://www.gnu.org/licenses/>.
 */
 
 #include "tutorialmanager.h"
+#include "log.h"
 #include "tutorialcontrol.h"
 #include "utility.h"
-#include "log.h"
+#include <QApplication>
 #include <QDir>
 #include <QList>
 #include <QString>
-#include <QApplication>
 
-
-namespace MOBase {
-
-
-TutorialManager *TutorialManager::s_Instance = nullptr;
-
-
-TutorialManager::TutorialManager(const QString &tutorialPath, QObject *organizerCore)
-  : m_TutorialPath(tutorialPath)
-  , m_OrganizerCore(organizerCore)
+namespace MOBase
 {
-}
 
+TutorialManager* TutorialManager::s_Instance = nullptr;
 
-void TutorialManager::init(const QString &tutorialPath, QObject *organizerCore)
+TutorialManager::TutorialManager(const QString& tutorialPath, QObject* organizerCore)
+    : m_TutorialPath(tutorialPath), m_OrganizerCore(organizerCore)
+{}
+
+void TutorialManager::init(const QString& tutorialPath, QObject* organizerCore)
 {
   if (s_Instance != nullptr) {
     delete s_Instance;
@@ -48,8 +43,7 @@ void TutorialManager::init(const QString &tutorialPath, QObject *organizerCore)
   s_Instance = new TutorialManager(tutorialPath, organizerCore);
 }
 
-
-TutorialManager &TutorialManager::instance()
+TutorialManager& TutorialManager::instance()
 {
   if (s_Instance == nullptr) {
     throw Exception(tr("tutorial manager not set up yet"));
@@ -57,8 +51,8 @@ TutorialManager &TutorialManager::instance()
   return *s_Instance;
 }
 
-
-void TutorialManager::activateTutorial(const QString &windowName, const QString &tutorialName)
+void TutorialManager::activateTutorial(const QString& windowName,
+                                       const QString& tutorialName)
 {
   std::map<QString, TutorialControl*>::iterator iter = m_Controls.find(windowName);
   if (iter != m_Controls.end()) {
@@ -69,23 +63,21 @@ void TutorialManager::activateTutorial(const QString &windowName, const QString 
   }
 }
 
-
-void TutorialManager::finishWindowTutorial(const QString &windowName)
+void TutorialManager::finishWindowTutorial(const QString& windowName)
 {
   emit windowTutorialFinished(windowName);
-//  QSettings &settings = Settings::instance().directInterface();
-//  settings.setValue(QString("CompletedWindowTutorials/") + windowName, true);
+  //  QSettings &settings = Settings::instance().directInterface();
+  //  settings.setValue(QString("CompletedWindowTutorials/") + windowName, true);
 }
 
-
-bool TutorialManager::hasTutorial(const QString &tutorialName)
+bool TutorialManager::hasTutorial(const QString& tutorialName)
 {
   return QFile::exists(m_TutorialPath + tutorialName);
 }
 
-QWidget *TutorialManager::findControl(const QString &controlName)
+QWidget* TutorialManager::findControl(const QString& controlName)
 {
-  QWidget *mainWindow = qApp->activeWindow();
+  QWidget* mainWindow = qApp->activeWindow();
   if (mainWindow != nullptr) {
     return mainWindow->findChild<QWidget*>(controlName);
   } else {
@@ -93,9 +85,10 @@ QWidget *TutorialManager::findControl(const QString &controlName)
   }
 }
 
-void TutorialManager::registerControl(const QString &windowName, TutorialControl *control)
+void TutorialManager::registerControl(const QString& windowName,
+                                      TutorialControl* control)
 {
-  m_Controls[windowName] = control;
+  m_Controls[windowName]                    = control;
   std::map<QString, QString>::iterator iter = m_PendingTutorials.find(windowName);
   if (iter != m_PendingTutorials.end()) {
     // there is a pending tutorial for this window, display it
@@ -104,8 +97,7 @@ void TutorialManager::registerControl(const QString &windowName, TutorialControl
   }
 }
 
-
-void TutorialManager::unregisterControl(const QString &windowName)
+void TutorialManager::unregisterControl(const QString& windowName)
 {
   std::map<QString, TutorialControl*>::iterator iter = m_Controls.find(windowName);
   if (iter != m_Controls.end()) {
@@ -114,4 +106,4 @@ void TutorialManager::unregisterControl(const QString &windowName)
     log::warn("failed to remove tutorial control {}", windowName);
   }
 }
-} // namespace MOBase
+}  // namespace MOBase

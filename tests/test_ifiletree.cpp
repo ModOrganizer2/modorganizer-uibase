@@ -1,7 +1,7 @@
-#pragma warning( push )
-#pragma warning( disable : 4668 )
+#pragma warning(push)
+#pragma warning(disable : 4668)
 #include <gtest/gtest.h>
-#pragma warning( pop )
+#pragma warning(pop)
 
 #include <algorithm>
 #include <string>
@@ -9,29 +9,39 @@
 
 #include "ifiletree.h"
 
-std::ostream& operator<<(std::ostream& os, const QString& str) {
+std::ostream& operator<<(std::ostream& os, const QString& str)
+{
   return os << str.toStdString();
 }
 
 using namespace MOBase;
 
 /**
-  *
-  */
-struct FileListTree : public IFileTree {
+ *
+ */
+struct FileListTree : public IFileTree
+{
   using File = std::pair<QStringList, bool>;
 
-  std::shared_ptr<IFileTree> makeDirectory(std::shared_ptr<const IFileTree> parent, QString name, std::vector<File> &&files) const {
-    return std::shared_ptr<FileListTree>(new FileListTree(parent, name, std::move(files)));
+  std::shared_ptr<IFileTree> makeDirectory(std::shared_ptr<const IFileTree> parent,
+                                           QString name,
+                                           std::vector<File>&& files) const
+  {
+    return std::shared_ptr<FileListTree>(
+        new FileListTree(parent, name, std::move(files)));
   }
 
-  std::shared_ptr<IFileTree> makeDirectory(std::shared_ptr<const IFileTree> parent, QString name) const {
+  std::shared_ptr<IFileTree> makeDirectory(std::shared_ptr<const IFileTree> parent,
+                                           QString name) const
+  {
     return std::shared_ptr<FileListTree>(new FileListTree(parent, name));
   }
 
   bool populated() const { return m_Populated; }
 
-  virtual bool doPopulate(std::shared_ptr<const IFileTree> parent, std::vector<std::shared_ptr<FileTreeEntry>>& entries) const {
+  virtual bool doPopulate(std::shared_ptr<const IFileTree> parent,
+                          std::vector<std::shared_ptr<FileTreeEntry>>& entries) const
+  {
     // We know that the files are sorted:
     QString currentName = "";
     std::vector<File> currentFiles;
@@ -52,11 +62,9 @@ struct FileListTree : public IFileTree {
           entries.push_back(makeFile(parent, currentName));
           currentName = "";
         }
-      }
-      else {
-        currentFiles.push_back({
-          QStringList(p.first.begin() + 1, p.first.end()), p.second
-          });
+      } else {
+        currentFiles.push_back(
+            {QStringList(p.first.begin() + 1, p.first.end()), p.second});
       }
     }
 
@@ -69,33 +77,42 @@ struct FileListTree : public IFileTree {
     return false;
   }
 
-  virtual std::shared_ptr<IFileTree> doClone() const override {
+  virtual std::shared_ptr<IFileTree> doClone() const override
+  {
     return std::shared_ptr<FileListTree>(new FileListTree(nullptr, name(), m_Files));
   }
 
 public:
-
-  static std::shared_ptr<IFileTree> makeTree(std::vector<std::pair<QString, bool>> &&files) {
+  static std::shared_ptr<IFileTree>
+  makeTree(std::vector<std::pair<QString, bool>>&& files)
+  {
     std::sort(std::begin(files), std::end(files),
-      [](const std::pair<QString, bool>& a, const std::pair<QString, bool>& b) {
-        return FileNameComparator::compare(a.first, b.first) < 0; });
+              [](const std::pair<QString, bool>& a, const std::pair<QString, bool>& b) {
+                return FileNameComparator::compare(a.first, b.first) < 0;
+              });
 
     std::vector<File> pFiles;
 
     for (auto p : files) {
-      pFiles.push_back({ p.first.split("/", Qt::SkipEmptyParts), p.second });
+      pFiles.push_back({p.first.split("/", Qt::SkipEmptyParts), p.second});
     }
 
-    return std::shared_ptr<FileListTree>(new FileListTree(nullptr, "", std::move(pFiles)));
+    return std::shared_ptr<FileListTree>(
+        new FileListTree(nullptr, "", std::move(pFiles)));
   }
 
 protected:
-
-  FileListTree(std::shared_ptr<const IFileTree> parent, QString name) : FileTreeEntry(parent, name), IFileTree() { }
-  FileListTree(std::shared_ptr<const IFileTree> parent, QString name, std::vector<File> const& files)
-    : FileTreeEntry(parent, name), IFileTree(), m_Files(files) { }
-  FileListTree(std::shared_ptr<const IFileTree> parent, QString name, std::vector<File>&& files)
-    : FileTreeEntry(parent, name), IFileTree(), m_Files(std::move(files)) { }
+  FileListTree(std::shared_ptr<const IFileTree> parent, QString name)
+      : FileTreeEntry(parent, name), IFileTree()
+  {}
+  FileListTree(std::shared_ptr<const IFileTree> parent, QString name,
+               std::vector<File> const& files)
+      : FileTreeEntry(parent, name), IFileTree(), m_Files(files)
+  {}
+  FileListTree(std::shared_ptr<const IFileTree> parent, QString name,
+               std::vector<File>&& files)
+      : FileTreeEntry(parent, name), IFileTree(), m_Files(std::move(files))
+  {}
 
   mutable bool m_Populated = false;
   std::vector<File> m_Files;
@@ -111,7 +128,8 @@ protected:
  *
  * @return true if the tree has been populated, false otherwize.
  */
-bool populated(std::shared_ptr<const IFileTree> tree) {
+bool populated(std::shared_ptr<const IFileTree> tree)
+{
   return std::dynamic_pointer_cast<const FileListTree>(tree)->populated();
 }
 
@@ -122,7 +140,9 @@ bool populated(std::shared_ptr<const IFileTree> tree) {
  *
  * @return a vector containing all the entries in the tree.
  */
-std::vector<std::shared_ptr<const FileTreeEntry>> getAllEntries(std::shared_ptr<const IFileTree> fileTree) {
+std::vector<std::shared_ptr<const FileTreeEntry>>
+getAllEntries(std::shared_ptr<const IFileTree> fileTree)
+{
   std::vector<std::shared_ptr<const FileTreeEntry>> entries;
   for (auto entry : *fileTree) {
     entries.push_back(entry);
@@ -146,23 +166,28 @@ std::vector<std::shared_ptr<const FileTreeEntry>> getAllEntries(std::shared_ptr<
  *     all the entry, including intermediate directories, except the root.
  *
  */
-void assertTreeEquals(std::shared_ptr<const IFileTree> fileTree, std::vector<std::pair<QString, bool>> const& entries) {
+void assertTreeEquals(std::shared_ptr<const IFileTree> fileTree,
+                      std::vector<std::pair<QString, bool>> const& entries)
+{
   // Check that all entries are in the tree:
   for (auto& entry : entries) {
     auto treeEntry = fileTree->find(entry.first);
-    ASSERT_NE(treeEntry, nullptr) << "Entry " << entry.first << " not found in the tree.";
-    ASSERT_EQ(entry.second, treeEntry->isDir()) << "Entry " << entry.first << " is not of the right type.";
+    ASSERT_NE(treeEntry, nullptr)
+        << "Entry " << entry.first << " not found in the tree.";
+    ASSERT_EQ(entry.second, treeEntry->isDir())
+        << "Entry " << entry.first << " is not of the right type.";
   }
 
   // Check that all entries in the tree are in the vector:
   auto treeEntries = getAllEntries(fileTree);
   for (auto& entry : treeEntries) {
     auto path = entry->pathFrom(fileTree, "/");
-    auto it = std::find_if(entries.begin(), entries.end(), [&path](auto const& p) {
+    auto it   = std::find_if(entries.begin(), entries.end(), [&path](auto const& p) {
       return p.first.compare(path, Qt::CaseInsensitive) == 0;
     });
     ASSERT_NE(it, entries.end()) << "Entry '" << path << "' not expected in the tree.";
-    ASSERT_EQ(it->second, entry->isDir()) << "Entry '" << path << "' is not of the right type.";
+    ASSERT_EQ(it->second, entry->isDir())
+        << "Entry '" << path << "' is not of the right type.";
   }
 }
 
@@ -173,7 +198,9 @@ void assertTreeEquals(std::shared_ptr<const IFileTree> fileTree, std::vector<std
  *
  * @return a mapping from path (separated by /) to file entry.
  */
-std::map<QString, std::shared_ptr<const FileTreeEntry>> createMapping(std::shared_ptr<const IFileTree> fileTree) {
+std::map<QString, std::shared_ptr<const FileTreeEntry>>
+createMapping(std::shared_ptr<const IFileTree> fileTree)
+{
   std::map<QString, std::shared_ptr<const FileTreeEntry>> mapping;
   for (auto entry : *fileTree) {
     mapping[entry->path("/")] = entry;
@@ -185,7 +212,8 @@ std::map<QString, std::shared_ptr<const FileTreeEntry>> createMapping(std::share
   return mapping;
 }
 
-TEST(IFileTreeTest, ExtensionComputedCorrectly) {
+TEST(IFileTreeTest, ExtensionComputedCorrectly)
+{
   // Fake tree to create entry:
   std::shared_ptr<IFileTree> fileTree = FileListTree::makeTree({});
 
@@ -198,15 +226,11 @@ TEST(IFileTreeTest, ExtensionComputedCorrectly) {
   EXPECT_EQ(a->suffix(), "b");
 }
 
-TEST(IFileTreeTest, TreeIsPopulatedCorrectly) {
-  std::vector<std::pair<QString, bool>> strTree{
-    {"a/", true},
-    {"b", true},
-    {"c.x", false},
-    {"d.y", false},
-    {"e/q/c.t", false},
-    {"e/q/p", true}
-  };
+TEST(IFileTreeTest, TreeIsPopulatedCorrectly)
+{
+  std::vector<std::pair<QString, bool>> strTree{{"a/", true},       {"b", true},
+                                                {"c.x", false},     {"d.y", false},
+                                                {"e/q/c.t", false}, {"e/q/p", true}};
 
   std::shared_ptr<IFileTree> fileTree = FileListTree::makeTree(std::move(strTree));
 
@@ -221,28 +245,23 @@ TEST(IFileTreeTest, TreeIsPopulatedCorrectly) {
   ASSERT_TRUE(fileTree->exists("e/q/c.t"));
   ASSERT_TRUE(fileTree->exists("e/q/p"));
 
-  assertTreeEquals(fileTree, {
-    {"a", true},
-    {"b", true},
-    {"c.x", false},
-    {"d.y", false},
-    {"e", true},
-    {"e/q", true},
-    {"e/q/c.t", false},
-    {"e/q/p", true}
-  });
+  assertTreeEquals(fileTree, {{"a", true},
+                              {"b", true},
+                              {"c.x", false},
+                              {"d.y", false},
+                              {"e", true},
+                              {"e/q", true},
+                              {"e/q/c.t", false},
+                              {"e/q/p", true}});
 
   // Retrieve the entry:
   {
-    std::shared_ptr<FileTreeEntry>
-      a = fileTree->find("a"),
-      b = fileTree->find("b"),
-      cx = fileTree->find("c.x"),
-      dy = fileTree->find("d.y"),
-      e = fileTree->find("e"),
-      e_q = fileTree->find("e/q"),
-      e_q_ct = fileTree->find("e/q/c.t"),
-      e_q_p = fileTree->find("e/q/p");
+    std::shared_ptr<FileTreeEntry> a = fileTree->find("a"), b = fileTree->find("b"),
+                                   cx = fileTree->find("c.x"),
+                                   dy = fileTree->find("d.y"), e = fileTree->find("e"),
+                                   e_q    = fileTree->find("e/q"),
+                                   e_q_ct = fileTree->find("e/q/c.t"),
+                                   e_q_p  = fileTree->find("e/q/p");
 
     EXPECT_NE(a, nullptr);
     EXPECT_TRUE(a->isDir());
@@ -301,21 +320,21 @@ TEST(IFileTreeTest, TreeIsPopulatedCorrectly) {
     EXPECT_EQ(e->astree()->find("q/p"), e_q_p);
 
     // Check the content:
-    EXPECT_EQ(a->astree()->size(), std::size_t{ 0 });
+    EXPECT_EQ(a->astree()->size(), std::size_t{0});
     EXPECT_TRUE(a->astree()->empty());
     EXPECT_EQ(a->astree()->begin(), a->astree()->end());
-    EXPECT_EQ(b->astree()->size(), std::size_t{ 0 });
+    EXPECT_EQ(b->astree()->size(), std::size_t{0});
     EXPECT_TRUE(b->astree()->empty());
     EXPECT_EQ(b->astree()->begin(), b->astree()->end());
     EXPECT_EQ(cx->astree(), nullptr);
     EXPECT_EQ(dy->astree(), nullptr);
-    EXPECT_EQ(e->astree()->size(), std::size_t{ 1 });
+    EXPECT_EQ(e->astree()->size(), std::size_t{1});
     EXPECT_EQ(e->astree()->at(0), e_q);
-    EXPECT_EQ(e_q->astree()->size(), std::size_t{ 2 });
-    EXPECT_NE(
-      std::find(e_q->astree()->begin(), e_q->astree()->end(), e_q_ct), e_q->astree()->end());
-    EXPECT_NE(
-      std::find(e_q->astree()->begin(), e_q->astree()->end(), e_q_p), e_q->astree()->end());
+    EXPECT_EQ(e_q->astree()->size(), std::size_t{2});
+    EXPECT_NE(std::find(e_q->astree()->begin(), e_q->astree()->end(), e_q_ct),
+              e_q->astree()->end());
+    EXPECT_NE(std::find(e_q->astree()->begin(), e_q->astree()->end(), e_q_p),
+              e_q->astree()->end());
 
     EXPECT_EQ(a->pathFrom(fileTree), "a");
     EXPECT_EQ(a->path(), "a");
@@ -340,72 +359,60 @@ TEST(IFileTreeTest, TreeIsPopulatedCorrectly) {
   }
 
   {
-    std::shared_ptr<FileTreeEntry>
-      a = fileTree->find("a", FileTreeEntry::DIRECTORY),
-      b = fileTree->find("b", FileTreeEntry::DIRECTORY),
-      cx = fileTree->find("c.x", FileTreeEntry::FILE),
-      dy = fileTree->find("d.y", FileTreeEntry::FILE),
-      e = fileTree->find("e", FileTreeEntry::DIRECTORY),
-      e_q = fileTree->find("e/q", FileTreeEntry::DIRECTORY),
-      e_q_ct = fileTree->find("e/q/c.t", FileTreeEntry::FILE),
-      e_q_p = fileTree->find("e/q/p", FileTreeEntry::DIRECTORY);
+    std::shared_ptr<FileTreeEntry> a  = fileTree->find("a", FileTreeEntry::DIRECTORY),
+                                   b  = fileTree->find("b", FileTreeEntry::DIRECTORY),
+                                   cx = fileTree->find("c.x", FileTreeEntry::FILE),
+                                   dy = fileTree->find("d.y", FileTreeEntry::FILE),
+                                   e  = fileTree->find("e", FileTreeEntry::DIRECTORY),
+                                   e_q =
+                                       fileTree->find("e/q", FileTreeEntry::DIRECTORY),
+                                   e_q_ct =
+                                       fileTree->find("e/q/c.t", FileTreeEntry::FILE),
+                                   e_q_p = fileTree->find("e/q/p",
+                                                          FileTreeEntry::DIRECTORY);
 
+    EXPECT_TRUE((a != nullptr && a->isDir() && a->name() == "a"));
+    EXPECT_TRUE((b != nullptr && b->isDir() && b->name() == "b"));
+    EXPECT_TRUE((cx != nullptr && cx->isFile() && cx->name() == "c.x"));
+    EXPECT_TRUE((dy != nullptr && dy->isFile() && dy->name() == "d.y"));
+    EXPECT_TRUE((e != nullptr && e->isDir() && e->name() == "e"));
+    EXPECT_TRUE((e_q != nullptr && e_q->isDir() && e_q->name() == "q"));
+    EXPECT_TRUE((e_q_ct != nullptr && e_q_ct->isFile() && e_q_ct->name() == "c.t"));
+    EXPECT_TRUE((e_q_p != nullptr && e_q_p->isDir() && e_q_p->name() == "p"));
 
-      EXPECT_TRUE((a != nullptr && a->isDir() && a->name() == "a"));
-      EXPECT_TRUE((b != nullptr && b->isDir() && b->name() == "b"));
-      EXPECT_TRUE((cx != nullptr && cx->isFile() && cx->name() == "c.x"));
-      EXPECT_TRUE((dy != nullptr && dy->isFile() && dy->name() == "d.y"));
-      EXPECT_TRUE((e != nullptr && e->isDir() && e->name() == "e"));
-      EXPECT_TRUE((e_q != nullptr && e_q->isDir() && e_q->name() == "q"));
-      EXPECT_TRUE((e_q_ct != nullptr && e_q_ct->isFile() && e_q_ct->name() == "c.t"));
-      EXPECT_TRUE((e_q_p != nullptr && e_q_p->isDir() && e_q_p->name() == "p"));
-
-      EXPECT_EQ(fileTree->find("a", FileTreeEntry::FILE), nullptr);
-      EXPECT_EQ(fileTree->find("b", FileTreeEntry::FILE), nullptr);
-      EXPECT_EQ(fileTree->find("c.x", FileTreeEntry::DIRECTORY), nullptr);
-      EXPECT_EQ(fileTree->find("d.y", FileTreeEntry::DIRECTORY), nullptr);
-      EXPECT_EQ(fileTree->find("e", FileTreeEntry::FILE), nullptr);
-      EXPECT_EQ(fileTree->find("e/q", FileTreeEntry::FILE), nullptr);
-      EXPECT_EQ(fileTree->find("e/q/c.t", FileTreeEntry::DIRECTORY), nullptr);
-      EXPECT_EQ(fileTree->find("e/q/p", FileTreeEntry::FILE), nullptr);
-
+    EXPECT_EQ(fileTree->find("a", FileTreeEntry::FILE), nullptr);
+    EXPECT_EQ(fileTree->find("b", FileTreeEntry::FILE), nullptr);
+    EXPECT_EQ(fileTree->find("c.x", FileTreeEntry::DIRECTORY), nullptr);
+    EXPECT_EQ(fileTree->find("d.y", FileTreeEntry::DIRECTORY), nullptr);
+    EXPECT_EQ(fileTree->find("e", FileTreeEntry::FILE), nullptr);
+    EXPECT_EQ(fileTree->find("e/q", FileTreeEntry::FILE), nullptr);
+    EXPECT_EQ(fileTree->find("e/q/c.t", FileTreeEntry::DIRECTORY), nullptr);
+    EXPECT_EQ(fileTree->find("e/q/p", FileTreeEntry::FILE), nullptr);
   }
-
 }
 
-TEST(IFileTreeTest, TreeIsDestructedCorrectly) {
-  std::vector<std::pair<QString, bool>> strTree{
-    {"a/", true},
-    {"b", true},
-    {"c.x", false},
-    {"d.y", false},
-    {"e/q/c.t", false},
-    {"e/q/p", true}
-  };
+TEST(IFileTreeTest, TreeIsDestructedCorrectly)
+{
+  std::vector<std::pair<QString, bool>> strTree{{"a/", true},       {"b", true},
+                                                {"c.x", false},     {"d.y", false},
+                                                {"e/q/c.t", false}, {"e/q/p", true}};
 
   std::shared_ptr<IFileTree> fileTree = FileListTree::makeTree(std::move(strTree));
 
   EXPECT_NE(fileTree, nullptr);
 
   // Retrieve weak ptr for the entry:
-  std::weak_ptr<FileTreeEntry>
-    a = fileTree->find("a"),
-    b = fileTree->find("b"),
-    cx = fileTree->find("c.x"),
-    dy = fileTree->find("d.y"),
-    e = fileTree->find("e"),
-    e_q = fileTree->find("e/q"),
-    e_q_ct = fileTree->find("e/q/c.t"),
-    e_q_p = fileTree->find("e/q/p");
+  std::weak_ptr<FileTreeEntry> a = fileTree->find("a"), b = fileTree->find("b"),
+                               cx = fileTree->find("c.x"), dy = fileTree->find("d.y"),
+                               e = fileTree->find("e"), e_q = fileTree->find("e/q"),
+                               e_q_ct = fileTree->find("e/q/c.t"),
+                               e_q_p  = fileTree->find("e/q/p");
 
   // And for the trees:
-  std::weak_ptr<IFileTree>
-    r_t = fileTree,
-    a_t = a.lock()->astree(),
-    b_t = b.lock()->astree(),
-    e_t = e.lock()->astree(),
-    e_q_t = e_q.lock()->astree(),
-    e_q_p_t = e_q_p.lock()->astree();
+  std::weak_ptr<IFileTree> r_t = fileTree, a_t = a.lock()->astree(),
+                           b_t = b.lock()->astree(), e_t = e.lock()->astree(),
+                           e_q_t   = e_q.lock()->astree(),
+                           e_q_p_t = e_q_p.lock()->astree();
 
   // Release the base tree:
   fileTree.reset();
@@ -426,56 +433,46 @@ TEST(IFileTreeTest, TreeIsDestructedCorrectly) {
   EXPECT_TRUE(e_q_p_t.expired());
 }
 
-TEST(IFileTreeTest, BasicTreeManipulation) {
-  std::vector<std::pair<QString, bool>> strTree{
-    {"a/", true},
-    {"b", true},
-    {"c.x", false},
-    {"d.y", false},
-    {"e/q/c.t", false},
-    {"e/q/p", true}
-  };
+TEST(IFileTreeTest, BasicTreeManipulation)
+{
+  std::vector<std::pair<QString, bool>> strTree{{"a/", true},       {"b", true},
+                                                {"c.x", false},     {"d.y", false},
+                                                {"e/q/c.t", false}, {"e/q/p", true}};
 
   std::shared_ptr<IFileTree> fileTree = FileListTree::makeTree(std::move(strTree));
 
   EXPECT_NE(fileTree, nullptr);
 
   // Retrieve the entry:
-  std::shared_ptr<FileTreeEntry>
-    a = fileTree->find("a"),
-    b = fileTree->find("b"),
-    cx = fileTree->find("c.x"),
-    dy = fileTree->find("d.y"),
-    e = fileTree->find("e"),
-    e_q = fileTree->find("e/q"),
-    e_q_ct = fileTree->find("e/q/c.t"),
-    e_q_p = fileTree->find("e/q/p");
+  std::shared_ptr<FileTreeEntry> a = fileTree->find("a"), b = fileTree->find("b"),
+                                 cx = fileTree->find("c.x"), dy = fileTree->find("d.y"),
+                                 e = fileTree->find("e"), e_q = fileTree->find("e/q"),
+                                 e_q_ct = fileTree->find("e/q/c.t"),
+                                 e_q_p  = fileTree->find("e/q/p");
 
   EXPECT_TRUE(b->moveTo(a->astree()));
   EXPECT_FALSE(fileTree->exists("b"));
   EXPECT_EQ(fileTree->find("a/b"), b);
   EXPECT_TRUE(a->astree()->exists("b"));
   EXPECT_EQ(a->astree()->find("b"), b);
-  EXPECT_EQ(a->astree()->size(), std::size_t{ 1 });
+  EXPECT_EQ(a->astree()->size(), std::size_t{1});
   EXPECT_EQ(a->astree()->at(0), b);
 }
 
-TEST(IFileTreeTest, IterOperations) {
-  auto tree = FileListTree::makeTree({
-    {"a", true},
-    {"c", true},
-    {"b", false},
-    {"d", false}
-  });
+TEST(IFileTreeTest, IterOperations)
+{
+  auto tree =
+      FileListTree::makeTree({{"a", true}, {"c", true}, {"b", false}, {"d", false}});
 
   // Order should be a -> c -> b -> d
-  std::vector expected{ tree->find("a"), tree->find("c"), tree->find("b"), tree->find("d") };
+  std::vector expected{tree->find("a"), tree->find("c"), tree->find("b"),
+                       tree->find("d")};
   std::vector entries(std::begin(*tree), std::end(*tree));
   EXPECT_EQ(entries, expected);
 
   // Order should be reversed:
   expected = std::vector(expected.rbegin(), expected.rend());
-  entries = std::vector(std::rbegin(*tree), std::rend(*tree));
+  entries  = std::vector(std::rbegin(*tree), std::rend(*tree));
   EXPECT_EQ(entries, expected);
 
   // We can erasae in the middle:
@@ -486,26 +483,18 @@ TEST(IFileTreeTest, IterOperations) {
       // to d):
       EXPECT_EQ(it, tree->end() - 1);
       EXPECT_EQ(*it, tree->find("d"));
-    }
-    else {
+    } else {
       ++it;
     }
   }
-  assertTreeEquals(tree, {
-    {"a", true},
-    {"c", true},
-    {"d", false}
-  });
+  assertTreeEquals(tree, {{"a", true}, {"c", true}, {"d", false}});
 }
 
-TEST(IFileTreeTest, AddOperations) {
+TEST(IFileTreeTest, AddOperations)
+{
   {
-    auto fileTree = FileListTree::makeTree({
-      {"a", true},
-      {"c.x", false},
-      {"e/q/c.t", false},
-      {"e/q/p", true}
-    });
+    auto fileTree = FileListTree::makeTree(
+        {{"a", true}, {"c.x", false}, {"e/q/c.t", false}, {"e/q/p", true}});
     auto map = createMapping(fileTree);
 
     EXPECT_EQ(fileTree->addFile("a"), nullptr);
@@ -523,43 +512,41 @@ TEST(IFileTreeTest, AddOperations) {
     EXPECT_NE(e_q_ct, nullptr);
     EXPECT_EQ(e_q_ct->parent(), map["e/q"]);
     EXPECT_EQ(map["e/q/c.t"]->parent(), nullptr);
-    EXPECT_EQ(map["e/q"]->astree()->size(), std::size_t{ 2 });
+    EXPECT_EQ(map["e/q"]->astree()->size(), std::size_t{2});
 
     // Directory are replaced with addFile():
     auto e_q = fileTree->addFile("e/q", true);
     EXPECT_NE(e_q, nullptr);
     EXPECT_EQ(e_q->parent(), map["e"]);
     EXPECT_EQ(map["e/q"]->parent(), nullptr);
-    EXPECT_EQ(map["e"]->astree()->size(), std::size_t{ 1 });
+    EXPECT_EQ(map["e"]->astree()->size(), std::size_t{1});
   }
-
 }
 
-TEST(IFileTreeTest, TreeInsertOperations) {
+TEST(IFileTreeTest, TreeInsertOperations)
+{
 
   // Test failure:
   {
-    auto fileTree = FileListTree::makeTree({
-      {"a/", true},
-      {"b", true},
-      {"c.x", false},
-      {"d.y", false},
-      {"e/q/c.t", false},
-      {"e/q/p", true},
-      {"e/q/z/", true},
-      {"e/q/z/a.t", false},
-      {"e/q/z/b", true},
-      {"f/q/c.t", false},
-      {"f/q/o", true},
-      {"f/q/z/b", false},
-      {"f/q/z/c.t", false}
-      });
+    auto fileTree = FileListTree::makeTree({{"a/", true},
+                                            {"b", true},
+                                            {"c.x", false},
+                                            {"d.y", false},
+                                            {"e/q/c.t", false},
+                                            {"e/q/p", true},
+                                            {"e/q/z/", true},
+                                            {"e/q/z/a.t", false},
+                                            {"e/q/z/b", true},
+                                            {"f/q/c.t", false},
+                                            {"f/q/o", true},
+                                            {"f/q/z/b", false},
+                                            {"f/q/z/c.t", false}});
 
     EXPECT_NE(fileTree, nullptr);
 
     // Retrieve the entry:
     auto map = createMapping(fileTree);
-    auto e = fileTree->findDirectory("e");
+    auto e   = fileTree->findDirectory("e");
     auto f_q = fileTree->findDirectory("f/q");
 
     auto it = e->insert(f_q, IFileTree::InsertPolicy::FAIL_IF_EXISTS);
@@ -569,27 +556,25 @@ TEST(IFileTreeTest, TreeInsertOperations) {
 
   // Test replace:
   {
-    auto fileTree = FileListTree::makeTree({
-      {"a/", true},
-      {"b", true},
-      {"c.x", false},
-      {"d.y", false},
-      {"e/q/c.t", false},
-      {"e/q/p", true},
-      {"e/q/z/", true},
-      {"e/q/z/a.t", false},
-      {"e/q/z/b", true},
-      {"f/q/c.t", false},
-      {"f/q/o", true},
-      {"f/q/z/b", false},
-      {"f/q/z/c.t", false}
-      });
+    auto fileTree = FileListTree::makeTree({{"a/", true},
+                                            {"b", true},
+                                            {"c.x", false},
+                                            {"d.y", false},
+                                            {"e/q/c.t", false},
+                                            {"e/q/p", true},
+                                            {"e/q/z/", true},
+                                            {"e/q/z/a.t", false},
+                                            {"e/q/z/b", true},
+                                            {"f/q/c.t", false},
+                                            {"f/q/o", true},
+                                            {"f/q/z/b", false},
+                                            {"f/q/z/c.t", false}});
 
     EXPECT_NE(fileTree, nullptr);
 
     // Retrieve the entry:
     auto map = createMapping(fileTree);
-    auto e = fileTree->findDirectory("e");
+    auto e   = fileTree->findDirectory("e");
     auto f_q = fileTree->findDirectory("f/q");
 
     auto it = e->insert(f_q, IFileTree::InsertPolicy::REPLACE);
@@ -607,56 +592,49 @@ TEST(IFileTreeTest, TreeInsertOperations) {
 
   // Test merge:
   {
-    auto fileTree = FileListTree::makeTree({
-      {"a/", true},
-      {"b", true},
-      {"c.x", false},
-      {"d.y", false},
-      {"e/q/c.t", false},
-      {"e/q/p", true},
-      {"e/q/z", true},
-      {"e/q/z/a.t", false},
-      {"e/q/z/b", true},
-      {"f/q/c.t", false},
-      {"f/q/o", true},
-      {"f/q/z", true},
-      {"f/q/z/b", false},
-      {"f/q/z/c.t", false}
-      });
+    auto fileTree = FileListTree::makeTree({{"a/", true},
+                                            {"b", true},
+                                            {"c.x", false},
+                                            {"d.y", false},
+                                            {"e/q/c.t", false},
+                                            {"e/q/p", true},
+                                            {"e/q/z", true},
+                                            {"e/q/z/a.t", false},
+                                            {"e/q/z/b", true},
+                                            {"f/q/c.t", false},
+                                            {"f/q/o", true},
+                                            {"f/q/z", true},
+                                            {"f/q/z/b", false},
+                                            {"f/q/z/c.t", false}});
 
     EXPECT_NE(fileTree, nullptr);
 
     // Retrieve the entry:
     auto map = createMapping(fileTree);
-    auto e = fileTree->findDirectory("e");
+    auto e   = fileTree->findDirectory("e");
     auto f_q = fileTree->findDirectory("f/q");
 
     auto it = e->insert(f_q, IFileTree::InsertPolicy::MERGE);
-    assertTreeEquals(e, {
-      {"q", true},
-      {"q/o", true},
-      {"q/p", true},
-      {"q/z", true},
-      {"q/c.t", false},
-      {"q/z/a.t", false},
-      {"q/z/c.t", false},
-      {"q/z/b", false}
-    });
+    assertTreeEquals(e, {{"q", true},
+                         {"q/o", true},
+                         {"q/p", true},
+                         {"q/z", true},
+                         {"q/c.t", false},
+                         {"q/z/a.t", false},
+                         {"q/z/c.t", false},
+                         {"q/z/b", false}});
     EXPECT_EQ(e->find("q/z/b"), map["f/q/z/b"]);
-    EXPECT_EQ(fileTree->findDirectory("f")->size(), std::size_t{ 0 });
+    EXPECT_EQ(fileTree->findDirectory("f")->size(), std::size_t{0});
     EXPECT_EQ(map["f/q"]->parent(), nullptr);
     EXPECT_EQ(map["f/q/z"]->parent(), nullptr);
   }
 }
 
-TEST(IFileTreeTest, TreeMoveAndCopyOperations) {
+TEST(IFileTreeTest, TreeMoveAndCopyOperations)
+{
   {
-    auto tree1 = FileListTree::makeTree({
-      {"a/b/m.y", false},
-      {"a/b/c", true},
-      {"b/", true},
-      {"c", false}
-      });
+    auto tree1 = FileListTree::makeTree(
+        {{"a/b/m.y", false}, {"a/b/c", true}, {"b/", true}, {"c", false}});
     auto a = tree1->findDirectory("a");
     EXPECT_FALSE(populated(a));
 
@@ -676,65 +654,63 @@ TEST(IFileTreeTest, TreeMoveAndCopyOperations) {
     EXPECT_NE(tree1->find("a1"), tree1->find("a2"));
 
     assertTreeEquals(tree1, {
-      {"a1", true},
-      {"a1/b", true},
-      {"a1/b/c", true},
-      {"a1/b/m.y", false},
-      {"a2", true},
-      {"a2/b", true},
-      {"a2/b/c", true},
-      {"a2/b/m.y", false},
-      {"b", true},
-      {"c", false},
-    });
+                                {"a1", true},
+                                {"a1/b", true},
+                                {"a1/b/c", true},
+                                {"a1/b/m.y", false},
+                                {"a2", true},
+                                {"a2/b", true},
+                                {"a2/b/c", true},
+                                {"a2/b/m.y", false},
+                                {"b", true},
+                                {"c", false},
+                            });
 
     // Everything should be populated now:
     EXPECT_TRUE(populated(tree1->findDirectory("a1")));
     EXPECT_TRUE(populated(tree1->findDirectory("a2")));
 
     QString a1("a1/"), a2("a2/");
-    for (auto p : { "b", "b/c", "b/m.y" }) {
-      EXPECT_NE(tree1->find(a1 + p), tree1->find(a2 + p)) << "Entry '" << (a1 + p) << "' and '" << (a2 + p) << "' should be different.";
+    for (auto p : {"b", "b/c", "b/m.y"}) {
+      EXPECT_NE(tree1->find(a1 + p), tree1->find(a2 + p))
+          << "Entry '" << (a1 + p) << "' and '" << (a2 + p) << "' should be different.";
     }
   }
 }
 
-TEST(IFileTreeTest, TreeMergeOperations) {
+TEST(IFileTreeTest, TreeMergeOperations)
+{
 
   {
-    auto fileTree = FileListTree::makeTree({
-      {"a/", true},
-      {"b", true},
-      {"c.x", false},
-      {"d.y", false},
-      {"e/q/c.t", false},
-      {"e/q/p", true}
-    });
+    auto fileTree = FileListTree::makeTree({{"a/", true},
+                                            {"b", true},
+                                            {"c.x", false},
+                                            {"d.y", false},
+                                            {"e/q/c.t", false},
+                                            {"e/q/p", true}});
 
     EXPECT_NE(fileTree, nullptr);
 
     // Retrieve the entry:
     auto map = createMapping(fileTree);
-    auto e = fileTree->findDirectory("e");
+    auto e   = fileTree->findDirectory("e");
     auto e_q = fileTree->findDirectory("e/q");
 
     // Merge e in the root:
     IFileTree::OverwritesType overwrites;
     auto noverwrites = fileTree->merge(e, &overwrites);
 
-    EXPECT_EQ(noverwrites, std::size_t{ 0 });
+    EXPECT_EQ(noverwrites, std::size_t{0});
     EXPECT_TRUE(overwrites.empty());
-    EXPECT_EQ(e->size(), std::size_t{ 0 });
-    assertTreeEquals(fileTree, {
-      {"a", true},
-      {"b", true},
-      {"c.x", false},
-      {"d.y", false},
-      {"e", true},
-      {"q", true},
-      {"q/c.t", false},
-      {"q/p", true}
-    });
+    EXPECT_EQ(e->size(), std::size_t{0});
+    assertTreeEquals(fileTree, {{"a", true},
+                                {"b", true},
+                                {"c.x", false},
+                                {"d.y", false},
+                                {"e", true},
+                                {"q", true},
+                                {"q/c.t", false},
+                                {"q/p", true}});
 
     auto p = fileTree->addFile("p");
     EXPECT_NE(p, nullptr);
@@ -742,33 +718,29 @@ TEST(IFileTreeTest, TreeMergeOperations) {
     // Not: e/q is not q
     overwrites.clear();
     noverwrites = fileTree->merge(e_q, &overwrites);
-    EXPECT_EQ(noverwrites, std::size_t{ 1 });
-    EXPECT_EQ(overwrites.size(), std::size_t{ 1 });
+    EXPECT_EQ(noverwrites, std::size_t{1});
+    EXPECT_EQ(overwrites.size(), std::size_t{1});
     EXPECT_EQ(overwrites[p], map["e/q/p"]);
-    assertTreeEquals(fileTree, {
-      {"a", true},
-      {"b", true},
-      {"c.x", false},
-      {"d.y", false},
-      {"e", true},
-      {"q", true},
-      {"c.t", false},
-      {"p", true}
-      });
+    assertTreeEquals(fileTree, {{"a", true},
+                                {"b", true},
+                                {"c.x", false},
+                                {"d.y", false},
+                                {"e", true},
+                                {"q", true},
+                                {"c.t", false},
+                                {"p", true}});
     // Note: the "p" at the root should be the one under q initially.
     EXPECT_EQ(fileTree->find("p"), map["e/q/p"]);
   }
 
   // Merge failure:
   {
-    auto tree1 = FileListTree::makeTree({
-      {"a/", true},
-      {"b", true},
-      {"c.x", false},
-      {"d.y", false},
-      {"e/q/c.t", false},
-      {"e/q/p", true}
-    });
+    auto tree1 = FileListTree::makeTree({{"a/", true},
+                                         {"b", true},
+                                         {"c.x", false},
+                                         {"d.y", false},
+                                         {"e/q/c.t", false},
+                                         {"e/q/p", true}});
 
     std::size_t noverwrites = tree1->findDirectory("e")->merge(tree1);
     EXPECT_EQ(noverwrites, IFileTree::MERGE_FAILED);
@@ -782,47 +754,41 @@ TEST(IFileTreeTest, TreeMergeOperations) {
 
   //
   {
-    auto tree1 = FileListTree::makeTree({
-      {"a/b/c/m.y", false},
-      {"a/b/c/n", true},
-      {"a/b/x.t", false},
-      {"a/b/y.t", false},
-      {"b/", true},
-      {"c", false}
-    });
-    auto map1 = createMapping(tree1);
+    auto tree1 = FileListTree::makeTree({{"a/b/c/m.y", false},
+                                         {"a/b/c/n", true},
+                                         {"a/b/x.t", false},
+                                         {"a/b/y.t", false},
+                                         {"b/", true},
+                                         {"c", false}});
+    auto map1  = createMapping(tree1);
 
-    auto tree2 = FileListTree::makeTree({
-      {"a/b/c/m.y", false},
-      {"a/b/c/n", false}, // n is a file here
-      {"a/b/y.t", false},
-      {"b/v", false},
-      {"b/e", true}
-    });
-    auto map2 = createMapping(tree2);
+    auto tree2 = FileListTree::makeTree({{"a/b/c/m.y", false},
+                                         {"a/b/c/n", false},  // n is a file here
+                                         {"a/b/y.t", false},
+                                         {"b/v", false},
+                                         {"b/e", true}});
+    auto map2  = createMapping(tree2);
 
     IFileTree::OverwritesType overwrites;
     std::size_t noverwrites = tree1->merge(tree2, &overwrites);
 
-    EXPECT_EQ(noverwrites, std::size_t{ 3 });
+    EXPECT_EQ(noverwrites, std::size_t{3});
     EXPECT_EQ(noverwrites, overwrites.size());
     EXPECT_EQ(overwrites[map1["a/b/c/m.y"]], map2["a/b/c/m.y"]);
     EXPECT_EQ(overwrites[map1["a/b/c/n"]], map2["a/b/c/n"]);
     EXPECT_EQ(overwrites[map1["a/b/y.t"]], map2["a/b/y.t"]);
 
-    assertTreeEquals(tree1, {
-      {"a", true},
-      {"b", true},
-      {"c", false},
-      {"a/b", true},
-      {"a/b/c", true},
-      {"a/b/c/m.y", false},
-      {"a/b/c/n", false},
-      {"a/b/x.t", false},
-      {"a/b/y.t", false},
-      {"b/v", false},
-      {"b/e", true}
-    });
+    assertTreeEquals(tree1, {{"a", true},
+                             {"b", true},
+                             {"c", false},
+                             {"a/b", true},
+                             {"a/b/c", true},
+                             {"a/b/c/m.y", false},
+                             {"a/b/c/n", false},
+                             {"a/b/x.t", false},
+                             {"a/b/y.t", false},
+                             {"b/v", false},
+                             {"b/e", true}});
 
     // Merged directories should be the one from the original tree:
     EXPECT_EQ(tree1->find("a"), map1["a"]);
@@ -835,87 +801,76 @@ TEST(IFileTreeTest, TreeMergeOperations) {
     EXPECT_EQ(tree1->find("a/b/c/n"), map2["a/b/c/n"]);
     EXPECT_EQ(tree1->find("a/b/y.t"), map2["a/b/y.t"]);
   }
-
 }
 
-TEST(IFileTreeTest, TreeWalkOperations) {
+TEST(IFileTreeTest, TreeWalkOperations)
+{
 
   // Note: Testing specific order here, while in reality user should not rely
   // on it (and it is not specified, on purpose). Only guarantee is that a folder
   // is visited before its children.
   {
-    auto fileTree = FileListTree::makeTree({
-      {"a/", true},
-      {"b", true},
-      {"b/u", false},
-      {"b/v", false},
-      {"c.x", false},
-      {"d.y", false},
-      {"e/q/c.t", false},
-      {"e/q/p", true}
-      });
+    auto fileTree = FileListTree::makeTree({{"a/", true},
+                                            {"b", true},
+                                            {"b/u", false},
+                                            {"b/v", false},
+                                            {"c.x", false},
+                                            {"d.y", false},
+                                            {"e/q/c.t", false},
+                                            {"e/q/p", true}});
 
     auto map = createMapping(fileTree);
 
     // Populate the vector:
     std::vector<std::pair<QString, std::shared_ptr<const FileTreeEntry>>> entries;
-    fileTree->walk([&entries](auto path, auto entry) {
-      entries.push_back({ path, entry });
-      return IFileTree::WalkReturn::CONTINUE;
-    }, "/");
+    fileTree->walk(
+        [&entries](auto path, auto entry) {
+          entries.push_back({path, entry});
+          return IFileTree::WalkReturn::CONTINUE;
+        },
+        "/");
 
-    decltype(entries) expected{
-      { "", map["a"] },
-      { "", map["b"] },
-      { "b/", map["b/u"] },
-      { "b/", map["b/v"] },
-      { "", map["e"] },
-      { "e/", map["e/q"] },
-      { "e/q/", map["e/q/p"] },
-      { "e/q/", map["e/q/c.t"] },
-      { "", map["c.x"] },
-      { "", map["d.y"] }
+    decltype(entries) expected{{"", map["a"]},         {"", map["b"]},
+                               {"b/", map["b/u"]},     {"b/", map["b/v"]},
+                               {"", map["e"]},         {"e/", map["e/q"]},
+                               {"e/q/", map["e/q/p"]}, {"e/q/", map["e/q/c.t"]},
+                               {"", map["c.x"]},       {"", map["d.y"]}};
+    EXPECT_EQ(entries, expected);
+
+    entries.clear();
+    fileTree->walk(
+        [&entries](auto path, auto entry) {
+          if (entry->name() == "e") {
+            return IFileTree::WalkReturn::STOP;
+          }
+          entries.push_back({path, entry});
+          return IFileTree::WalkReturn::CONTINUE;
+        },
+        "/");
+
+    // Note: This assumes a given order, while in reality it is not specified.
+    expected = {
+        {"", map["a"]},
+        {"", map["b"]},
+        {"b/", map["b/u"]},
+        {"b/", map["b/v"]},
     };
     EXPECT_EQ(entries, expected);
 
     entries.clear();
-    fileTree->walk([&entries](auto path, auto entry) {
-      if (entry->name() == "e") {
-        return IFileTree::WalkReturn::STOP;
-      }
-      entries.push_back({ path, entry });
-      return IFileTree::WalkReturn::CONTINUE;
-    }, "/");
+    fileTree->walk(
+        [&entries](auto path, auto entry) {
+          if (entry->name() == "e") {
+            return IFileTree::WalkReturn::SKIP;
+          }
+          entries.push_back({path, entry});
+          return IFileTree::WalkReturn::CONTINUE;
+        },
+        "/");
 
     // Note: This assumes a given order, while in reality it is not specified.
-    expected = {
-      { "", map["a"] },
-      { "", map["b"] },
-      { "b/", map["b/u"] },
-      { "b/", map["b/v"] },
-    };
+    expected = {{"", map["a"]},     {"", map["b"]},   {"b/", map["b/u"]},
+                {"b/", map["b/v"]}, {"", map["c.x"]}, {"", map["d.y"]}};
     EXPECT_EQ(entries, expected);
-
-    entries.clear();
-    fileTree->walk([&entries](auto path, auto entry) {
-      if (entry->name() == "e") {
-        return IFileTree::WalkReturn::SKIP;
-      }
-      entries.push_back({ path, entry });
-      return IFileTree::WalkReturn::CONTINUE;
-      }, "/");
-
-    // Note: This assumes a given order, while in reality it is not specified.
-    expected = {
-      { "", map["a"] },
-      { "", map["b"] },
-      { "b/", map["b/u"] },
-      { "b/", map["b/v"] },
-      { "", map["c.x"] },
-      { "", map["d.y"] }
-    };
-    EXPECT_EQ(entries, expected);
-
   }
-
 }

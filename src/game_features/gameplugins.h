@@ -3,20 +3,21 @@
 
 #include <QStringList>
 
-namespace MOBase { class IPluginList; }
+namespace MOBase
+{
+class IPluginList;
+}
 
-
-class GamePlugins {
+class GamePlugins
+{
 
 public:
-
   virtual ~GamePlugins() {}
 
-  virtual void writePluginLists(const MOBase::IPluginList *pluginList) = 0;
-  virtual void readPluginLists(MOBase::IPluginList *pluginList) = 0;
-  virtual QStringList getLoadOrder() = 0;
-  virtual bool lightPluginsAreSupported() = 0;
-
+  virtual void writePluginLists(const MOBase::IPluginList* pluginList) = 0;
+  virtual void readPluginLists(MOBase::IPluginList* pluginList)        = 0;
+  virtual QStringList getLoadOrder()                                   = 0;
+  virtual bool lightPluginsAreSupported()                              = 0;
 };
 
-#endif // GAMEPLUGINS_H
+#endif  // GAMEPLUGINS_H

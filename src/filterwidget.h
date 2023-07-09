@@ -1,17 +1,18 @@
 #ifndef FILTERWIDGET_H
 #define FILTERWIDGET_H
 
-#include <QObject>
-#include <QLineEdit>
-#include <QToolButton>
-#include <QList>
+#include "dllimport.h"
 #include <QAbstractItemView>
-#include <QSortFilterProxyModel>
+#include <QLineEdit>
+#include <QList>
+#include <QObject>
 #include <QRegularExpression>
 #include <QShortcut>
-#include "dllimport.h"
+#include <QSortFilterProxyModel>
+#include <QToolButton>
 
-namespace MOBase {
+namespace MOBase
+{
 
 class EventFilter;
 class FilterWidget;
@@ -21,7 +22,7 @@ class QDLLEXPORT FilterWidgetProxyModel : public QSortFilterProxyModel
   Q_OBJECT;
 
 public:
-  FilterWidgetProxyModel(FilterWidget& fw, QWidget* parent=nullptr);
+  FilterWidgetProxyModel(FilterWidget& fw, QWidget* parent = nullptr);
   using QSortFilterProxyModel::invalidateFilter;
 
 protected:
@@ -32,11 +33,9 @@ protected:
 private:
   FilterWidget& m_filter;
 
-  bool columnMatches(
-    int sourceRow, const QModelIndex& sourceParent,
-    int c, const QRegularExpression& what) const;
+  bool columnMatches(int sourceRow, const QModelIndex& sourceParent, int c,
+                     const QRegularExpression& what) const;
 };
-
 
 class QDLLEXPORT FilterWidget : public QObject
 {
@@ -45,15 +44,14 @@ class QDLLEXPORT FilterWidget : public QObject
 public:
   struct Options
   {
-    bool useRegex = false;
+    bool useRegex           = false;
     bool regexCaseSensitive = false;
-    bool regexExtended = false;
-    bool scrollToSelection = false;
+    bool regexExtended      = false;
+    bool scrollToSelection  = false;
   };
 
-  using predFun = std::function<bool (const QRegularExpression& what)>;
-  using sortFun = std::function<bool (const QModelIndex&, const QModelIndex&)>;
-
+  using predFun = std::function<bool(const QRegularExpression& what)>;
+  using sortFun = std::function<bool(const QModelIndex&, const QModelIndex&)>;
 
   FilterWidget();
 
@@ -140,6 +138,6 @@ private:
   void compile();
 };
 
-} // namespace
+}  // namespace MOBase
 
-#endif // FILTERWIDGET_H
+#endif  // FILTERWIDGET_H

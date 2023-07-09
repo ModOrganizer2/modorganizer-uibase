@@ -1,8 +1,14 @@
 #ifndef SAVEGAMEINFO_H
 #define SAVEGAMEINFO_H
 
-namespace MOBase { class ISaveGame; }
-namespace MOBase { class ISaveGameInfoWidget; }
+namespace MOBase
+{
+class ISaveGame;
+}
+namespace MOBase
+{
+class ISaveGameInfoWidget;
+}
 
 #include <QMap>
 #include <QString>
@@ -41,8 +47,7 @@ public:
    * It is permitted to return a null pointer to indicate the plugin does not have a
    * nice visual way of displaying save game contents.
    */
-  virtual MOBase::ISaveGameInfoWidget *getSaveGameWidget(QWidget *parent = 0) const = 0;
+  virtual MOBase::ISaveGameInfoWidget* getSaveGameWidget(QWidget* parent = 0) const = 0;
 };
 
-#endif // SAVEGAMEINFO_H
-
+#endif  // SAVEGAMEINFO_H

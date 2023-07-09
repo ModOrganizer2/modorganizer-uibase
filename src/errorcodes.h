@@ -9,6 +9,6 @@ namespace MOBase
 
 QDLLEXPORT const wchar_t* errorCodeName(DWORD code);
 
-} // namespace
+}  // namespace MOBase
 
 #endif UIBASE_ERRORCODES_H

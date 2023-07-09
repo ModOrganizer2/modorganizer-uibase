@@ -18,22 +18,21 @@ License along with this library; if not, write to the Free Software
 Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 */
 
-
 #ifndef DLLIMPORT_H
 #define DLLIMPORT_H
 
-
-namespace MOBase {
+namespace MOBase
+{
 
 #if defined(UIBASE_EXPORT)
-  #define QDLLEXPORT __declspec(dllexport)
+#define QDLLEXPORT __declspec(dllexport)
 #elif defined(_NODLL)
-  #define QDLLEXPORT
+#define QDLLEXPORT
 #else
-  #undef DLLEXPORT
-  #define QDLLEXPORT __declspec(dllimport)
+#undef DLLEXPORT
+#define QDLLEXPORT __declspec(dllimport)
 #endif
 
-} // namespace MOBase
+}  // namespace MOBase
 
-#endif // DLLIMPORT_H
+#endif  // DLLIMPORT_H

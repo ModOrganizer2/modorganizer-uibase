@@ -10,7 +10,8 @@
 
 #include "dllimport.h"
 
-namespace MOBase {
+namespace MOBase
+{
 
 class IOrganizer;
 class IPluginDiagnose;
@@ -18,12 +19,12 @@ class IPluginDiagnose;
 /**
  * @brief The interface for plugin requirements.
  */
-class IPluginRequirement {
+class IPluginRequirement
+{
 public:
-
-  class Problem {
+  class Problem
+  {
   public:
-
     /**
      * @return a short description for the problem.
      */
@@ -37,17 +38,17 @@ public:
     /**
      *
      */
-    Problem(QString shortDescription, QString longDescription = "") :
-      m_ShortDescription(shortDescription),
-      m_LongDescription(longDescription.isEmpty() ? shortDescription : longDescription) { }
+    Problem(QString shortDescription, QString longDescription = "")
+        : m_ShortDescription(shortDescription),
+          m_LongDescription(longDescription.isEmpty() ? shortDescription
+                                                      : longDescription)
+    {}
 
   private:
     QString m_ShortDescription, m_LongDescription;
-
   };
 
 public:
-
   /**
    * @brief Check if the requirements is met.
    *
@@ -57,14 +58,15 @@ public:
    */
   virtual std::optional<Problem> check(IOrganizer* organizer) const = 0;
 
-  virtual ~IPluginRequirement() { }
+  virtual ~IPluginRequirement() {}
 };
 
 /**
  * @brief Plugin dependency - The requirement is met if one of the
  *     given plugin is active.
  */
-class PluginDependencyRequirement : public IPluginRequirement {
+class PluginDependencyRequirement : public IPluginRequirement
+{
 
   friend class PluginRequirementFactory;
 
@@ -87,7 +89,8 @@ protected:
  * @brief Game dependency - The requirement is met if the active game
  *     is one of the specified game.
  */
-class GameDependencyRequirement : public IPluginRequirement {
+class GameDependencyRequirement : public IPluginRequirement
+{
 
   friend class PluginRequirementFactory;
 
@@ -114,7 +117,8 @@ protected:
  * and the associated message is the one from the diagnose plugin (or the
  * list of messages if multiple problems were reported).
  */
-class DiagnoseRequirement : public IPluginRequirement {
+class DiagnoseRequirement : public IPluginRequirement
+{
 
   friend class PluginRequirementFactory;
 
@@ -127,13 +131,12 @@ private:
   const IPluginDiagnose* m_Diagnose;
 };
 
-
 /**
  * Factory for plugin requirements.
  */
-class QDLLEXPORT PluginRequirementFactory {
+class QDLLEXPORT PluginRequirementFactory
+{
 public:
-
   /**
    * @brief Create a new plugin dependency. The requirement is met if one of the
    *     given plugin is enabled.
@@ -142,9 +145,12 @@ public:
    *
    * @param pluginNames Name of the plugin required.
    */
-  static std::shared_ptr<const IPluginRequirement> pluginDependency(QStringList const& pluginNames);
-  static std::shared_ptr<const IPluginRequirement> pluginDependency(QString const& pluginName) {
-    return pluginDependency(QStringList{ pluginName });
+  static std::shared_ptr<const IPluginRequirement>
+  pluginDependency(QStringList const& pluginNames);
+  static std::shared_ptr<const IPluginRequirement>
+  pluginDependency(QString const& pluginName)
+  {
+    return pluginDependency(QStringList{pluginName});
   }
 
   /**
@@ -155,9 +161,12 @@ public:
    *
    * @note This differ from makePluginDependency only for the message.
    */
-  static std::shared_ptr<const IPluginRequirement> gameDependency(QStringList const& gameNames);
-  static std::shared_ptr<const IPluginRequirement> gameDependency(QString const& gameName) {
-    return gameDependency(QStringList{ gameName });
+  static std::shared_ptr<const IPluginRequirement>
+  gameDependency(QStringList const& gameNames);
+  static std::shared_ptr<const IPluginRequirement>
+  gameDependency(QString const& gameName)
+  {
+    return gameDependency(QStringList{gameName});
   }
 
   /**
@@ -165,7 +174,8 @@ public:
    *
    * @param diagnose The diagnose plugin.
    */
-  static std::shared_ptr<const IPluginRequirement> diagnose(const IPluginDiagnose *diagnose);
+  static std::shared_ptr<const IPluginRequirement>
+  diagnose(const IPluginDiagnose* diagnose);
 
   /**
    * @brief Create a generic requirement with the given checker and message.
@@ -174,10 +184,10 @@ public:
    *     return true if the requirement is met).
    * @param description The description to show user if the requirement is not met.
    */
-  static std::shared_ptr<const IPluginRequirement> basic(std::function<bool(IOrganizer*)> const& checker, QString const description);
-
+  static std::shared_ptr<const IPluginRequirement>
+  basic(std::function<bool(IOrganizer*)> const& checker, QString const description);
 };
 
-}
+}  // namespace MOBase
 
 #endif

@@ -18,18 +18,17 @@ License along with this library; if not, write to the Free Software
 Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 */
 
-
 #ifndef TUTORIALCONTROL_H
 #define TUTORIALCONTROL_H
 
-
 #include "dllimport.h"
-#include <QWidget>
 #include <QQuickWidget>
 #include <QRect>
+#include <QWidget>
 #include <utility>
 
-namespace MOBase {
+namespace MOBase
+{
 
 class TutorialManager;
 
@@ -37,28 +36,27 @@ class QDLLEXPORT TutorialControl : public QObject
 {
   Q_OBJECT
 public:
-
-  TutorialControl(const TutorialControl &reference);
-  TutorialControl(QWidget *targetControl, const QString &name);
+  TutorialControl(const TutorialControl& reference);
+  TutorialControl(QWidget* targetControl, const QString& name);
 
   ~TutorialControl();
 
   void registerControl();
-  void resize(const QSize &size);
+  void resize(const QSize& size);
 
-  void expose(const QString &widgetName, QObject *widget);
+  void expose(const QString& widgetName, QObject* widget);
 
-  void startTutorial(const QString &tutorial);
+  void startTutorial(const QString& tutorial);
 
   Q_INVOKABLE void finish();
-  Q_INVOKABLE QRect getRect(const QString &widgetName);
-  Q_INVOKABLE QRect getActionRect(const QString &widgetName);
-  Q_INVOKABLE QRect getMenuRect(const QString &widgetName);
-  Q_INVOKABLE QWidget *getChild(const QString &name);
-  Q_INVOKABLE bool waitForButton(const QString &buttonName);
-  Q_INVOKABLE bool waitForAction(const QString &actionName);
-  Q_INVOKABLE bool waitForTabOpen(const QString &tabControlName, const QString &tab);
-  Q_INVOKABLE const QString getTabName(const QString &tabControlName);
+  Q_INVOKABLE QRect getRect(const QString& widgetName);
+  Q_INVOKABLE QRect getActionRect(const QString& widgetName);
+  Q_INVOKABLE QRect getMenuRect(const QString& widgetName);
+  Q_INVOKABLE QWidget* getChild(const QString& name);
+  Q_INVOKABLE bool waitForButton(const QString& buttonName);
+  Q_INVOKABLE bool waitForAction(const QString& actionName);
+  Q_INVOKABLE bool waitForTabOpen(const QString& tabControlName, const QString& tab);
+  Q_INVOKABLE const QString getTabName(const QString& tabControlName);
   Q_INVOKABLE void lockUI(bool locked);
   Q_INVOKABLE void simulateClick(int x, int y);
 
@@ -68,20 +66,18 @@ private slots:
   void nextTutorialStepProxy();
 
 private:
-
-  QWidget *m_TargetControl;
+  QWidget* m_TargetControl;
   QString m_Name;
-  QQuickWidget *m_TutorialView;
+  QQuickWidget* m_TutorialView;
 
-  TutorialManager &m_Manager;
+  TutorialManager& m_Manager;
 
-  std::vector<std::pair<QString, QObject*> > m_ExposedObjects;
+  std::vector<std::pair<QString, QObject*>> m_ExposedObjects;
   QList<QMetaObject::Connection> m_Connections;
   int m_ExpectedTab;
-  QWidget *m_CurrentClickControl;
-
+  QWidget* m_CurrentClickControl;
 };
 
-} // namespace MOBase
+}  // namespace MOBase
 
-#endif // TUTORIALCONTROL_H
+#endif  // TUTORIALCONTROL_H

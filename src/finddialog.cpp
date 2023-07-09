@@ -18,21 +18,20 @@ License along with this library; if not, write to the Free Software
 Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 */
 
-
 #include "finddialog.h"
 #include "ui_finddialog.h"
 
-namespace MOBase {
-
-FindDialog::FindDialog(QWidget *parent)
-  : QDialog(parent), ui(new Ui::FindDialog)
+namespace MOBase
 {
-    ui->setupUi(this);
+
+FindDialog::FindDialog(QWidget* parent) : QDialog(parent), ui(new Ui::FindDialog)
+{
+  ui->setupUi(this);
 }
 
 FindDialog::~FindDialog()
 {
-    delete ui;
+  delete ui;
 }
 
 void FindDialog::on_nextBtn_clicked()
@@ -40,7 +39,7 @@ void FindDialog::on_nextBtn_clicked()
   emit findNext();
 }
 
-void FindDialog::on_patternEdit_textChanged(const QString &pattern)
+void FindDialog::on_patternEdit_textChanged(const QString& pattern)
 {
   emit patternChanged(pattern);
 }
@@ -49,4 +48,4 @@ void FindDialog::on_closeBtn_clicked()
 {
   this->close();
 }
-} // namespace MOBase
+}  // namespace MOBase

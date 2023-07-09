@@ -6,10 +6,10 @@
 #include <QString>
 #include <QStringList>
 
-class ScriptExtender {
+class ScriptExtender
+{
 
 public:
-
   virtual ~ScriptExtender() {}
 
   /** Get the name of the script extender binary */
@@ -37,5 +37,4 @@ public:
   virtual WORD getArch() const = 0;
 };
 
-#endif // SCRIPTEXTENDER
-
+#endif  // SCRIPTEXTENDER

@@ -18,29 +18,28 @@ License along with this library; if not, write to the Free Software
 Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 */
 
-
 #ifndef IPLUGININSTALLER_H
 #define IPLUGININSTALLER_H
 
 #include <set>
 
-#include "iplugin.h"
-#include "imodinterface.h"
 #include "ifiletree.h"
+#include "imodinterface.h"
+#include "iplugin.h"
 
-namespace MOBase {
-
+namespace MOBase
+{
 
 class IInstallationManager;
 
-
-class IPluginInstaller : public IPlugin {
+class IPluginInstaller : public IPlugin
+{
 
   Q_INTERFACES(IPlugin)
 
 public:
-
-  enum EInstallResult {
+  enum EInstallResult
+  {
     RESULT_SUCCESS,
     RESULT_FAILED,
     RESULT_CANCELED,
@@ -50,7 +49,6 @@ public:
   };
 
 public:
-
   IPluginInstaller() : m_ParentWidget(nullptr), m_InstallationManager(nullptr) {}
 
   /**
@@ -63,49 +61,50 @@ public:
 
   /**
    * @return true if this plugin should be treated as a manual installer if the user
-   * explicitly requested one. A manual installer should offer the user maximum amount of
-   * customizability.
+   * explicitly requested one. A manual installer should offer the user maximum amount
+   * of customizability.
    */
   virtual bool isManualInstaller() const = 0;
 
   /**
-   * @brief Method calls at the start of the installation process, before any other methods.
-   *     This method is only called once per installation process, even for recursive
-   *     installations (e.g. with the bundle installer).
+   * @brief Method calls at the start of the installation process, before any other
+   * methods. This method is only called once per installation process, even for
+   * recursive installations (e.g. with the bundle installer).
    *
    * @param archive Path to the archive that is going to be installed.
    * @param reinstallation True if this is a reinstallation, false otherwise.
-   * @param mod A currently installed mod corresponding to the archive being installed, or a null
-   *     if there is no such mod.
+   * @param mod A currently installed mod corresponding to the archive being installed,
+   * or a null if there is no such mod.
    *
-   * @note If `reinstallation` is true, then the given mod is the mod being reinstalled (the one
-   *     selected by the user). If `reinstallation` is false and `currentMod` is not null, then
-   *     it corresponds to a mod MO2 thinks corresponds to the archive (e.g. based on matching Nexus ID
-   *     or name).
+   * @note If `reinstallation` is true, then the given mod is the mod being reinstalled
+   * (the one selected by the user). If `reinstallation` is false and `currentMod` is
+   * not null, then it corresponds to a mod MO2 thinks corresponds to the archive (e.g.
+   * based on matching Nexus ID or name).
    * @note The default implementation does nothing.
    */
-  virtual void onInstallationStart(
-      [[maybe_unused]] QString const &archive,
-      [[maybe_unused]] bool reinstallation,
-      [[maybe_unused]] IModInterface *currentMod) {}
+  virtual void onInstallationStart([[maybe_unused]] QString const& archive,
+                                   [[maybe_unused]] bool reinstallation,
+                                   [[maybe_unused]] IModInterface* currentMod)
+  {}
 
   /**
-   * @brief Method calls at the end of the installation process. This method is only called once
-   *     per installation process, even for recursive installations (e.g. with the bundle installer).
+   * @brief Method calls at the end of the installation process. This method is only
+   * called once per installation process, even for recursive installations (e.g. with
+   * the bundle installer).
    *
    * @param result The result of the installation.
-   * @param mod If the installation succeeded (result is RESULT_SUCCESS), contains the newly
-   *     installed mod, otherwise it contains a null pointer.
+   * @param mod If the installation succeeded (result is RESULT_SUCCESS), contains the
+   * newly installed mod, otherwise it contains a null pointer.
    *
    * @note The default implementation does nothing.
    */
-  virtual void onInstallationEnd(
-      [[maybe_unused]] EInstallResult result,
-      [[maybe_unused]] IModInterface *newMod) {}
+  virtual void onInstallationEnd([[maybe_unused]] EInstallResult result,
+                                 [[maybe_unused]] IModInterface* newMod)
+  {}
 
   /**
-   * @brief Test if the archive represented by the tree parameter can be installed through this 
-   *     installer.
+   * @brief Test if the archive represented by the tree parameter can be installed
+   * through this installer.
    *
    * @param tree a directory tree representing the archive.
    *
@@ -119,7 +118,7 @@ public:
    *
    * @param widget The new parent widget.
    */
-  virtual void setParentWidget(QWidget *widget) { m_ParentWidget = widget; }
+  virtual void setParentWidget(QWidget* widget) { m_ParentWidget = widget; }
 
   /**
    * @brief Sets the installation manager responsible for the installation process
@@ -127,29 +126,31 @@ public:
    *
    * @param manager The new installation manager.
    */
-  void setInstallationManager(IInstallationManager *manager) { m_InstallationManager = manager; }
+  void setInstallationManager(IInstallationManager* manager)
+  {
+    m_InstallationManager = manager;
+  }
 
 protected:
-
   /**
-   * @return the parent widget that the tool should use to create new dialogs and widgets.
+   * @return the parent widget that the tool should use to create new dialogs and
+   * widgets.
    */
-  QWidget *parentWidget() const { return m_ParentWidget; }
+  QWidget* parentWidget() const { return m_ParentWidget; }
 
   /**
    * @return the manager responsible for the installation process.
    */
-  IInstallationManager *manager() const { return m_InstallationManager; }
+  IInstallationManager* manager() const { return m_InstallationManager; }
 
 private:
-
-  QWidget *m_ParentWidget;
-  IInstallationManager *m_InstallationManager;
-
+  QWidget* m_ParentWidget;
+  IInstallationManager* m_InstallationManager;
 };
 
-} // namespace MOBase
+}  // namespace MOBase
 
-Q_DECLARE_INTERFACE(MOBase::IPluginInstaller, "com.tannin.ModOrganizer.PluginInstaller/1.0")
+Q_DECLARE_INTERFACE(MOBase::IPluginInstaller,
+                    "com.tannin.ModOrganizer.PluginInstaller/1.0")
 
-#endif // IPLUGININSTALLER_H
+#endif  // IPLUGININSTALLER_H
