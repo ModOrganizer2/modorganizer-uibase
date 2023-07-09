@@ -1,7 +1,7 @@
 #include "widgetutility.h"
 #include "eventfilter.h"
-#include <QHeaderView>
 #include <QCheckBox>
+#include <QHeaderView>
 #include <QWidgetAction>
 
 namespace MOBase
@@ -17,8 +17,7 @@ void onHeaderContextMenu(QTreeView* view, const QPoint& pos)
   QAbstractItemModel* model = header->model();
 
   for (int i = 1; i < model->columnCount(); ++i) {
-    const QString columnName =
-      model->headerData(i, Qt::Horizontal).toString();
+    const QString columnName = model->headerData(i, Qt::Horizontal).toString();
 
     auto* checkBox = new QCheckBox(&menu);
     checkBox->setText(columnName);
@@ -27,15 +26,13 @@ void onHeaderContextMenu(QTreeView* view, const QPoint& pos)
     // Enable the checkbox if 1) the section is visible, or 2) the
     // EnabledColumnRole is not found, or 3) the value for the role is true.
     auto display = model->headerData(i, Qt::Horizontal, EnabledColumnRole);
-    checkBox->setEnabled(
-      !header->isSectionHidden(i)
-      || !display.isValid()
-      || display.toBool());
+    checkBox->setEnabled(!header->isSectionHidden(i) || !display.isValid() ||
+                         display.toBool());
 
     auto* checkableAction = new QWidgetAction(&menu);
     checkableAction->setDefaultWidget(checkBox);
 
-    QObject::connect(checkBox, &QCheckBox::clicked, [=]{
+    QObject::connect(checkBox, &QCheckBox::clicked, [=] {
       header->setSectionHidden(i, !checkBox->isChecked());
     });
 
@@ -52,9 +49,10 @@ void setCustomizableColumns(QTreeView* view)
   header->setSectionsMovable(true);
   header->setContextMenuPolicy(Qt::CustomContextMenu);
 
-  QObject::connect(
-    header, &QWidget::customContextMenuRequested,
-    view, [view](auto&& pos){ onHeaderContextMenu(view, pos); });
+  QObject::connect(header, &QWidget::customContextMenuRequested, view,
+                   [view](auto&& pos) {
+                     onHeaderContextMenu(view, pos);
+                   });
 }
 
-} // namespace
+}  // namespace MOBase

@@ -18,34 +18,32 @@ License along with this library; if not, write to the Free Software
 Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 */
 
-
 #ifndef IPLUGINFILEMAPPER_H
 #define IPLUGINFILEMAPPER_H
-
 
 #include "filemapping.h"
 #include "iplugin.h"
 
-namespace MOBase {
-
+namespace MOBase
+{
 
 /**
  * brief A plugin that adds virtual file links
  * This does not derive from IPlugin to prevent multiple inheritance issues.
  * For stand-alone mapping plugins, derive from IPlugin and IPluginDiagnose
  */
-class IPluginFileMapper {
+class IPluginFileMapper
+{
 public:
-
   /**
    * @return a list of file maps
    */
   virtual MappingType mappings() const = 0;
-
 };
 
-} // namespace MOBase
+}  // namespace MOBase
 
-Q_DECLARE_INTERFACE(MOBase::IPluginFileMapper, "com.tannin.ModOrganizer.PluginFileMapper/2.0")
+Q_DECLARE_INTERFACE(MOBase::IPluginFileMapper,
+                    "com.tannin.ModOrganizer.PluginFileMapper/2.0")
 
-#endif // IPLUGINDIAGNOSE_H
+#endif  // IPLUGINDIAGNOSE_H

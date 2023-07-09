@@ -21,10 +21,12 @@ along with Mod Organizer.  If not, see <http://www.gnu.org/licenses/>.
 #include "dllimport.h"
 #include <Windows.h>
 
-namespace MOBase {
+namespace MOBase
+{
 
-QDLLEXPORT bool WriteRegistryValue(LPCWSTR appName, LPCWSTR keyName, LPCWSTR value, LPCWSTR fileName);
+QDLLEXPORT bool WriteRegistryValue(LPCWSTR appName, LPCWSTR keyName, LPCWSTR value,
+                                   LPCWSTR fileName);
 
-} // namespace MOBase
+}  // namespace MOBase
 
-#endif // REGISTRY_H
+#endif  // REGISTRY_H

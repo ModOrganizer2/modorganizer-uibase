@@ -28,13 +28,15 @@ class QString;
 #include <functional>
 #include <map>
 
-namespace MOBase {
+namespace MOBase
+{
 
-class IPluginList {
+class IPluginList
+{
 
 public:
-
-  enum PluginState {
+  enum PluginState
+  {
     STATE_MISSING,
     STATE_INACTIVE,
     STATE_ACTIVE
@@ -43,7 +45,6 @@ public:
   Q_DECLARE_FLAGS(PluginStates, PluginState)
 
 public:
-
   virtual ~IPluginList() {}
 
   /**
@@ -56,21 +57,22 @@ public:
    * @param name filename of the plugin (without path but with file extension)
    * @return one of the possible plugin states: missing, inactive or active
    */
-  virtual PluginStates state(const QString &name) const = 0;
+  virtual PluginStates state(const QString& name) const = 0;
 
   /**
    * @brief set the state of a plugin
    * @param name filename of the plugin (without path but with file extensions)
    * @param state new state of the plugin. should be active or inactive
    */
-  virtual void setState(const QString &name, PluginStates state) = 0;
+  virtual void setState(const QString& name, PluginStates state) = 0;
 
   /**
    * @brief retrieve the priority of a plugin
    * @param name filename of the plugin (without path but with file extension)
-   * @return the priority (the higher the more important). Returns -1 if the plugin doesn't exist
+   * @return the priority (the higher the more important). Returns -1 if the plugin
+   * doesn't exist
    */
-  virtual int priority(const QString &name) const = 0;
+  virtual int priority(const QString& name) const = 0;
 
   /**
    * @brief Change the priority of a plugin.
@@ -78,19 +80,21 @@ public:
    * @param name Filename of the plugin (without path but with file extension).
    * @param newPriority New priority of the plugin.
    *
-   * @return true on success, false if the priority change was not possible. This is usually because
-   *     one of the parameters is invalid. The function returns true even if the plugin was not moved
-   *     at the specified priority (e.g. when trying to move a non-master plugin before a master one).
+   * @return true on success, false if the priority change was not possible. This is
+   * usually because one of the parameters is invalid. The function returns true even if
+   * the plugin was not moved at the specified priority (e.g. when trying to move a
+   * non-master plugin before a master one).
    */
   virtual bool setPriority(const QString& name, int newPriority) = 0;
 
   /**
    * @brief retrieve the load order of a plugin
    * @param name filename of the plugin (without path but with file extension)
-   * @return the load order of a plugin (the order in which the game loads it). If all plugins are enabled this is the same as the priority
-   *         but disabled plugins will have a load order of -1. This also returns -1 if the plugin doesn't exist
+   * @return the load order of a plugin (the order in which the game loads it). If all
+   * plugins are enabled this is the same as the priority but disabled plugins will have
+   * a load order of -1. This also returns -1 if the plugin doesn't exist
    */
-  virtual int loadOrder(const QString &name) const = 0;
+  virtual int loadOrder(const QString& name) const = 0;
 
   /**
    * @brief sets the load order of the plugin list.
@@ -98,12 +102,14 @@ public:
    * @note plugins not included in the list will be placed at highest priority
    *       in the order they were before
    */
-  virtual void setLoadOrder(const QStringList &pluginList) = 0;
+  virtual void setLoadOrder(const QStringList& pluginList) = 0;
 
   /**
-   * @brief determine if a plugin is a master file (basically a library, referenced by other plugins)
+   * @brief determine if a plugin is a master file (basically a library, referenced by
+   * other plugins)
    * @param name filename of the plugin (without path but with file extension)
-   * @return true if the file is a master, false if it isn't OR if the file doesn't exist.
+   * @return true if the file is a master, false if it isn't OR if the file doesn't
+   * exist.
    * @note deprecated
    */
   [[deprecated]] virtual bool isMaster(const QString& name) const = 0;
@@ -113,42 +119,52 @@ public:
    * @param name filename of the plugin (without path but with file extension)
    * @return list of masters (filenames with extension, no path)
    */
-  virtual QStringList masters(const QString &name) const = 0;
+  virtual QStringList masters(const QString& name) const = 0;
 
   /**
-   * @brief retrieve the name of the origin of a plugin. This is either the (internal!) name of a mod or "overwrite" or "data"
+   * @brief retrieve the name of the origin of a plugin. This is either the (internal!)
+   * name of a mod or "overwrite" or "data"
    * @param name filename of the plugin (without path but with file extension)
    * @return name of the origin or an empty string if the plugin doesn't exist
-   * @note the internal name of a mod can differ from the display name for disambiguation
+   * @note the internal name of a mod can differ from the display name for
+   * disambiguation
    */
-  virtual QString origin(const QString &name) const = 0;
+  virtual QString origin(const QString& name) const = 0;
 
   /**
-   * @brief invoked whenever the application felt it necessary to refresh the list (i.e. because of external changes)
+   * @brief invoked whenever the application felt it necessary to refresh the list (i.e.
+   * because of external changes)
    */
-  virtual bool onRefreshed(const std::function<void()> &callback) = 0;
+  virtual bool onRefreshed(const std::function<void()>& callback) = 0;
 
   /**
    * @brief invoked whenever a plugin has changed priority
    */
-  virtual bool onPluginMoved(const std::function<void (const QString &, int, int)> &func) = 0;
+  virtual bool
+  onPluginMoved(const std::function<void(const QString&, int, int)>& func) = 0;
 
   /**
-   * @brief Installs a handler for the event that the state of plugin changed (active/inactive).
+   * @brief Installs a handler for the event that the state of plugin changed
+   * (active/inactive).
    *
    * Parameters of the callback:
-   *   - Map containing the plugins whose states have changed. Keys are plugin names and values are mod states.
+   *   - Map containing the plugins whose states have changed. Keys are plugin names and
+   * values are mod states.
    *
    * @param func The signal to be called when the states of any plugins change.
    *
-   * @return true if the handler was successfully installed, false otherwise (there is as of now no known reason this should fail).
+   * @return true if the handler was successfully installed, false otherwise (there is
+   * as of now no known reason this should fail).
    */
-  virtual bool onPluginStateChanged(const std::function<void(const std::map<QString, PluginStates>&)>& func) = 0;
+  virtual bool onPluginStateChanged(
+      const std::function<void(const std::map<QString, PluginStates>&)>& func) = 0;
 
   /**
-   * @brief determine if a plugin has the .esm extension (basically a library, referenced by other plugins)
+   * @brief determine if a plugin has the .esm extension (basically a library,
+   * referenced by other plugins)
    * @param name filename of the plugin (without path but with file extension)
-   * @return true if the file has the .esm extension, false if it isn't OR if the file doesn't exist.
+   * @return true if the file has the .esm extension, false if it isn't OR if the file
+   * doesn't exist.
    * @note in gamebryo games, a master file will usually have a .esm file
    * extension but technically an esp can be flagged as master and an esm might
    * not be
@@ -158,7 +174,8 @@ public:
   /**
    * @brief determine if a plugin has the .esl extension
    * @param name filename of the plugin (without path but with file extension)
-   * @return true if the file has the .esl extension, false if it isn't OR if the file doesn't exist.
+   * @return true if the file has the .esl extension, false if it isn't OR if the file
+   * doesn't exist.
    * @note in gamebryo games, a light file will usually have a .esl file
    * extension but technically an esp can be flagged as light and an esm might
    * not be
@@ -166,9 +183,11 @@ public:
   virtual bool hasLightExtension(const QString& name) const = 0;
 
   /**
-   * @brief determine if a plugin is flagged as master (basically a library, referenced by other plugins)
+   * @brief determine if a plugin is flagged as master (basically a library, referenced
+   * by other plugins)
    * @param name filename of the plugin (without path but with file extension)
-   * @return true if the file is flagged as master, false if it isn't OR if the file doesn't exist.
+   * @return true if the file is flagged as master, false if it isn't OR if the file
+   * doesn't exist.
    * @note in gamebryo games, a master file will usually have a .esm file
    * extension but technically an esp can be flagged as master and an esm might
    * not be
@@ -178,13 +197,13 @@ public:
   /**
    * @brief determine if a plugin is flagged as light
    * @param name filename of the plugin (without path but with file extension)
-   * @return true if the file is flagged as light, false if it isn't OR if the file doesn't exist.
+   * @return true if the file is flagged as light, false if it isn't OR if the file
+   * doesn't exist.
    * @note in gamebryo games, a light file will usually have a .esl file
    */
   virtual bool isLightFlagged(const QString& name) const = 0;
-
 };
 
-}
+}  // namespace MOBase
 
-#endif // IPLUGINLIST_H
+#endif  // IPLUGINLIST_H

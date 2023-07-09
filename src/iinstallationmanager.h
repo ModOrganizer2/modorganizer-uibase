@@ -18,29 +18,28 @@ License along with this library; if not, write to the Free Software
 Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 */
 
-
 #ifndef IINSTALLATIONMANAGER_H
 #define IINSTALLATIONMANAGER_H
 
 #include <QList>
 #include <QString>
 
-#include "iplugininstaller.h"
 #include "ifiletree.h"
+#include "iplugininstaller.h"
 
-namespace MOBase {
+namespace MOBase
+{
 
-
-template <typename T> class GuessedValue;
-
+template <typename T>
+class GuessedValue;
 
 /**
  * @brief The IInstallationManager class.
  */
-class IInstallationManager {
+class IInstallationManager
+{
 
 public:
-
   virtual ~IInstallationManager() {}
 
   /**
@@ -65,10 +64,12 @@ public:
    * @note The temporary file is automatically cleaned up after the installation.
    * @note This call can be very slow if the archive is large and "solid".
    */
-  virtual QString extractFile(std::shared_ptr<const FileTreeEntry> entry, bool silent = false) = 0;
+  virtual QString extractFile(std::shared_ptr<const FileTreeEntry> entry,
+                              bool silent = false) = 0;
 
   /**
-   * @brief Extract the specified files from the currently opened archive to a temporary location.
+   * @brief Extract the specified files from the currently opened archive to a temporary
+   * location.
    *
    * @param entres Entries corresponding to the files to extract.
    * @param silent If true, the dialog showing extraction progress will not be shown.
@@ -82,24 +83,29 @@ public:
    * @note The temporary file is automatically cleaned up after the installation.
    * @note This call can be very slow if the archive is large and "solid".
    *
-   * The flatten argument is not present here while it is present in the deprecated QStringList
-   * version for multiple reasons: 1) it was never used, 2) it is kind of fishy because there
-   * is no way to know if a file is going to be overriden, 3) it is quite easy to flatten a 
-   * IFileTree and thus to given a list of entries flattened (this was not possible with the
-   * QStringList version since these were based on the name of the file inside the archive).
+   * The flatten argument is not present here while it is present in the deprecated
+   * QStringList version for multiple reasons: 1) it was never used, 2) it is kind of
+   * fishy because there is no way to know if a file is going to be overriden, 3) it is
+   * quite easy to flatten a IFileTree and thus to given a list of entries flattened
+   * (this was not possible with the QStringList version since these were based on the
+   * name of the file inside the archive).
    */
-  virtual QStringList extractFiles(std::vector<std::shared_ptr<const FileTreeEntry>> const& entries, bool silent = false) = 0;
+  virtual QStringList
+  extractFiles(std::vector<std::shared_ptr<const FileTreeEntry>> const& entries,
+               bool silent = false) = 0;
 
   /**
    * @brief Create a new file on the disk corresponding to the given entry.
    *
-   * This method can be used by installer that needs to create files that are not in the original
-   * archive. At the end of the installation, if there are entries in the final tree that were used
-   * to create files, the corresponding files will be moved to the mod folder.
+   * This method can be used by installer that needs to create files that are not in the
+   * original archive. At the end of the installation, if there are entries in the final
+   * tree that were used to create files, the corresponding files will be moved to the
+   * mod folder.
    *
    * @param entry The entry for which a temporary file should be created.
    *
-   * @return the path to the created file, or an empty QString() if the file could not be created.
+   * @return the path to the created file, or an empty QString() if the file could not
+   * be created.
    */
   virtual QString createFile(std::shared_ptr<const MOBase::FileTreeEntry> entry) = 0;
 
@@ -112,10 +118,11 @@ public:
    *
    * @return the installation result.
    */
-  virtual IPluginInstaller::EInstallResult installArchive(MOBase::GuessedValue<QString> &modName, const QString &archiveFile, int modID = 0) = 0;
-
+  virtual IPluginInstaller::EInstallResult
+  installArchive(MOBase::GuessedValue<QString>& modName, const QString& archiveFile,
+                 int modID = 0) = 0;
 };
 
-} // namespace MOBase
+}  // namespace MOBase
 
-#endif // IINSTALLATIONMANAGER_H
+#endif  // IINSTALLATIONMANAGER_H

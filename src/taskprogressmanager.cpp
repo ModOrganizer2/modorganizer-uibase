@@ -2,12 +2,13 @@
 #include "log.h"
 #include "utility.h"
 #include <QApplication>
-#include <QWidget>
 #include <QMainWindow>
+#include <QWidget>
 
-namespace MOBase {
+namespace MOBase
+{
 
-TaskProgressManager &TaskProgressManager::instance()
+TaskProgressManager& TaskProgressManager::instance()
 {
   static TaskProgressManager s_Instance;
   return s_Instance;
@@ -50,13 +51,12 @@ quint32 TaskProgressManager::getId()
   return m_NextId++;
 }
 
-
 void TaskProgressManager::showProgress()
 {
   if (!m_Percentages.empty()) {
     m_Taskbar->SetProgressState(m_WinId, TBPF_NORMAL);
 
-    QTime now = QTime::currentTime();
+    QTime now                = QTime::currentTime();
     unsigned long long total = 0;
     unsigned long long count = 0;
 
@@ -78,12 +78,11 @@ void TaskProgressManager::showProgress()
   }
 }
 
-
 bool TaskProgressManager::tryCreateTaskbar()
 {
   // try to find our main window
-  for (QWidget *widget : QApplication::topLevelWidgets()) {
-    QMainWindow *mainWin = qobject_cast<QMainWindow*>(widget);
+  for (QWidget* widget : QApplication::topLevelWidgets()) {
+    QMainWindow* mainWin = qobject_cast<QMainWindow*>(widget);
     if (mainWin != nullptr) {
       m_WinId = reinterpret_cast<HWND>(mainWin->winId());
     }
@@ -105,17 +104,15 @@ bool TaskProgressManager::tryCreateTaskbar()
   if (m_CreateTries-- > 0) {
     QTimer::singleShot(1000, this, SLOT(tryCreateTaskbar()));
   } else {
-    log::warn(
-      "failed to create taskbar connection (this is to be expected on "
-      "Windows XP): ", formatSystemMessage(result));
+    log::warn("failed to create taskbar connection (this is to be expected on "
+              "Windows XP): ",
+              formatSystemMessage(result));
   }
   return false;
 }
 
 TaskProgressManager::TaskProgressManager()
-  : m_NextId(1), m_CreateTries(10), m_WinId(nullptr), m_Taskbar(nullptr)
-{
-}
+    : m_NextId(1), m_CreateTries(10), m_WinId(nullptr), m_Taskbar(nullptr)
+{}
 
-
-} // namespace MOBase
+}  // namespace MOBase

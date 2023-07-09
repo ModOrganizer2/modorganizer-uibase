@@ -18,46 +18,49 @@ License along with this library; if not, write to the Free Software
 Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 */
 
-
 #include "utility.h"
-#include "report.h"
 #include "log.h"
+#include "report.h"
+#include <QApplication>
+#include <QBuffer>
+#include <QCollator>
+#include <QDir>
+#include <QImage>
+#include <QScreen>
+#include <QStringEncoder>
+#include <QUuid>
+#include <QtDebug>
 #include <memory>
 #include <sstream>
-#include <QDir>
-#include <QBuffer>
-#include <QScreen>
-#include <QApplication>
-#include <QtDebug>
-#include <QUuid>
-#include <QCollator>
-#include <QImage>
-#include <QStringEncoder>
 #define WIN32_LEAN_AND_MEAN
 #include <Windows.h>
 
-
 #define FO_RECYCLE 0x1003
-
 
 namespace MOBase
 {
 
-bool removeDir(const QString &dirName)
+bool removeDir(const QString& dirName)
 {
   QDir dir(dirName);
 
   if (dir.exists()) {
-    Q_FOREACH(QFileInfo info, dir.entryInfoList(QDir::NoDotAndDotDot | QDir::System | QDir::Hidden  | QDir::AllDirs | QDir::Files, QDir::DirsFirst)) {
+    Q_FOREACH (QFileInfo info,
+               dir.entryInfoList(QDir::NoDotAndDotDot | QDir::System | QDir::Hidden |
+                                     QDir::AllDirs | QDir::Files,
+                                 QDir::DirsFirst)) {
       if (info.isDir()) {
         if (!removeDir(info.absoluteFilePath())) {
           return false;
         }
       } else {
-        ::SetFileAttributesW(ToWString(info.absoluteFilePath()).c_str(), FILE_ATTRIBUTE_NORMAL);
+        ::SetFileAttributesW(ToWString(info.absoluteFilePath()).c_str(),
+                             FILE_ATTRIBUTE_NORMAL);
         QFile file(info.absoluteFilePath());
         if (!file.remove()) {
-          reportError(QObject::tr("removal of \"%1\" failed: %2").arg(info.absoluteFilePath()).arg(file.errorString()));
+          reportError(QObject::tr("removal of \"%1\" failed: %2")
+                          .arg(info.absoluteFilePath())
+                          .arg(file.errorString()));
           return false;
         }
       }
@@ -75,8 +78,7 @@ bool removeDir(const QString &dirName)
   return true;
 }
 
-
-bool copyDir(const QString &sourceName, const QString &destinationName, bool merge)
+bool copyDir(const QString& sourceName, const QString& destinationName, bool merge)
 {
   QDir sourceDir(sourceName);
   if (!sourceDir.exists()) {
@@ -91,65 +93,91 @@ bool copyDir(const QString &sourceName, const QString &destinationName, bool mer
 
   QStringList files = sourceDir.entryList(QDir::Files);
   foreach (QString fileName, files) {
-    QString srcName = sourceName + "/" + fileName;
+    QString srcName  = sourceName + "/" + fileName;
     QString destName = destinationName + "/" + fileName;
     QFile::copy(srcName, destName);
   }
 
   files.clear();
   // we leave out symlinks because that could cause an endless recursion
-  QStringList subDirs = sourceDir.entryList(QDir::AllDirs | QDir::NoDotAndDotDot | QDir::NoSymLinks);
+  QStringList subDirs =
+      sourceDir.entryList(QDir::AllDirs | QDir::NoDotAndDotDot | QDir::NoSymLinks);
   foreach (QString subDir, subDirs) {
-    QString srcName = sourceName + "/" + subDir;
+    QString srcName  = sourceName + "/" + subDir;
     QString destName = destinationName + "/" + subDir;
     copyDir(srcName, destName, merge);
   }
   return true;
 }
 
-
 static DWORD TranslateError(int error)
 {
   switch (error) {
-    case 0x71:    return ERROR_INVALID_PARAMETER; // same file
-    case 0x72:    return ERROR_INVALID_PARAMETER; // many source, one destination. shouldn't happen due to how parameters are transformed
-    case 0x73:    return ERROR_NOT_SAME_DEVICE;
-    case 0x74:    return ERROR_INVALID_PARAMETER;
-    case 0x75:    return ERROR_CANCELLED;
-    case 0x76:    return ERROR_BAD_PATHNAME;
-    case 0x78:    return ERROR_ACCESS_DENIED;
-    case 0x79:    return ERROR_BUFFER_OVERFLOW; // path exceeds max_path
-    case 0x7A:    return ERROR_INVALID_PARAMETER;
-    case 0x7C:    return ERROR_BAD_PATHNAME;
-    case 0x7D:    return ERROR_INVALID_PARAMETER;
-    case 0x7E:    return ERROR_ALREADY_EXISTS;
-    case 0x80:    return ERROR_ALREADY_EXISTS;
-    case 0x81:    return ERROR_BUFFER_OVERFLOW;
-    case 0x82:    return ERROR_WRITE_PROTECT;
-    case 0x83:    return ERROR_WRITE_PROTECT;
-    case 0x84:    return ERROR_WRITE_PROTECT;
-    case 0x85:    return ERROR_DISK_FULL;
-    case 0x86:    return ERROR_WRITE_PROTECT;
-    case 0x87:    return ERROR_WRITE_PROTECT;
-    case 0x88:    return ERROR_WRITE_PROTECT;
-    case 0xB7:    return ERROR_BUFFER_OVERFLOW;
-    case 0x402:   return ERROR_PATH_NOT_FOUND;
-    case 0x10000: return ERROR_GEN_FAILURE;
-    default: return static_cast<DWORD>(error);
+  case 0x71:
+    return ERROR_INVALID_PARAMETER;  // same file
+  case 0x72:
+    return ERROR_INVALID_PARAMETER;  // many source, one destination. shouldn't happen
+                                     // due to how parameters are transformed
+  case 0x73:
+    return ERROR_NOT_SAME_DEVICE;
+  case 0x74:
+    return ERROR_INVALID_PARAMETER;
+  case 0x75:
+    return ERROR_CANCELLED;
+  case 0x76:
+    return ERROR_BAD_PATHNAME;
+  case 0x78:
+    return ERROR_ACCESS_DENIED;
+  case 0x79:
+    return ERROR_BUFFER_OVERFLOW;  // path exceeds max_path
+  case 0x7A:
+    return ERROR_INVALID_PARAMETER;
+  case 0x7C:
+    return ERROR_BAD_PATHNAME;
+  case 0x7D:
+    return ERROR_INVALID_PARAMETER;
+  case 0x7E:
+    return ERROR_ALREADY_EXISTS;
+  case 0x80:
+    return ERROR_ALREADY_EXISTS;
+  case 0x81:
+    return ERROR_BUFFER_OVERFLOW;
+  case 0x82:
+    return ERROR_WRITE_PROTECT;
+  case 0x83:
+    return ERROR_WRITE_PROTECT;
+  case 0x84:
+    return ERROR_WRITE_PROTECT;
+  case 0x85:
+    return ERROR_DISK_FULL;
+  case 0x86:
+    return ERROR_WRITE_PROTECT;
+  case 0x87:
+    return ERROR_WRITE_PROTECT;
+  case 0x88:
+    return ERROR_WRITE_PROTECT;
+  case 0xB7:
+    return ERROR_BUFFER_OVERFLOW;
+  case 0x402:
+    return ERROR_PATH_NOT_FOUND;
+  case 0x10000:
+    return ERROR_GEN_FAILURE;
+  default:
+    return static_cast<DWORD>(error);
   }
 }
 
-
-static bool shellOp(
-  const QStringList &sourceNames, const QStringList &destinationNames,
-  QWidget *dialog, UINT operation, bool yesToAll, bool silent=false)
+static bool shellOp(const QStringList& sourceNames, const QStringList& destinationNames,
+                    QWidget* dialog, UINT operation, bool yesToAll, bool silent = false)
 {
   std::vector<wchar_t> fromBuffer;
   std::vector<wchar_t> toBuffer;
 
-  foreach (const QString &from, sourceNames) {
-    // SHFileOperation has to be used with absolute maths, err paths ("It cannot be overstated" they say)
-    std::wstring tempFrom = ToWString(QDir::toNativeSeparators(QFileInfo(from).absoluteFilePath()));
+  foreach (const QString& from, sourceNames) {
+    // SHFileOperation has to be used with absolute maths, err paths ("It cannot be
+    // overstated" they say)
+    std::wstring tempFrom =
+        ToWString(QDir::toNativeSeparators(QFileInfo(from).absoluteFilePath()));
     fromBuffer.insert(fromBuffer.end(), tempFrom.begin(), tempFrom.end());
     fromBuffer.push_back(L'\0');
   }
@@ -162,13 +190,15 @@ static bool shellOp(
 
   if ((destinationNames.count() == sourceNames.count()) ||
       (destinationNames.count() == 1)) {
-    foreach (const QString &to, destinationNames) {
-      std::wstring tempTo = ToWString(QDir::toNativeSeparators(QFileInfo(to).absoluteFilePath()));
+    foreach (const QString& to, destinationNames) {
+      std::wstring tempTo =
+          ToWString(QDir::toNativeSeparators(QFileInfo(to).absoluteFilePath()));
       toBuffer.insert(toBuffer.end(), tempTo.begin(), tempTo.end());
       toBuffer.push_back(L'\0');
     }
   } else if ((operation == FO_DELETE) && (destinationNames.count() == 0)) {
-    // pTo is not used but as I understand the documentation it should still be double-null terminated
+    // pTo is not used but as I understand the documentation it should still be
+    // double-null terminated
     toBuffer.push_back(L'\0');
   } else {
     ::SetLastError(ERROR_INVALID_PARAMETER);
@@ -188,7 +218,7 @@ static bool shellOp(
   }
   op.wFunc = operation;
   op.pFrom = &fromBuffer[0];
-  op.pTo = &toBuffer[0];
+  op.pTo   = &toBuffer[0];
 
   if ((operation == FO_DELETE) || yesToAll) {
     op.fFlags = FOF_NOCONFIRMATION;
@@ -218,108 +248,113 @@ static bool shellOp(
   }
 }
 
-bool shellCopy(const QStringList &sourceNames, const QStringList &destinationNames, QWidget *dialog)
+bool shellCopy(const QStringList& sourceNames, const QStringList& destinationNames,
+               QWidget* dialog)
 {
   return shellOp(sourceNames, destinationNames, dialog, FO_COPY, false);
 }
 
-bool shellCopy(const QString &sourceNames, const QString &destinationNames, bool yesToAll, QWidget *dialog)
+bool shellCopy(const QString& sourceNames, const QString& destinationNames,
+               bool yesToAll, QWidget* dialog)
 {
-  return shellOp(QStringList() << sourceNames, QStringList() << destinationNames, dialog, FO_COPY, yesToAll);
+  return shellOp(QStringList() << sourceNames, QStringList() << destinationNames,
+                 dialog, FO_COPY, yesToAll);
 }
 
-bool shellMove(const QStringList &sourceNames, const QStringList &destinationNames, QWidget *dialog)
+bool shellMove(const QStringList& sourceNames, const QStringList& destinationNames,
+               QWidget* dialog)
 {
   return shellOp(sourceNames, destinationNames, dialog, FO_MOVE, false);
 }
 
-bool shellMove(const QString &sourceNames, const QString &destinationNames, bool yesToAll, QWidget *dialog)
+bool shellMove(const QString& sourceNames, const QString& destinationNames,
+               bool yesToAll, QWidget* dialog)
 {
-  return shellOp(QStringList() << sourceNames, QStringList() << destinationNames, dialog, FO_MOVE, yesToAll);
+  return shellOp(QStringList() << sourceNames, QStringList() << destinationNames,
+                 dialog, FO_MOVE, yesToAll);
 }
 
-bool shellRename(const QString &oldName, const QString &newName, bool yesToAll, QWidget *dialog)
+bool shellRename(const QString& oldName, const QString& newName, bool yesToAll,
+                 QWidget* dialog)
 {
-  return shellOp(QStringList(oldName), QStringList(newName), dialog, FO_RENAME, yesToAll);
+  return shellOp(QStringList(oldName), QStringList(newName), dialog, FO_RENAME,
+                 yesToAll);
 }
 
-bool shellDelete(const QStringList &fileNames, bool recycle, QWidget *dialog)
+bool shellDelete(const QStringList& fileNames, bool recycle, QWidget* dialog)
 {
   const UINT op = static_cast<UINT>(recycle ? FO_RECYCLE : FO_DELETE);
   return shellOp(fileNames, QStringList(), dialog, op, false);
 }
 
-
 namespace shell
 {
 
-static QString g_urlHandler;
+  static QString g_urlHandler;
 
-
-Result::Result(bool success, DWORD error, QString message, HANDLE process) :
-  m_success(success), m_error(error), m_message(std::move(message)),
-  m_process(process)
-{
-  if (m_message.isEmpty()) {
-    m_message = QString::fromStdWString(formatSystemMessage(m_error));
+  Result::Result(bool success, DWORD error, QString message, HANDLE process)
+      : m_success(success), m_error(error), m_message(std::move(message)),
+        m_process(process)
+  {
+    if (m_message.isEmpty()) {
+      m_message = QString::fromStdWString(formatSystemMessage(m_error));
+    }
   }
-}
 
-Result Result::makeFailure(DWORD error, QString message)
-{
-  return Result(false, error, std::move(message), INVALID_HANDLE_VALUE);
-}
+  Result Result::makeFailure(DWORD error, QString message)
+  {
+    return Result(false, error, std::move(message), INVALID_HANDLE_VALUE);
+  }
 
-Result Result::makeSuccess(HANDLE process)
-{
-  return Result(true, ERROR_SUCCESS, {}, process);
-}
+  Result Result::makeSuccess(HANDLE process)
+  {
+    return Result(true, ERROR_SUCCESS, {}, process);
+  }
 
-bool Result::success() const
-{
-  return m_success;
-}
+  bool Result::success() const
+  {
+    return m_success;
+  }
 
-Result::operator bool() const
-{
-  return m_success;
-}
+  Result::operator bool() const
+  {
+    return m_success;
+  }
 
-DWORD Result::error()
-{
-  return m_error;
-}
+  DWORD Result::error()
+  {
+    return m_error;
+  }
 
-const QString& Result::message() const
-{
-  return m_message;
-}
-
-HANDLE Result::processHandle() const
-{
-  return m_process.get();
-}
-
-HANDLE Result::stealProcessHandle()
-{
-  const auto h = m_process.release();
-  m_process.reset(INVALID_HANDLE_VALUE);
-  return h;
-}
-
-QString Result::toString() const
-{
-  if (m_message.isEmpty()) {
-    return QObject::tr("Error %1").arg(m_error);
-  } else {
+  const QString& Result::message() const
+  {
     return m_message;
   }
-}
 
+  HANDLE Result::processHandle() const
+  {
+    return m_process.get();
+  }
 
-QString formatError(int i)
-{
-  switch (i) {
+  HANDLE Result::stealProcessHandle()
+  {
+    const auto h = m_process.release();
+    m_process.reset(INVALID_HANDLE_VALUE);
+    return h;
+  }
+
+  QString Result::toString() const
+  {
+    if (m_message.isEmpty()) {
+      return QObject::tr("Error %1").arg(m_error);
+    } else {
+      return m_message;
+    }
+  }
+
+  QString formatError(int i)
+  {
+    switch (i) {
     case 0:
       return "The operating system is out of memory or resources";
 
@@ -340,21 +375,21 @@ QString formatError(int i)
 
     case SE_ERR_DDEBUSY:
       return "The DDE transaction could not be completed because other DDE "
-        "transactions were being processed";
+             "transactions were being processed";
 
     case SE_ERR_DDEFAIL:
       return "The DDE transaction failed";
 
     case SE_ERR_DDETIMEOUT:
       return "The DDE transaction could not be completed because the request "
-        "timed out";
+             "timed out";
 
     case SE_ERR_DLLNOTFOUND:
       return "The specified DLL was not found";
 
     case SE_ERR_NOASSOC:
       return "There is no application associated with the given file name "
-        "extension";
+             "extension";
 
     case SE_ERR_OOM:
       return "There was not enough memory to complete the operation";
@@ -364,279 +399,274 @@ QString formatError(int i)
 
     default:
       return QString("Unknown error %1").arg(i);
-  }
-}
-
-void LogShellFailure(
-  const wchar_t* operation, const wchar_t* file, const wchar_t* params,
-  DWORD error)
-{
-  QStringList s;
-
-  if (operation) {
-    s << QString::fromWCharArray(operation);
-  }
-
-  if (file) {
-    s << QString::fromWCharArray(file);
-  }
-
-  if (params) {
-    s << QString::fromWCharArray(params);
-  }
-
-  log::error("failed to invoke '{}': {}", s.join(" "), formatSystemMessage(error));
-}
-
-Result ShellExecuteWrapper(
-  const wchar_t* operation, const wchar_t* file, const wchar_t* params)
-{
-  SHELLEXECUTEINFOW info = {};
-
-  info.cbSize = sizeof(info);
-  info.fMask = SEE_MASK_FLAG_NO_UI | SEE_MASK_NOCLOSEPROCESS;
-  info.lpVerb = operation;
-  info.lpFile = file;
-  info.lpParameters = params;
-  info.nShow = SW_SHOWNORMAL;
-
-  const auto r = ::ShellExecuteExW(&info);
-
-  if (!r)
-  {
-    const auto e = ::GetLastError();
-    LogShellFailure(operation, file, params, e);
-
-    return Result::makeFailure(
-      e, QString::fromStdWString(formatSystemMessage(e)));
-  }
-
-  const HANDLE process = info.hProcess ? info.hProcess : INVALID_HANDLE_VALUE;
-  return Result::makeSuccess(process);
-}
-
-Result ExploreDirectory(const QFileInfo& info)
-{
-  const auto path = QDir::toNativeSeparators(info.absoluteFilePath());
-  const auto ws_path = path.toStdWString();
-
-  return ShellExecuteWrapper(L"explore", ws_path.c_str(), nullptr);
-}
-
-Result ExploreFileInDirectory(const QFileInfo& info)
-{
-  const auto path = QDir::toNativeSeparators(info.absoluteFilePath());
-  const auto params = "/select,\"" + path + "\"";
-  const auto ws_params = params.toStdWString();
-
-  return ShellExecuteWrapper(nullptr, L"explorer", ws_params.c_str());
-}
-
-
-Result Explore(const QFileInfo& info)
-{
-  if (info.isFile()) {
-    return ExploreFileInDirectory(info);
-  } else if (info.isDir()) {
-    return ExploreDirectory(info);
-  } else {
-    // try the parent directory
-    const auto parent = info.dir();
-
-    if (parent.exists()) {
-      return ExploreDirectory(QFileInfo(parent.absolutePath()));
-    } else {
-      return Result::makeFailure(ERROR_FILE_NOT_FOUND);
     }
   }
-}
 
-Result Explore(const QString& path)
-{
-  return Explore(QFileInfo(path));
-}
+  void LogShellFailure(const wchar_t* operation, const wchar_t* file,
+                       const wchar_t* params, DWORD error)
+  {
+    QStringList s;
 
-Result Explore(const QDir& dir)
-{
-  return Explore(QFileInfo(dir.absolutePath()));
-}
+    if (operation) {
+      s << QString::fromWCharArray(operation);
+    }
 
-Result Open(const QString& path)
-{
-  const auto ws_path = path.toStdWString();
-  return ShellExecuteWrapper(L"open", ws_path.c_str(), nullptr);
-}
+    if (file) {
+      s << QString::fromWCharArray(file);
+    }
 
-Result OpenCustomURL(const std::wstring& format, const std::wstring& url)
-{
-  log::debug("custom url handler: '{}'", format);
+    if (params) {
+      s << QString::fromWCharArray(params);
+    }
 
-  // arguments, the first one is the url, the next 98 are empty strings because
-  // FormatMessage() doesn't have a way of saying how many arguments are
-  // available in the array, so this avoids a crash if there's something like
-  // %2 in the format string
-  const std::size_t args_count = 99;
-  DWORD_PTR args[args_count];
-  args[0] = reinterpret_cast<DWORD_PTR>(url.c_str());
-
-  for (std::size_t i=1; i<args_count; ++i) {
-    args[i] = reinterpret_cast<DWORD_PTR>(L"");
+    log::error("failed to invoke '{}': {}", s.join(" "), formatSystemMessage(error));
   }
 
-  wchar_t* output = nullptr;
+  Result ShellExecuteWrapper(const wchar_t* operation, const wchar_t* file,
+                             const wchar_t* params)
+  {
+    SHELLEXECUTEINFOW info = {};
 
-  // formatting
-  const auto n = ::FormatMessageW(
-    FORMAT_MESSAGE_ALLOCATE_BUFFER |
-    FORMAT_MESSAGE_ARGUMENT_ARRAY |
-    FORMAT_MESSAGE_FROM_STRING,
-    format.c_str(), 0, 0,
-    reinterpret_cast<LPWSTR>(&output), 0, reinterpret_cast<va_list*>(args));
+    info.cbSize       = sizeof(info);
+    info.fMask        = SEE_MASK_FLAG_NO_UI | SEE_MASK_NOCLOSEPROCESS;
+    info.lpVerb       = operation;
+    info.lpFile       = file;
+    info.lpParameters = params;
+    info.nShow        = SW_SHOWNORMAL;
 
-  if (n == 0) {
-    const auto e = GetLastError();
+    const auto r = ::ShellExecuteExW(&info);
 
-    log::error("failed to format browser command '{}'", format);
-    log::error("{}", formatSystemMessage(e));
-    log::error("{}", QObject::tr(
-      "You have an invalid custom browser command in the settings."));
+    if (!r) {
+      const auto e = ::GetLastError();
+      LogShellFailure(operation, file, params, e);
 
-    return Result::makeFailure(e);
+      return Result::makeFailure(e, QString::fromStdWString(formatSystemMessage(e)));
+    }
+
+    const HANDLE process = info.hProcess ? info.hProcess : INVALID_HANDLE_VALUE;
+    return Result::makeSuccess(process);
   }
 
-  const std::wstring cmd(output, n);
-  ::LocalFree(output);
+  Result ExploreDirectory(const QFileInfo& info)
+  {
+    const auto path    = QDir::toNativeSeparators(info.absoluteFilePath());
+    const auto ws_path = path.toStdWString();
 
-  log::debug("running '{}'", cmd);
-
-  // creating process
-  STARTUPINFO si = { .cb = sizeof(STARTUPINFO) };
-  PROCESS_INFORMATION pi = {};
-
-  const auto r = ::CreateProcessW(
-    nullptr, const_cast<wchar_t*>(cmd.c_str()),
-    nullptr, nullptr, FALSE, 0, nullptr, nullptr, &si, &pi);
-
-  if (r == 0) {
-    const auto e = GetLastError();
-    log::error("failed to run '{}'", cmd);
-    log::error("{}", formatSystemMessage(e));
-    log::error("{}", QObject::tr(
-      "You have an invalid custom browser command in the settings."));
-    return Result::makeFailure(e);
+    return ShellExecuteWrapper(L"explore", ws_path.c_str(), nullptr);
   }
 
-  ::CloseHandle(pi.hProcess);
-  ::CloseHandle(pi.hThread);
+  Result ExploreFileInDirectory(const QFileInfo& info)
+  {
+    const auto path      = QDir::toNativeSeparators(info.absoluteFilePath());
+    const auto params    = "/select,\"" + path + "\"";
+    const auto ws_params = params.toStdWString();
 
-  return Result::makeSuccess();
-}
-
-Result Open(const QUrl& url)
-{
-  log::debug("opening url '{}'", url.toString());
-
-  const auto ws_url = url.toString().toStdWString();
-
-  if (g_urlHandler.isEmpty()) {
-    return ShellExecuteWrapper(L"open", ws_url.c_str(), nullptr);
-  } else {
-    return OpenCustomURL(g_urlHandler.toStdWString(), ws_url);
-  }
-}
-
-Result Execute(const QString& program, const QString& params)
-{
-  const auto program_ws = program.toStdWString();
-  const auto params_ws = params.toStdWString();
-
-  return ShellExecuteWrapper(L"open", program_ws.c_str(), params_ws.c_str());
-}
-
-void SetUrlHandler(const QString& cmd)
-{
-  g_urlHandler = cmd;
-}
-
-std::wstring toUNC(const QFileInfo& path)
-{
-  auto wpath = QDir::toNativeSeparators(path.absoluteFilePath()).toStdWString();
-  if (!wpath.starts_with(L"\\\\?\\")) {
-    wpath = L"\\\\?\\" + wpath;
+    return ShellExecuteWrapper(nullptr, L"explorer", ws_params.c_str());
   }
 
-  return wpath;
-}
+  Result Explore(const QFileInfo& info)
+  {
+    if (info.isFile()) {
+      return ExploreFileInDirectory(info);
+    } else if (info.isDir()) {
+      return ExploreDirectory(info);
+    } else {
+      // try the parent directory
+      const auto parent = info.dir();
 
-Result Delete(const QFileInfo& path)
-{
-  const auto wpath = toUNC(path);
-
-  if (!::DeleteFileW(wpath.c_str())) {
-    const auto e = ::GetLastError();
-    return Result::makeFailure(e);
+      if (parent.exists()) {
+        return ExploreDirectory(QFileInfo(parent.absolutePath()));
+      } else {
+        return Result::makeFailure(ERROR_FILE_NOT_FOUND);
+      }
+    }
   }
 
-  return Result::makeSuccess();
-}
-
-Result Rename(const QFileInfo& src, const QFileInfo& dest)
-{
-  return Rename(src, dest, true);
-}
-
-Result Rename(const QFileInfo& src, const QFileInfo& dest, bool copyAllowed)
-{
-  const auto wsrc = toUNC(src);
-  const auto wdest = toUNC(dest);
-
-  DWORD flags = 0;
-
-  if (copyAllowed) {
-    flags |= MOVEFILE_COPY_ALLOWED;
+  Result Explore(const QString& path)
+  {
+    return Explore(QFileInfo(path));
   }
 
-  if (!::MoveFileEx(wsrc.c_str(), wdest.c_str(), flags)) {
-    const auto e = ::GetLastError();
-    return Result::makeFailure(e);
+  Result Explore(const QDir& dir)
+  {
+    return Explore(QFileInfo(dir.absolutePath()));
   }
 
-  return Result::makeSuccess();
-}
-
-Result CreateDirectories(const QDir& dir)
-{
-  const DWORD e = static_cast<DWORD>(
-    ::SHCreateDirectory(0, dir.path().toStdWString().c_str()));
-
-  if (e != ERROR_SUCCESS) {
-    return Result::makeFailure(
-      e, QString::fromStdWString(formatSystemMessage(e)));
+  Result Open(const QString& path)
+  {
+    const auto ws_path = path.toStdWString();
+    return ShellExecuteWrapper(L"open", ws_path.c_str(), nullptr);
   }
 
-  return Result::makeSuccess();
-}
+  Result OpenCustomURL(const std::wstring& format, const std::wstring& url)
+  {
+    log::debug("custom url handler: '{}'", format);
 
-Result DeleteDirectoryRecursive(const QDir& dir)
-{
-  if (!shellOp({dir.path()}, QStringList(), nullptr, FO_DELETE, true)) {
-    const auto e = GetLastError();
+    // arguments, the first one is the url, the next 98 are empty strings because
+    // FormatMessage() doesn't have a way of saying how many arguments are
+    // available in the array, so this avoids a crash if there's something like
+    // %2 in the format string
+    const std::size_t args_count = 99;
+    DWORD_PTR args[args_count];
+    args[0] = reinterpret_cast<DWORD_PTR>(url.c_str());
 
-    return Result::makeFailure(
-      e, QString::fromStdWString(formatSystemMessage(e)));
+    for (std::size_t i = 1; i < args_count; ++i) {
+      args[i] = reinterpret_cast<DWORD_PTR>(L"");
+    }
+
+    wchar_t* output = nullptr;
+
+    // formatting
+    const auto n =
+        ::FormatMessageW(FORMAT_MESSAGE_ALLOCATE_BUFFER |
+                             FORMAT_MESSAGE_ARGUMENT_ARRAY | FORMAT_MESSAGE_FROM_STRING,
+                         format.c_str(), 0, 0, reinterpret_cast<LPWSTR>(&output), 0,
+                         reinterpret_cast<va_list*>(args));
+
+    if (n == 0) {
+      const auto e = GetLastError();
+
+      log::error("failed to format browser command '{}'", format);
+      log::error("{}", formatSystemMessage(e));
+      log::error(
+          "{}",
+          QObject::tr("You have an invalid custom browser command in the settings."));
+
+      return Result::makeFailure(e);
+    }
+
+    const std::wstring cmd(output, n);
+    ::LocalFree(output);
+
+    log::debug("running '{}'", cmd);
+
+    // creating process
+    STARTUPINFO si         = {.cb = sizeof(STARTUPINFO)};
+    PROCESS_INFORMATION pi = {};
+
+    const auto r = ::CreateProcessW(nullptr, const_cast<wchar_t*>(cmd.c_str()), nullptr,
+                                    nullptr, FALSE, 0, nullptr, nullptr, &si, &pi);
+
+    if (r == 0) {
+      const auto e = GetLastError();
+      log::error("failed to run '{}'", cmd);
+      log::error("{}", formatSystemMessage(e));
+      log::error(
+          "{}",
+          QObject::tr("You have an invalid custom browser command in the settings."));
+      return Result::makeFailure(e);
+    }
+
+    ::CloseHandle(pi.hProcess);
+    ::CloseHandle(pi.hThread);
+
+    return Result::makeSuccess();
   }
 
-  return Result::makeSuccess();
-}
+  Result Open(const QUrl& url)
+  {
+    log::debug("opening url '{}'", url.toString());
 
-} // namespace shell
+    const auto ws_url = url.toString().toStdWString();
 
+    if (g_urlHandler.isEmpty()) {
+      return ShellExecuteWrapper(L"open", ws_url.c_str(), nullptr);
+    } else {
+      return OpenCustomURL(g_urlHandler.toStdWString(), ws_url);
+    }
+  }
 
-bool moveFileRecursive(const QString &source, const QString &baseDir, const QString &destination)
+  Result Execute(const QString& program, const QString& params)
+  {
+    const auto program_ws = program.toStdWString();
+    const auto params_ws  = params.toStdWString();
+
+    return ShellExecuteWrapper(L"open", program_ws.c_str(), params_ws.c_str());
+  }
+
+  void SetUrlHandler(const QString& cmd)
+  {
+    g_urlHandler = cmd;
+  }
+
+  std::wstring toUNC(const QFileInfo& path)
+  {
+    auto wpath = QDir::toNativeSeparators(path.absoluteFilePath()).toStdWString();
+    if (!wpath.starts_with(L"\\\\?\\")) {
+      wpath = L"\\\\?\\" + wpath;
+    }
+
+    return wpath;
+  }
+
+  Result Delete(const QFileInfo& path)
+  {
+    const auto wpath = toUNC(path);
+
+    if (!::DeleteFileW(wpath.c_str())) {
+      const auto e = ::GetLastError();
+      return Result::makeFailure(e);
+    }
+
+    return Result::makeSuccess();
+  }
+
+  Result Rename(const QFileInfo& src, const QFileInfo& dest)
+  {
+    return Rename(src, dest, true);
+  }
+
+  Result Rename(const QFileInfo& src, const QFileInfo& dest, bool copyAllowed)
+  {
+    const auto wsrc  = toUNC(src);
+    const auto wdest = toUNC(dest);
+
+    DWORD flags = 0;
+
+    if (copyAllowed) {
+      flags |= MOVEFILE_COPY_ALLOWED;
+    }
+
+    if (!::MoveFileEx(wsrc.c_str(), wdest.c_str(), flags)) {
+      const auto e = ::GetLastError();
+      return Result::makeFailure(e);
+    }
+
+    return Result::makeSuccess();
+  }
+
+  Result CreateDirectories(const QDir& dir)
+  {
+    const DWORD e =
+        static_cast<DWORD>(::SHCreateDirectory(0, dir.path().toStdWString().c_str()));
+
+    if (e != ERROR_SUCCESS) {
+      return Result::makeFailure(e, QString::fromStdWString(formatSystemMessage(e)));
+    }
+
+    return Result::makeSuccess();
+  }
+
+  Result DeleteDirectoryRecursive(const QDir& dir)
+  {
+    if (!shellOp({dir.path()}, QStringList(), nullptr, FO_DELETE, true)) {
+      const auto e = GetLastError();
+
+      return Result::makeFailure(e, QString::fromStdWString(formatSystemMessage(e)));
+    }
+
+    return Result::makeSuccess();
+  }
+
+}  // namespace shell
+
+bool moveFileRecursive(const QString& source, const QString& baseDir,
+                       const QString& destination)
 {
   QStringList pathComponents = destination.split("/");
-  QString path = baseDir;
-  for (QStringList::Iterator iter = pathComponents.begin(); iter != pathComponents.end() - 1; ++iter) {
+  QString path               = baseDir;
+  for (QStringList::Iterator iter = pathComponents.begin();
+       iter != pathComponents.end() - 1; ++iter) {
     path.append("/").append(*iter);
     if (!QDir(path).exists() && !QDir().mkdir(path)) {
       reportError(QObject::tr("failed to create directory \"%1\"").arg(path));
@@ -648,7 +678,9 @@ bool moveFileRecursive(const QString &source, const QString &baseDir, const QStr
   if (!QFile::rename(source, destinationAbsolute)) {
     // move failed, try copy & delete
     if (!QFile::copy(source, destinationAbsolute)) {
-      reportError(QObject::tr("failed to copy \"%1\" to \"%2\"").arg(source).arg(destinationAbsolute));
+      reportError(QObject::tr("failed to copy \"%1\" to \"%2\"")
+                      .arg(source)
+                      .arg(destinationAbsolute));
       return false;
     } else {
       QFile::remove(source);
@@ -657,11 +689,13 @@ bool moveFileRecursive(const QString &source, const QString &baseDir, const QStr
   return true;
 }
 
-bool copyFileRecursive(const QString &source, const QString &baseDir, const QString &destination)
+bool copyFileRecursive(const QString& source, const QString& baseDir,
+                       const QString& destination)
 {
   QStringList pathComponents = destination.split("/");
-  QString path = baseDir;
-  for (QStringList::Iterator iter = pathComponents.begin(); iter != pathComponents.end() - 1; ++iter) {
+  QString path               = baseDir;
+  for (QStringList::Iterator iter = pathComponents.begin();
+       iter != pathComponents.end() - 1; ++iter) {
     path.append("/").append(*iter);
     if (!QDir(path).exists() && !QDir().mkdir(path)) {
       reportError(QObject::tr("failed to create directory \"%1\"").arg(path));
@@ -671,27 +705,28 @@ bool copyFileRecursive(const QString &source, const QString &baseDir, const QStr
 
   QString destinationAbsolute = baseDir.mid(0).append("/").append(destination);
   if (!QFile::copy(source, destinationAbsolute)) {
-    reportError(QObject::tr("failed to copy \"%1\" to \"%2\"").arg(source).arg(destinationAbsolute));
+    reportError(QObject::tr("failed to copy \"%1\" to \"%2\"")
+                    .arg(source)
+                    .arg(destinationAbsolute));
     return false;
   }
   return true;
 }
 
-
-std::wstring ToWString(const QString &source)
+std::wstring ToWString(const QString& source)
 {
-  //FIXME
-  //why not source.toStdWString() ?
-  wchar_t *buffer = new wchar_t[static_cast<std::size_t>(source.count()) + 1];
+  // FIXME
+  // why not source.toStdWString() ?
+  wchar_t* buffer = new wchar_t[static_cast<std::size_t>(source.count()) + 1];
   source.toWCharArray(buffer);
   buffer[source.count()] = L'\0';
   std::wstring result(buffer);
-  delete [] buffer;
+  delete[] buffer;
 
   return result;
 }
 
-std::string ToString(const QString &source, bool utf8)
+std::string ToString(const QString& source, bool utf8)
 {
   QByteArray array8bit;
   if (utf8) {
@@ -702,31 +737,33 @@ std::string ToString(const QString &source, bool utf8)
   return std::string(array8bit.constData());
 }
 
-QString ToQString(const std::string &source)
+QString ToQString(const std::string& source)
 {
-  //return QString::fromUtf8(source.c_str());
+  // return QString::fromUtf8(source.c_str());
   return QString::fromStdString(source);
 }
 
-QString ToQString(const std::wstring &source)
+QString ToQString(const std::wstring& source)
 {
-  //return QString::fromWCharArray(source.c_str());
+  // return QString::fromWCharArray(source.c_str());
   return QString::fromStdWString(source);
 }
 
-QString ToString(const SYSTEMTIME &time)
+QString ToString(const SYSTEMTIME& time)
 {
   char dateBuffer[100];
   char timeBuffer[100];
   int size = 100;
-  GetDateFormatA(LOCALE_USER_DEFAULT, LOCALE_USE_CP_ACP, &time, nullptr, dateBuffer, size);
-  GetTimeFormatA(LOCALE_USER_DEFAULT, LOCALE_USE_CP_ACP, &time, nullptr, timeBuffer, size);
+  GetDateFormatA(LOCALE_USER_DEFAULT, LOCALE_USE_CP_ACP, &time, nullptr, dateBuffer,
+                 size);
+  GetTimeFormatA(LOCALE_USER_DEFAULT, LOCALE_USE_CP_ACP, &time, nullptr, timeBuffer,
+                 size);
   return QString::fromLocal8Bit(dateBuffer) + " " + QString::fromLocal8Bit(timeBuffer);
 }
 
 static int naturalCompareI(const QString& a, const QString& b)
 {
-  static QCollator c = []{
+  static QCollator c = [] {
     QCollator temp;
     temp.setNumericMode(true);
     temp.setCaseSensitivity(Qt::CaseInsensitive);
@@ -742,7 +779,7 @@ int naturalCompare(const QString& a, const QString& b, Qt::CaseSensitivity cs)
     return naturalCompareI(a, b);
   }
 
-  static QCollator c = []{
+  static QCollator c = [] {
     QCollator temp;
     temp.setNumericMode(true);
     return temp;
@@ -753,15 +790,11 @@ int naturalCompare(const QString& a, const QString& b, Qt::CaseSensitivity cs)
 
 struct CoTaskMemFreer
 {
-  void operator()(void* p)
-  {
-    ::CoTaskMemFree(p);
-  }
+  void operator()(void* p) { ::CoTaskMemFree(p); }
 };
 
 template <class T>
 using COMMemPtr = std::unique_ptr<T, CoTaskMemFreer>;
-
 
 QString getOptionalKnownFolder(KNOWNFOLDERID id)
 {
@@ -769,7 +802,7 @@ QString getOptionalKnownFolder(KNOWNFOLDERID id)
 
   {
     wchar_t* rawPath = nullptr;
-    HRESULT res = SHGetKnownFolderPath(id, 0, nullptr, &rawPath);
+    HRESULT res      = SHGetKnownFolderPath(id, 0, nullptr, &rawPath);
 
     if (FAILED(res)) {
       return {};
@@ -787,13 +820,12 @@ QDir getKnownFolder(KNOWNFOLDERID id, const QString& what)
 
   {
     wchar_t* rawPath = nullptr;
-    HRESULT res = SHGetKnownFolderPath(id, 0, nullptr, &rawPath);
+    HRESULT res      = SHGetKnownFolderPath(id, 0, nullptr, &rawPath);
 
     if (FAILED(res)) {
-      log::error(
-        "failed to get known folder '{}', {}",
-        what.isEmpty() ? QUuid(id).toString() : what,
-        formatSystemMessage(res));
+      log::error("failed to get known folder '{}', {}",
+                 what.isEmpty() ? QUuid(id).toString() : what,
+                 formatSystemMessage(res));
 
       throw std::runtime_error("couldn't get known folder path");
     }
@@ -814,7 +846,7 @@ QString getStartMenuDirectory()
   return getKnownFolder(FOLDERID_StartMenu, "start menu").absolutePath();
 }
 
-bool shellDeleteQuiet(const QString &fileName, QWidget *dialog)
+bool shellDeleteQuiet(const QString& fileName, QWidget* dialog)
 {
   if (!QFile::remove(fileName)) {
     return shellDelete(QStringList(fileName), false, dialog);
@@ -822,7 +854,7 @@ bool shellDeleteQuiet(const QString &fileName, QWidget *dialog)
   return true;
 }
 
-QString readFileText(const QString &fileName, QString *encoding)
+QString readFileText(const QString& fileName, QString* encoding)
 {
   QStringConverter::Encoding codec = QStringConverter::Encoding::Utf8;
   QStringEncoder encoder(codec);
@@ -834,7 +866,7 @@ QString readFileText(const QString &fileName, QString *encoding)
   }
 
   QByteArray buffer = textFile.readAll();
-  QString text = decoder.decode(buffer);
+  QString text      = decoder.decode(buffer);
 
   // check reverse conversion. If this was unicode text there can't be data loss
   // this assumes QString doesn't normalize the data in any way so this is a bit unsafe
@@ -842,10 +874,10 @@ QString readFileText(const QString &fileName, QString *encoding)
     log::debug("conversion failed assuming local encoding");
     auto codecSearch = QStringConverter::encodingForData(buffer);
     if (codecSearch.has_value()) {
-        codec = codecSearch.value();
-        decoder = QStringDecoder(codec);
+      codec   = codecSearch.value();
+      decoder = QStringDecoder(codec);
     } else {
-        decoder = QStringDecoder(QStringConverter::Encoding::System);
+      decoder = QStringDecoder(QStringConverter::Encoding::System);
     }
     text = decoder.decode(buffer);
   }
@@ -857,9 +889,11 @@ QString readFileText(const QString &fileName, QString *encoding)
   return text;
 }
 
-void removeOldFiles(const QString &path, const QString &pattern, int numToKeep, QDir::SortFlags sorting)
+void removeOldFiles(const QString& path, const QString& pattern, int numToKeep,
+                    QDir::SortFlags sorting)
 {
-  QFileInfoList files = QDir(path).entryInfoList(QStringList(pattern), QDir::Files, sorting);
+  QFileInfoList files =
+      QDir(path).entryInfoList(QStringList(pattern), QDir::Files, sorting);
 
   if (files.count() > numToKeep) {
     QStringList deleteFiles;
@@ -874,8 +908,7 @@ void removeOldFiles(const QString &path, const QString &pattern, int numToKeep, 
   }
 }
 
-
-QIcon iconForExecutable(const QString &filePath)
+QIcon iconForExecutable(const QString& filePath)
 {
   HICON winIcon;
   UINT res = ::ExtractIconExW(ToWString(filePath).c_str(), 0, &winIcon, nullptr, 1);
@@ -889,11 +922,12 @@ QIcon iconForExecutable(const QString &filePath)
   }
 }
 
-
 QString getFileVersion(QString const& filepath)
 {
-  //This *really* needs to be factored out
-  std::wstring app_name = L"\\\\?\\" + QDir::toNativeSeparators(QDir(filepath).absolutePath()).toStdWString();
+  // This *really* needs to be factored out
+  std::wstring app_name =
+      L"\\\\?\\" +
+      QDir::toNativeSeparators(QDir(filepath).absolutePath()).toStdWString();
   DWORD handle;
   DWORD info_len = ::GetFileVersionInfoSizeW(app_name.c_str(), &handle);
   if (info_len == 0) {
@@ -909,19 +943,24 @@ QString getFileVersion(QString const& filepath)
 
   VS_FIXEDFILEINFO* pFileInfo;
   UINT buf_len;
-  if (!::VerQueryValueW(buff.data(), L"\\", reinterpret_cast<LPVOID*>(&pFileInfo), &buf_len)) {
+  if (!::VerQueryValueW(buff.data(), L"\\", reinterpret_cast<LPVOID*>(&pFileInfo),
+                        &buf_len)) {
     log::debug("VerQueryValueW Error %d", ::GetLastError());
     return "";
   }
-  return QString("%1.%2.%3.%4").arg(HIWORD(pFileInfo->dwFileVersionMS))
-    .arg(LOWORD(pFileInfo->dwFileVersionMS))
-    .arg(HIWORD(pFileInfo->dwFileVersionLS))
-    .arg(LOWORD(pFileInfo->dwFileVersionLS));
+  return QString("%1.%2.%3.%4")
+      .arg(HIWORD(pFileInfo->dwFileVersionMS))
+      .arg(LOWORD(pFileInfo->dwFileVersionMS))
+      .arg(HIWORD(pFileInfo->dwFileVersionLS))
+      .arg(LOWORD(pFileInfo->dwFileVersionLS));
 }
 
-QString getProductVersion(QString const& filepath) {
-  //This *really* needs to be factored out
-  std::wstring app_name = L"\\\\?\\" + QDir::toNativeSeparators(QDir(filepath).absolutePath()).toStdWString();
+QString getProductVersion(QString const& filepath)
+{
+  // This *really* needs to be factored out
+  std::wstring app_name =
+      L"\\\\?\\" +
+      QDir::toNativeSeparators(QDir(filepath).absolutePath()).toStdWString();
   DWORD handle;
   DWORD info_len = ::GetFileVersionInfoSizeW(app_name.c_str(), &handle);
   if (info_len == 0) {
@@ -939,14 +978,17 @@ QString getProductVersion(QString const& filepath) {
 
   UINT uiSize;
   BYTE* lpb;
-  if (!::VerQueryValueW(buff.data(), TEXT("\\VarFileInfo\\Translation"), (void**)&lpb, &uiSize)) {
+  if (!::VerQueryValueW(buff.data(), TEXT("\\VarFileInfo\\Translation"), (void**)&lpb,
+                        &uiSize)) {
     log::debug("VerQueryValue Error %d", ::GetLastError());
     return "";
   }
 
   WORD* lpw = (WORD*)lpb;
-  auto query = fmt::format(L"\\StringFileInfo\\{:04x}{:04x}\\ProductVersion", lpw[0], lpw[1]);
-  if (!::VerQueryValueW(buff.data(), query.data(), (void**)&lpb, &uiSize) && uiSize > 0) {
+  auto query =
+      fmt::format(L"\\StringFileInfo\\{:04x}{:04x}\\ProductVersion", lpw[0], lpw[1]);
+  if (!::VerQueryValueW(buff.data(), query.data(), (void**)&lpb, &uiSize) &&
+      uiSize > 0) {
     log::debug("VerQueryValue Error %d", ::GetLastError());
     return "";
   }
@@ -961,7 +1003,7 @@ void deleteChildWidgets(QWidget* w)
     return;
   }
 
-  while (auto* item=ly->takeAt(0)) {
+  while (auto* item = ly->takeAt(0)) {
     delete item->widget();
     delete item;
   }
@@ -969,18 +1011,19 @@ void deleteChildWidgets(QWidget* w)
 
 void trimWString(std::wstring& s)
 {
-    s.erase(std::remove_if(s.begin(), s.end(),
-        [](wint_t ch) { return std::iswspace(ch); }), s.end());
+  s.erase(std::remove_if(s.begin(), s.end(),
+                         [](wint_t ch) {
+                           return std::iswspace(ch);
+                         }),
+          s.end());
 }
 
 std::wstring getMessage(DWORD id, HMODULE mod)
 {
   wchar_t* message = nullptr;
 
-  DWORD flags =
-    FORMAT_MESSAGE_ALLOCATE_BUFFER |
-    FORMAT_MESSAGE_FROM_SYSTEM |
-    FORMAT_MESSAGE_IGNORE_INSERTS;
+  DWORD flags = FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM |
+                FORMAT_MESSAGE_IGNORE_INSERTS;
 
   void* source = nullptr;
 
@@ -989,11 +1032,9 @@ std::wstring getMessage(DWORD id, HMODULE mod)
     source = mod;
   }
 
-  const auto ret = FormatMessageW(
-    flags, source, id,
-    MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),
-    reinterpret_cast<LPWSTR>(&message),
-    0, NULL);
+  const auto ret =
+      FormatMessageW(flags, source, id, MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),
+                     reinterpret_cast<LPWSTR>(&message), 0, NULL);
 
   std::wstring s;
 
@@ -1038,10 +1079,8 @@ QString windowsErrorString(DWORD errorCode)
   return QString::fromStdWString(formatSystemMessage(errorCode));
 }
 
-QString localizedSize(
-  unsigned long long bytes,
-  const QString& B, const QString& KB, const QString& MB,
-  const QString& GB, const QString& TB)
+QString localizedSize(unsigned long long bytes, const QString& B, const QString& KB,
+                      const QString& MB, const QString& GB, const QString& TB)
 {
   constexpr unsigned long long OneKB = 1024ull;
   constexpr unsigned long long OneMB = 1024ull * 1024;
@@ -1053,7 +1092,7 @@ QString localizedSize(
 
     // avoids rounding something like "1.999" to "2.00 KB"
     const double truncated =
-      static_cast<double>(static_cast<unsigned long long>(n * 100)) / 100.0;
+        static_cast<double>(static_cast<unsigned long long>(n * 100)) / 100.0;
 
     return QString().setNum(truncated, 'f', 2);
   };
@@ -1071,99 +1110,89 @@ QString localizedSize(
   }
 }
 
-
 QDLLEXPORT QString localizedByteSize(unsigned long long bytes)
 {
-  return localizedSize(
-    bytes,
-    QObject::tr("%1 B"),
-    QObject::tr("%1 KB"),
-    QObject::tr("%1 MB"),
-    QObject::tr("%1 GB"),
-    QObject::tr("%1 TB"));
+  return localizedSize(bytes, QObject::tr("%1 B"), QObject::tr("%1 KB"),
+                       QObject::tr("%1 MB"), QObject::tr("%1 GB"),
+                       QObject::tr("%1 TB"));
 }
 
 QDLLEXPORT QString localizedByteSpeed(unsigned long long bps)
 {
-  return localizedSize(
-    bps,
-    QObject::tr("%1 B/s"),
-    QObject::tr("%1 KB/s"),
-    QObject::tr("%1 MB/s"),
-    QObject::tr("%1 GB/s"),
-    QObject::tr("%1 TB/s"));
+  return localizedSize(bps, QObject::tr("%1 B/s"), QObject::tr("%1 KB/s"),
+                       QObject::tr("%1 MB/s"), QObject::tr("%1 GB/s"),
+                       QObject::tr("%1 TB/s"));
 }
 
 QDLLEXPORT QString localizedTimeRemaining(unsigned int remaining)
 {
-    QString Result;
-    double interval;
-    qint64 intval;
+  QString Result;
+  double interval;
+  qint64 intval;
 
-    // Hours
-    interval = 60.0 * 60.0 * 1000.0;
-    intval = (qint64)trunc((double)remaining / interval);
-    if (intval < 0)
-        intval = 0;
-    remaining -= static_cast<unsigned int>(trunc((double)intval * interval));
-    qint64 hours = intval;
+  // Hours
+  interval = 60.0 * 60.0 * 1000.0;
+  intval   = (qint64)trunc((double)remaining / interval);
+  if (intval < 0)
+    intval = 0;
+  remaining -= static_cast<unsigned int>(trunc((double)intval * interval));
+  qint64 hours = intval;
 
-    // Minutes
-    interval = 60.0 * 1000.0;
-    intval = (qint64)trunc((double)remaining / interval);
-    if (intval < 0)
-        intval = 0;
-    remaining -= static_cast<unsigned int>(trunc((double)intval * interval));
-    qint64 minutes = intval;
+  // Minutes
+  interval = 60.0 * 1000.0;
+  intval   = (qint64)trunc((double)remaining / interval);
+  if (intval < 0)
+    intval = 0;
+  remaining -= static_cast<unsigned int>(trunc((double)intval * interval));
+  qint64 minutes = intval;
 
-    // Seconds
-    interval = 1000.0;
-    intval = (qint64)trunc((double)remaining / interval);
-    if (intval < 0)
-        intval = 0;
-    remaining -= static_cast<unsigned int>(trunc((double)intval * interval));
-    qint64 seconds = intval;
+  // Seconds
+  interval = 1000.0;
+  intval   = (qint64)trunc((double)remaining / interval);
+  if (intval < 0)
+    intval = 0;
+  remaining -= static_cast<unsigned int>(trunc((double)intval * interval));
+  qint64 seconds = intval;
 
-    // Whatever is left over is milliseconds
+  // Whatever is left over is milliseconds
 
-    char buffer[25];
-    memset(buffer, 0, 25);
+  char buffer[25];
+  memset(buffer, 0, 25);
 
-    if (hours > 0) {
-        if (hours < 10)
-            sprintf_s(buffer, "0%lld", hours);
-        else
-            sprintf_s(buffer, "%lld", hours);
-        Result.append(QString("%1:").arg(buffer));
-    }
-
-    if (minutes > 0 || hours > 0) {
-        if (minutes < 10 && hours > 0)
-            sprintf_s(buffer, "0%lld", minutes);
-        else
-            sprintf_s(buffer, "%lld", minutes);
-        Result.append(QString("%1:").arg(buffer));
-    }
-
-    if (seconds < 10 && (minutes > 0 || hours > 0))
-        sprintf_s(buffer, "0%lld", seconds);
+  if (hours > 0) {
+    if (hours < 10)
+      sprintf_s(buffer, "0%lld", hours);
     else
-        sprintf_s(buffer, "%lld", seconds);
-    Result.append(QString("%1").arg(buffer));
+      sprintf_s(buffer, "%lld", hours);
+    Result.append(QString("%1:").arg(buffer));
+  }
 
-    if (hours > 0)
-        //: Time remaining hours
-        Result.append(QApplication::translate("uibase", "h"));
-    else if (minutes > 0)
-        //: Time remaining minutes
-        Result.append(QApplication::translate("uibase", "m"));
+  if (minutes > 0 || hours > 0) {
+    if (minutes < 10 && hours > 0)
+      sprintf_s(buffer, "0%lld", minutes);
     else
-        //: Time remaining seconds
-        Result.append(QApplication::translate("uibase", "s"));
+      sprintf_s(buffer, "%lld", minutes);
+    Result.append(QString("%1:").arg(buffer));
+  }
 
-    return Result;
+  if (seconds < 10 && (minutes > 0 || hours > 0))
+    sprintf_s(buffer, "0%lld", seconds);
+  else
+    sprintf_s(buffer, "%lld", seconds);
+  Result.append(QString("%1").arg(buffer));
+
+  if (hours > 0)
+    //: Time remaining hours
+    Result.append(QApplication::translate("uibase", "h"));
+  else if (minutes > 0)
+    //: Time remaining minutes
+    Result.append(QApplication::translate("uibase", "m"));
+  else
+    //: Time remaining seconds
+    Result.append(QApplication::translate("uibase", "s"));
+
+  return Result;
 }
-
 
 QDLLEXPORT void localizedByteSizeTests()
 {
@@ -1171,23 +1200,24 @@ QDLLEXPORT void localizedByteSizeTests()
     return localizedByteSize(n).toStdString();
   };
 
-#define CHECK_EQ(a, b) if ((a) != (b)){ \
-  std::cerr << "failed: " << a << " == " << b << "\n"; \
-  DebugBreak(); \
-}
+#define CHECK_EQ(a, b)                                                                 \
+  if ((a) != (b)) {                                                                    \
+    std::cerr << "failed: " << a << " == " << b << "\n";                               \
+    DebugBreak();                                                                      \
+  }
 
-  CHECK_EQ(f(0),    "0 B");
-  CHECK_EQ(f(1),    "1 B");
-  CHECK_EQ(f(999),  "999 B");
+  CHECK_EQ(f(0), "0 B");
+  CHECK_EQ(f(1), "1 B");
+  CHECK_EQ(f(999), "999 B");
   CHECK_EQ(f(1000), "1000 B");
   CHECK_EQ(f(1023), "1023 B");
 
-  CHECK_EQ(f(1024),    "1.00 KB");
-  CHECK_EQ(f(2047),    "1.99 KB");
-  CHECK_EQ(f(2048),    "2.00 KB");
+  CHECK_EQ(f(1024), "1.00 KB");
+  CHECK_EQ(f(2047), "1.99 KB");
+  CHECK_EQ(f(2048), "2.00 KB");
   CHECK_EQ(f(1048575), "1023.99 KB");
 
-  CHECK_EQ(f(1048576),    "1.00 MB");
+  CHECK_EQ(f(1048576), "1.00 MB");
   CHECK_EQ(f(1073741823), "1023.99 MB");
 
   CHECK_EQ(f(1073741824), "1.00 GB");
@@ -1199,9 +1229,7 @@ QDLLEXPORT void localizedByteSizeTests()
 #undef CHECK_EQ
 }
 
-
-TimeThis::TimeThis(const QString& what)
-  : m_running(false)
+TimeThis::TimeThis(const QString& what) : m_running(false)
 {
   start(what);
 }
@@ -1215,8 +1243,8 @@ void TimeThis::start(const QString& what)
 {
   stop();
 
-  m_what = what;
-  m_start = Clock::now();
+  m_what    = what;
+  m_start   = Clock::now();
   m_running = true;
 }
 
@@ -1229,7 +1257,7 @@ void TimeThis::stop()
   }
 
   const auto end = Clock::now();
-  const auto d = duration_cast<milliseconds>(end - m_start).count();
+  const auto d   = duration_cast<milliseconds>(end - m_start).count();
 
   if (m_what.isEmpty()) {
     log::debug("timing: {} ms", d);
@@ -1240,4 +1268,4 @@ void TimeThis::stop()
   m_running = false;
 }
 
-} // namespace MOBase
+}  // namespace MOBase

@@ -1,13 +1,9 @@
 #include "delayedfilewriter.h"
 #include "log.h"
 
-
 using namespace MOBase;
 
-
-DelayedFileWriterBase::DelayedFileWriterBase(int delay)
-  : m_TimerDelay(delay)
-  , m_Timer()
+DelayedFileWriterBase::DelayedFileWriterBase(int delay) : m_TimerDelay(delay), m_Timer()
 {
   QObject::connect(&m_Timer, &QTimer::timeout, this, &DelayedFileWriter::timerExpired);
   m_Timer.setSingleShot(true);
@@ -43,14 +39,9 @@ void DelayedFileWriterBase::timerExpired()
   doWrite();
 }
 
-
-
-DelayedFileWriter::DelayedFileWriter(DelayedFileWriter::WriterFunc func
-                                     , int delay)
-  : DelayedFileWriterBase(delay)
-  , m_Func(func)
-{
-}
+DelayedFileWriter::DelayedFileWriter(DelayedFileWriter::WriterFunc func, int delay)
+    : DelayedFileWriterBase(delay), m_Func(func)
+{}
 
 void DelayedFileWriter::doWrite()
 {

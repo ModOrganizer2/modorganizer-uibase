@@ -1,12 +1,11 @@
 #ifndef FILEMAPPING_H
 #define FILEMAPPING_H
 
-
 #include <QString>
 #include <vector>
 
-
-struct Mapping {
+struct Mapping
+{
   QString source;
   QString destination;
   bool isDirectory;
@@ -15,5 +14,4 @@ struct Mapping {
 
 typedef std::vector<Mapping> MappingType;
 
-
-#endif // FILEMAPPING_H
+#endif  // FILEMAPPING_H

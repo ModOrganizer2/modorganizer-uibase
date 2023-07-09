@@ -26,7 +26,7 @@ class QDLLEXPORT LinkLabel : public QLabel
   Q_PROPERTY(QColor linkColor READ linkColor WRITE setLinkColor);
 
 public:
-  LinkLabel(QWidget* parent=nullptr);
+  LinkLabel(QWidget* parent = nullptr);
 
   QColor linkColor() const;
   void setLinkColor(const QColor& c);
@@ -35,4 +35,4 @@ private:
   static QColor m_linkColor;
 };
 
-#endif // UIBASE_LINKLABEL_INCLUDED
+#endif  // UIBASE_LINKLABEL_INCLUDED

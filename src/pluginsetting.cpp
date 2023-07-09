@@ -19,5 +19,6 @@ along with Mod Organizer.  If not, see <http://www.gnu.org/licenses/>.
 
 #include "pluginsetting.h"
 
-namespace MOBase {
-} // namespace MOBase
+namespace MOBase
+{
+}  // namespace MOBase

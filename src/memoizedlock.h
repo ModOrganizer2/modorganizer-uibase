@@ -8,7 +8,8 @@
 #include <functional>
 #include <mutex>
 
-namespace MOBase {
+namespace MOBase
+{
 
 /**
  * Class that can be used to perform thread-safe memoization.
@@ -24,37 +25,37 @@ namespace MOBase {
  * @tparam Fn Type of the callback.
  */
 template <class T, class Fn = std::function<T()>>
-class MemoizedLocked {
+class MemoizedLocked
+{
 public:
-
   template <class Callable>
-  MemoizedLocked(Callable&& callable, T value = {}) :
-    m_Fn{ std::forward<Callable>(callable) }, m_Value{ std::move(value) } { }
+  MemoizedLocked(Callable&& callable, T value = {})
+      : m_Fn{std::forward<Callable>(callable)}, m_Value{std::move(value)}
+  {}
 
   template <class... Args>
-  T& value(Args&&... args) const {
+  T& value(Args&&... args) const
+  {
     if (m_NeedUpdating) {
       std::scoped_lock lock(m_Mutex);
       if (m_NeedUpdating) {
-        m_Value = std::invoke(m_Fn, std::forward<Args>(args)...);
+        m_Value        = std::invoke(m_Fn, std::forward<Args>(args)...);
         m_NeedUpdating = false;
       }
     }
     return m_Value;
   }
 
-  void invalidate() {
-    m_NeedUpdating = true;
-  }
+  void invalidate() { m_NeedUpdating = true; }
 
 private:
   mutable std::mutex m_Mutex;
-  mutable std::atomic<bool> m_NeedUpdating{ true };
+  mutable std::atomic<bool> m_NeedUpdating{true};
 
   Fn m_Fn;
   mutable T m_Value;
 };
 
-}
+}  // namespace MOBase
 
 #endif

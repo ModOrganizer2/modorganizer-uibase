@@ -17,58 +17,56 @@ You should have received a copy of the GNU General Public License
 along with Mod Organizer.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-
 #include "safewritefile.h"
 #include "log.h"
-#include <QList>
-#include <QString>
 #include <QCryptographicHash>
+#include <QList>
 #include <QStorageInfo>
+#include <QString>
 
-namespace MOBase {
+namespace MOBase
+{
 
-
-SafeWriteFile::SafeWriteFile(const QString &fileName)
-: m_FileName(fileName)
+SafeWriteFile::SafeWriteFile(const QString& fileName) : m_FileName(fileName)
 {
   if (!m_TempFile.open()) {
-    const auto av = static_cast<double>(
-      QStorageInfo(QDir::tempPath()).bytesAvailable());
+    const auto av =
+        static_cast<double>(QStorageInfo(QDir::tempPath()).bytesAvailable());
 
-    log::error(
-      "failed to create temporary file for '{}', error {} ('{}'), "
-      "temp path is '{}', {:.3f}GB available",
-      m_FileName, m_TempFile.error(), m_TempFile.errorString(),
-      QDir::tempPath(), (av/1024/1024/1024));
+    log::error("failed to create temporary file for '{}', error {} ('{}'), "
+               "temp path is '{}', {:.3f}GB available",
+               m_FileName, m_TempFile.error(), m_TempFile.errorString(),
+               QDir::tempPath(), (av / 1024 / 1024 / 1024));
 
-    QString errorMsg = QObject::tr(
-      "Failed to save '{}', could not create a temporary file: {} (error {})")
-      .arg(m_FileName)
-      .arg(m_TempFile.errorString())
-      .arg(m_TempFile.error());
+    QString errorMsg =
+        QObject::tr(
+            "Failed to save '{}', could not create a temporary file: {} (error {})")
+            .arg(m_FileName)
+            .arg(m_TempFile.errorString())
+            .arg(m_TempFile.error());
 
     throw Exception(errorMsg);
   }
 }
 
-
-QFile *SafeWriteFile::operator->() {
+QFile* SafeWriteFile::operator->()
+{
   Q_ASSERT(m_TempFile.isOpen());
   return &m_TempFile;
 }
 
-
-void SafeWriteFile::commit() {
+void SafeWriteFile::commit()
+{
   shellDeleteQuiet(m_FileName);
   m_TempFile.rename(m_FileName);
   m_TempFile.setAutoRemove(false);
   m_TempFile.close();
 }
 
-bool SafeWriteFile::commitIfDifferent(QByteArray &inHash) {
+bool SafeWriteFile::commitIfDifferent(QByteArray& inHash)
+{
   QByteArray newHash = hash();
-  if (newHash != inHash
-      || !QFile::exists(m_FileName)) {
+  if (newHash != inHash || !QFile::exists(m_FileName)) {
     commit();
     inHash = newHash;
     return true;
@@ -87,4 +85,4 @@ QByteArray SafeWriteFile::hash()
   return QCryptographicHash::hash(data, QCryptographicHash::Md5);
 }
 
-}
+}  // namespace MOBase

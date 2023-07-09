@@ -1,19 +1,22 @@
 #include "filesystemutilities.h"
 
-#include <QString>
 #include <QRegularExpression>
+#include <QString>
 
 namespace MOBase
 {
 
-bool fixDirectoryName(QString &name)
+bool fixDirectoryName(QString& name)
 {
   QString temp = name.simplified();
-  while (temp.endsWith('.')) temp.chop(1);
+  while (temp.endsWith('.'))
+    temp.chop(1);
 
   temp.replace(QRegularExpression("[<>:\"/\\|?*]"), "");
-  static QString invalidNames[] = { "CON", "PRN", "AUX", "NUL", "COM1", "COM2", "COM3", "COM4", "COM5", "COM6", "COM7", "COM8", "COM9",
-                                    "LPT1", "LPT2", "LPT3", "LPT4", "LPT5", "LPT6", "LPT7", "LPT8", "LPT9" };
+  static QString invalidNames[] = {"CON",  "PRN",  "AUX",  "NUL",  "COM1", "COM2",
+                                   "COM3", "COM4", "COM5", "COM6", "COM7", "COM8",
+                                   "COM9", "LPT1", "LPT2", "LPT3", "LPT4", "LPT5",
+                                   "LPT6", "LPT7", "LPT8", "LPT9"};
   for (unsigned int i = 0; i < sizeof(invalidNames) / sizeof(QString); ++i) {
     if (temp == invalidNames[i]) {
       temp = "";
@@ -36,7 +39,8 @@ QString sanitizeFileName(const QString& name, const QString& replacement)
   QString new_name = name;
 
   // Remove characters not allowed by Windows
-  new_name.replace(QRegularExpression("[\\x{00}-\\x{1f}\\\\/:\\*\\?\"<>|]"), replacement);
+  new_name.replace(QRegularExpression("[\\x{00}-\\x{1f}\\\\/:\\*\\?\"<>|]"),
+                   replacement);
 
   // Don't end with a period or a space
   // Don't be "." or ".."
@@ -54,12 +58,11 @@ bool validFileName(const QString& name)
   if (name.isEmpty()) {
     return false;
   }
-  if (name == "." || name == "..")
-  {
+  if (name == "." || name == "..") {
     return false;
   }
 
   return (name == sanitizeFileName(name));
 }
 
-} // namespace MOBase
+}  // namespace MOBase

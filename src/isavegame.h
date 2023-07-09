@@ -6,7 +6,8 @@
 class QString;
 class QDateTime;
 
-namespace MOBase {
+namespace MOBase
+{
 
 /** Base class for information about what is in a save game */
 class ISaveGame
@@ -48,11 +49,10 @@ public:
    * Note: This must return the actual list, not the potential list.
    */
   virtual QStringList allFiles() const = 0;
-
 };
 
-}
+}  // namespace MOBase
 
-Q_DECLARE_METATYPE(MOBase::ISaveGame const *)
+Q_DECLARE_METATYPE(MOBase::ISaveGame const*)
 
-#endif // SAVEGAMEINFO_H
+#endif  // SAVEGAMEINFO_H

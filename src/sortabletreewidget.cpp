@@ -18,25 +18,22 @@ License along with this library; if not, write to the Free Software
 Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 */
 
-
 #include "sortabletreewidget.h"
 #include <QDropEvent>
 
-
-namespace MOBase {
-
-SortableTreeWidget::SortableTreeWidget(QWidget *parent)
-  : QTreeWidget(parent)
-  , m_LocalMoveOnly(false)
+namespace MOBase
 {
-}
+
+SortableTreeWidget::SortableTreeWidget(QWidget* parent)
+    : QTreeWidget(parent), m_LocalMoveOnly(false)
+{}
 
 void SortableTreeWidget::setLocalMoveOnly(bool localOnly)
 {
   m_LocalMoveOnly = localOnly;
 }
 
-void SortableTreeWidget::dropEvent(QDropEvent *event)
+void SortableTreeWidget::dropEvent(QDropEvent* event)
 {
   // only react on internal drag&drop
   if (event->source() == this) {
@@ -50,21 +47,24 @@ Qt::DropActions SortableTreeWidget::supportedDropActions() const
   return Qt::CopyAction;
 }
 
-
-bool SortableTreeWidget::dropMimeData(QTreeWidgetItem *parent, int index, const QMimeData*, Qt::DropAction)
+bool SortableTreeWidget::dropMimeData(QTreeWidgetItem* parent, int index,
+                                      const QMimeData*, Qt::DropAction)
 {
   // TODO: ignores type of action set up in designer, always moves
   return this->moveSelection(parent, index);
 }
 
-bool SortableTreeWidget::moveSelection(QTreeWidgetItem *parent, int idx)
+bool SortableTreeWidget::moveSelection(QTreeWidgetItem* parent, int idx)
 {
   QModelIndex parentIndex = indexFromItem(parent);
   std::vector<QPersistentModelIndex> persistentIndices;
-  Q_FOREACH(const QModelIndex &index, selectedIndexes()) {
-    if (index == parentIndex) return false;
-    if (m_LocalMoveOnly && (parentIndex != index.parent())) return false;
-    if (index.column() != 0) continue;
+  Q_FOREACH (const QModelIndex& index, selectedIndexes()) {
+    if (index == parentIndex)
+      return false;
+    if (m_LocalMoveOnly && (parentIndex != index.parent()))
+      return false;
+    if (index.column() != 0)
+      continue;
     persistentIndices.push_back(index);
   }
 
@@ -77,15 +77,17 @@ bool SortableTreeWidget::moveSelection(QTreeWidgetItem *parent, int idx)
     }
   } else {
     // if items aren't expandable, we can't be placing items on sublevels
-    targetRow = parentIndex.row();
+    targetRow   = parentIndex.row();
     parentIndex = QModelIndex();
   }
 
   // remove items from the list, store in temporary location
   QList<QTreeWidgetItem*> temp;
-  for (auto iter = persistentIndices.rbegin(); iter != persistentIndices.rend(); ++iter) {
-    QTreeWidgetItem *item = itemFromIndex(*iter);
-    if (item == nullptr) continue;
+  for (auto iter = persistentIndices.rbegin(); iter != persistentIndices.rend();
+       ++iter) {
+    QTreeWidgetItem* item = itemFromIndex(*iter);
+    if (item == nullptr)
+      continue;
     if ((item == nullptr) || (item->parent() == nullptr)) {
       temp.append(takeTopLevelItem(iter->row()));
     } else {
@@ -111,4 +113,4 @@ bool SortableTreeWidget::moveSelection(QTreeWidgetItem *parent, int idx)
   return true;
 }
 
-}
+}  // namespace MOBase

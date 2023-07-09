@@ -1,16 +1,17 @@
 #include "filterwidget.h"
 #include "eventfilter.h"
 #include "log.h"
-#include <QSortFilterProxyModel>
 #include <QEvent>
+#include <QSortFilterProxyModel>
 
-namespace MOBase {
+namespace MOBase
+{
 
 void setStyleProperty(QWidget* w, const char* k, const QVariant& v)
 {
   w->setProperty(k, v);
 
-  if (auto* s=w->style()) {
+  if (auto* s = w->style()) {
     // changing properties doesn't repolish automatically
     s->unpolish(w);
     s->polish(w);
@@ -24,15 +25,14 @@ void setStyleProperty(QWidget* w, const char* k, const QVariant& v)
   w->updateGeometry();
 }
 
-
-FilterWidgetProxyModel::FilterWidgetProxyModel(FilterWidget& fw, QWidget* parent) :
-  QSortFilterProxyModel(parent), m_filter(fw)
+FilterWidgetProxyModel::FilterWidgetProxyModel(FilterWidget& fw, QWidget* parent)
+    : QSortFilterProxyModel(parent), m_filter(fw)
 {
   setRecursiveFilteringEnabled(true);
 }
 
-bool FilterWidgetProxyModel::filterAcceptsRow(
-  int sourceRow, const QModelIndex& sourceParent) const
+bool FilterWidgetProxyModel::filterAcceptsRow(int sourceRow,
+                                              const QModelIndex& sourceParent) const
 {
   if (!m_filter.filteringEnabled()) {
     return true;
@@ -42,7 +42,7 @@ bool FilterWidgetProxyModel::filterAcceptsRow(
 
   const auto m = m_filter.matches([&](auto&& regex) {
     if (m_filter.filterColumn() == -1) {
-      for (int c=0; c<cols; ++c) {
+      for (int c = 0; c < cols; ++c) {
         if (columnMatches(sourceRow, sourceParent, c, regex)) {
           return true;
         }
@@ -50,20 +50,19 @@ bool FilterWidgetProxyModel::filterAcceptsRow(
 
       return false;
     } else {
-      return columnMatches(
-        sourceRow, sourceParent, m_filter.filterColumn(), regex);
+      return columnMatches(sourceRow, sourceParent, m_filter.filterColumn(), regex);
     }
   });
 
   return m;
 }
 
-bool FilterWidgetProxyModel::columnMatches(
-  int sourceRow, const QModelIndex& sourceParent,
-  int c, const QRegularExpression& regex) const
+bool FilterWidgetProxyModel::columnMatches(int sourceRow,
+                                           const QModelIndex& sourceParent, int c,
+                                           const QRegularExpression& regex) const
 {
   QModelIndex index = sourceModel()->index(sourceRow, c, sourceParent);
-  const auto text = sourceModel()->data(index, Qt::DisplayRole).toString();
+  const auto text   = sourceModel()->data(index, Qt::DisplayRole).toString();
 
   return regex.match(text).hasMatch();
 }
@@ -81,30 +80,32 @@ void FilterWidgetProxyModel::sort(int column, Qt::SortOrder order)
   }
 }
 
-bool FilterWidgetProxyModel::lessThan(
-  const QModelIndex& left, const QModelIndex& right) const
+bool FilterWidgetProxyModel::lessThan(const QModelIndex& left,
+                                      const QModelIndex& right) const
 {
-  if (auto lt=m_filter.sortPredicate()) {
+  if (auto lt = m_filter.sortPredicate()) {
     return lt(left, right);
   } else {
     return QSortFilterProxyModel::lessThan(left, right);
   }
 }
 
-
-
 static FilterWidget::Options s_options;
 
-FilterWidget::FilterWidget() :
-  m_edit(nullptr), m_list(nullptr), m_proxy(nullptr),
-  m_eventFilter(nullptr), m_clear(nullptr), m_timer(nullptr),
-  m_useDelay(false), m_valid(true), m_useSourceSort(false), m_filterColumn(-1),
-  m_filteringEnabled(true), m_filteredBorder(true)
+FilterWidget::FilterWidget()
+    : m_edit(nullptr), m_list(nullptr), m_proxy(nullptr), m_eventFilter(nullptr),
+      m_clear(nullptr), m_timer(nullptr), m_useDelay(false), m_valid(true),
+      m_useSourceSort(false), m_filterColumn(-1), m_filteringEnabled(true),
+      m_filteredBorder(true)
 {
   m_timer = new QTimer(this);
   m_timer->setSingleShot(true);
-  QObject::connect(m_timer, &QTimer::timeout, this,  [&] { set(); }, Qt::QueuedConnection);
-
+  QObject::connect(
+      m_timer, &QTimer::timeout, this,
+      [&] {
+        set();
+      },
+      Qt::QueuedConnection);
 }
 
 void FilterWidget::setOptions(const Options& o)
@@ -156,7 +157,8 @@ void FilterWidget::clear()
 
 void FilterWidget::scrollToSelection()
 {
-  if (options().scrollToSelection && m_list && m_list->selectionModel()->hasSelection()) {
+  if (options().scrollToSelection && m_list &&
+      m_list->selectionModel()->hasSelection()) {
     m_list->scrollTo(m_list->selectionModel()->selectedIndexes()[0]);
   }
 }
@@ -288,7 +290,7 @@ void FilterWidget::compile()
 
   if (s_options.useRegex) {
     QRegularExpression::PatternOptions flags =
-      QRegularExpression::DotMatchesEverythingOption;
+        QRegularExpression::DotMatchesEverythingOption;
 
     if (!s_options.regexCaseSensitive) {
       flags |= QRegularExpression::CaseInsensitiveOption;
@@ -314,9 +316,8 @@ void FilterWidget::compile()
       for (const auto& keyword : keywords) {
         const QString escaped = QRegularExpression::escape(keyword);
 
-        const auto flags =
-          QRegularExpression::CaseInsensitiveOption |
-          QRegularExpression::DotMatchesEverythingOption;
+        const auto flags = QRegularExpression::CaseInsensitiveOption |
+                           QRegularExpression::DotMatchesEverythingOption;
 
         regexes.push_back(QRegularExpression(escaped, flags));
       }
@@ -361,7 +362,7 @@ bool FilterWidget::matches(predFun pred) const
     // but it doesn't matter where.
     for (auto& currentKeyword : ANDKeywords) {
       if (!pred(currentKeyword)) {
-          segmentGood = false;
+        segmentGood = false;
       }
     }
 
@@ -396,7 +397,9 @@ void FilterWidget::hookEdit()
   });
 
   m_edit->installEventFilter(m_eventFilter);
-  QObject::connect(m_edit, &QLineEdit::textChanged, [&]{ onTextChanged(); });
+  QObject::connect(m_edit, &QLineEdit::textChanged, [&] {
+    onTextChanged();
+  });
 }
 
 void FilterWidget::unhookEdit()
@@ -483,12 +486,10 @@ void FilterWidget::setShortcuts()
     m_shortcuts.push_back(s);
   };
 
-
   // don't hook the escape key for reset when the filter is in a dialog, the
   // standard behaviour is to close the dialog
-  const bool inDialog = topLevelIsDialog(
-    m_list ? static_cast<QWidget*>(m_list) : m_edit);
-
+  const bool inDialog =
+      topLevelIsDialog(m_list ? static_cast<QWidget*>(m_list) : m_edit);
 
   if (m_list) {
     hookActivate(m_list);
@@ -535,7 +536,9 @@ void FilterWidget::createClear()
   m_clear->setStyleSheet("QToolButton { border: none; padding: 0px; }");
   m_clear->hide();
 
-  QObject::connect(m_clear, &QToolButton::clicked, [&]{ clear(); });
+  QObject::connect(m_clear, &QToolButton::clicked, [&] {
+    clear();
+  });
 
   repositionClearButton();
 }
@@ -547,8 +550,7 @@ void FilterWidget::set()
   QString currentText;
   if (m_edit != nullptr) {
     currentText = m_edit->text();
-  }
-  else {
+  } else {
     currentText = m_text;
   }
 
@@ -590,8 +592,7 @@ void FilterWidget::onTextChanged()
 
   if (m_useDelay) {
     m_timer->start(500);
-  }
-  else {
+  } else {
     set();
   }
 }
@@ -613,17 +614,15 @@ void FilterWidget::onContextMenu(QObject*, QContextMenuEvent* e)
   f.setBold(true);
   title->setFont(f);
 
-
   auto* regex = new QAction(tr("Use regular expressions"), m_edit);
   regex->setStatusTip(tr("Use regular expressions in filters"));
   regex->setCheckable(true);
   regex->setChecked(s_options.useRegex);
 
-  connect(regex, &QAction::triggered, [&]{
+  connect(regex, &QAction::triggered, [&] {
     s_options.useRegex = regex->isChecked();
     update();
   });
-
 
   auto* cs = new QAction(tr("Case sensitive"), m_edit);
   //: leave "(/i)" verbatim
@@ -632,11 +631,10 @@ void FilterWidget::onContextMenu(QObject*, QContextMenuEvent* e)
   cs->setChecked(s_options.regexCaseSensitive);
   cs->setEnabled(s_options.useRegex);
 
-  connect(cs, &QAction::triggered, [&]{
+  connect(cs, &QAction::triggered, [&] {
     s_options.regexCaseSensitive = cs->isChecked();
     update();
   });
-
 
   auto* x = new QAction(tr("Extended"), m_edit);
   //: leave "(/x)" verbatim
@@ -645,7 +643,7 @@ void FilterWidget::onContextMenu(QObject*, QContextMenuEvent* e)
   x->setChecked(s_options.regexExtended);
   x->setEnabled(s_options.useRegex);
 
-  connect(x, &QAction::triggered, [&]{
+  connect(x, &QAction::triggered, [&] {
     s_options.regexExtended = x->isChecked();
     update();
   });
@@ -658,8 +656,7 @@ void FilterWidget::onContextMenu(QObject*, QContextMenuEvent* e)
   connect(sts, &QAction::triggered, [&] {
     s_options.scrollToSelection = sts->isChecked();
     update();
-    });
-
+  });
 
   m->insertSeparator(m->actions().first());
   m->insertAction(m->actions().first(), x);
@@ -677,9 +674,9 @@ void FilterWidget::repositionClearButton()
     return;
   }
 
-  const QSize sz = m_clear->sizeHint();
+  const QSize sz  = m_clear->sizeHint();
   const int frame = m_edit->style()->pixelMetric(QStyle::PM_DefaultFrameWidth);
-  const auto r = m_edit->rect();
+  const auto r    = m_edit->rect();
 
   const auto x = r.right() - frame - sz.width();
   const auto y = (r.bottom() + 1 - sz.height()) / 2;
@@ -687,4 +684,4 @@ void FilterWidget::repositionClearButton()
   m_clear->move(x, y);
 }
 
-} // namespace
+}  // namespace MOBase

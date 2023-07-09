@@ -20,11 +20,10 @@ along with Mod Organizer.  If not, see <http://www.gnu.org/licenses/>.
 #ifndef NXMURL_H
 #define NXMURL_H
 
-#include <QList>
-#include <QString>
-#include <QObject>
 #include "dllimport.h"
-
+#include <QList>
+#include <QObject>
+#include <QString>
 
 /**
  * @brief represents a nxm:// url
@@ -35,13 +34,12 @@ class QDLLEXPORT NXMUrl : public QObject
   Q_OBJECT
 
 public:
-
   /**
    * @brief constructor
    *
    * @param url url following the nxm-protocol
    **/
-  NXMUrl(const QString &url);
+  NXMUrl(const QString& url);
 
   /**
    * @return name of the game
@@ -78,7 +76,6 @@ public:
   int userId() const { return m_UserId; }
 
 private:
-
   QString m_Game;
   QString m_Key;
   int m_ModId;
@@ -87,4 +84,4 @@ private:
   int m_UserId;
 };
 
-#endif // NXMURL_H
+#endif  // NXMURL_H

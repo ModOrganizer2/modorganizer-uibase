@@ -18,20 +18,18 @@ License along with this library; if not, write to the Free Software
 Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 */
 
-
 #ifndef IPLUGINPREVIEW_H
 #define IPLUGINPREVIEW_H
 
-
 #include "iplugin.h"
 
-namespace MOBase {
+namespace MOBase
+{
 
-
-class IPluginPreview : public QObject, public IPlugin {
+class IPluginPreview : public QObject, public IPlugin
+{
   Q_INTERFACES(IPlugin)
 public:
-
   /**
    * @return returns a set of file extensions that may be supported
    */
@@ -43,15 +41,14 @@ public:
    * @param maxSize maximum size of the generated widget
    * @return a widget showing the file
    */
-  virtual QWidget *genFilePreview(const QString &fileName, const QSize &maxSize) const = 0;
+  virtual QWidget* genFilePreview(const QString& fileName,
+                                  const QSize& maxSize) const = 0;
 
 private:
-
 };
 
-
-} // namespace MOBase
+}  // namespace MOBase
 
 Q_DECLARE_INTERFACE(MOBase::IPluginPreview, "com.tannin.ModOrganizer.PluginPreview/1.0")
 
-#endif // IPLUGINPREVIEW_H
+#endif  // IPLUGINPREVIEW_H

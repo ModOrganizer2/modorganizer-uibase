@@ -18,33 +18,33 @@ License along with this library; if not, write to the Free Software
 Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 */
 
-
 #ifndef PLUGINSETTING_H
 #define PLUGINSETTING_H
-
 
 #include <QList>
 #include <QString>
 #include <QVariant>
 
-namespace MOBase {
-
+namespace MOBase
+{
 
 /**
- * @brief struct to hold the user-configurable parameters a plugin accepts. The purpose of this
- * struct is only to inform the application what settings to offer to the user, it does not hold the actual value
+ * @brief struct to hold the user-configurable parameters a plugin accepts. The purpose
+ * of this struct is only to inform the application what settings to offer to the user,
+ * it does not hold the actual value
  */
 struct PluginSetting
 {
-  PluginSetting(const QString &key, const QString &description, const QVariant &defaultValue)
-    : key(key), description(description), defaultValue(defaultValue) {}
+  PluginSetting(const QString& key, const QString& description,
+                const QVariant& defaultValue)
+      : key(key), description(description), defaultValue(defaultValue)
+  {}
 
   QString key;
   QString description;
   QVariant defaultValue;
-
 };
 
-} // namespace MOBase
+}  // namespace MOBase
 
-#endif // PLUGINSETTING_H
+#endif  // PLUGINSETTING_H

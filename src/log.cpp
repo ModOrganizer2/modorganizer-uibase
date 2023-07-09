@@ -1,25 +1,24 @@
-#include "pch.h"
 #include "log.h"
+#include "pch.h"
 #include "utility.h"
 #include <iostream>
 
 #pragma warning(push)
-#pragma warning(disable: 4668)
+#pragma warning(disable : 4668)
 #include <boost/algorithm/string.hpp>
 #pragma warning(pop)
 
 #pragma warning(push)
-#pragma warning(disable: 4365)
+#pragma warning(disable : 4365)
 #define SPDLOG_WCHAR_FILENAMES 1
 #include <spdlog/logger.h>
-#include <spdlog/sinks/stdout_color_sinks.h>
 #include <spdlog/sinks/base_sink.h>
-#include <spdlog/sinks/dist_sink.h>
-#include <spdlog/sinks/daily_file_sink.h>
-#include <spdlog/sinks/rotating_file_sink.h>
 #include <spdlog/sinks/basic_file_sink.h>
+#include <spdlog/sinks/daily_file_sink.h>
+#include <spdlog/sinks/dist_sink.h>
+#include <spdlog/sinks/rotating_file_sink.h>
+#include <spdlog/sinks/stdout_color_sinks.h>
 #pragma warning(pop)
-
 
 namespace MOBase::log
 {
@@ -29,58 +28,50 @@ static std::unique_ptr<Logger> g_default;
 
 spdlog::level::level_enum toSpdlog(Levels lv)
 {
-  switch (lv)
-  {
-    case Debug:
-      return spdlog::level::debug;
+  switch (lv) {
+  case Debug:
+    return spdlog::level::debug;
 
-    case Warning:
-      return spdlog::level::warn;
+  case Warning:
+    return spdlog::level::warn;
 
-    case Error:
-      return spdlog::level::err;
+  case Error:
+    return spdlog::level::err;
 
-    case Info:  // fall-through
-    default:
-      return spdlog::level::info;
+  case Info:  // fall-through
+  default:
+    return spdlog::level::info;
   }
 }
 
 Levels fromSpdlog(spdlog::level::level_enum lv)
 {
-  switch (lv)
-  {
-    case spdlog::level::trace:
-    case spdlog::level::debug:
-      return Debug;
+  switch (lv) {
+  case spdlog::level::trace:
+  case spdlog::level::debug:
+    return Debug;
 
-    case spdlog::level::warn:
-      return Warning;
+  case spdlog::level::warn:
+    return Warning;
 
-    case spdlog::level::critical: // fall-through
-    case spdlog::level::err:
-      return Error;
+  case spdlog::level::critical:  // fall-through
+  case spdlog::level::err:
+    return Error;
 
-    case spdlog::level::info:  // fall-through
-    case spdlog::level::off:
-    case spdlog::level::n_levels: // to please MSVC
-    default:
-      return Info;
+  case spdlog::level::info:  // fall-through
+  case spdlog::level::off:
+  case spdlog::level::n_levels:  // to please MSVC
+  default:
+    return Info;
   }
 }
 
 class CallbackSink : public spdlog::sinks::base_sink<std::mutex>
 {
 public:
-  CallbackSink(Callback* f)
-    : m_f(f)
-  {
-  }
+  CallbackSink(Callback* f) : m_f(f) {}
 
-  void setCallback(Callback* f)
-  {
-    m_f = f;
-  }
+  void setCallback(Callback* f) { m_f = f; }
 
 protected:
   void sink_it_(const spdlog::details::log_msg& m) override
@@ -97,14 +88,15 @@ protected:
       return;
     }
 
-    try
-    {
-      auto g = Guard([&]{ active = false; });
+    try {
+      auto g = Guard([&] {
+        active = false;
+      });
       active = true;
 
       Entry e;
-      e.time = m.time;
-      e.level = fromSpdlog(m.level);
+      e.time    = m.time;
+      e.level   = fromSpdlog(m.level);
       e.message = fmt::to_string(m.payload);
 
       spdlog::memory_buf_t formatted;
@@ -118,15 +110,9 @@ protected:
       }
 
       (*m_f)(std::move(e));
-    }
-    catch(std::exception& e)
-    {
-      fprintf(
-        stderr, "uncaugh exception in logging callback, %s\n",
-        e.what());
-    }
-    catch(...)
-    {
+    } catch (std::exception& e) {
+      fprintf(stderr, "uncaugh exception in logging callback, %s\n", e.what());
+    } catch (...) {
       fprintf(stderr, "uncaught exception in logging callback\n");
     }
   }
@@ -140,34 +126,27 @@ private:
   std::atomic<Callback*> m_f;
 };
 
-
-File::File() :
-  type(None),
-  maxSize(0), maxFiles(0),
-  dailyHour(0), dailyMinute(0)
-{
-}
+File::File() : type(None), maxSize(0), maxFiles(0), dailyHour(0), dailyMinute(0) {}
 
 File File::daily(fs::path file, int hour, int minute)
 {
   File fl;
 
-  fl.type = Daily;
-  fl.file = std::move(file);
-  fl.dailyHour = hour;
+  fl.type        = Daily;
+  fl.file        = std::move(file);
+  fl.dailyHour   = hour;
   fl.dailyMinute = minute;
 
   return fl;
 }
 
-File File::rotating(
-  fs::path file, std::size_t maxSize, std::size_t maxFiles)
+File File::rotating(fs::path file, std::size_t maxSize, std::size_t maxFiles)
 {
   File fl;
 
-  fl.type = Rotating;
-  fl.file = std::move(file);
-  fl.maxSize = maxSize;
+  fl.type     = Rotating;
+  fl.file     = std::move(file);
+  fl.maxSize  = maxSize;
   fl.maxFiles = maxFiles;
 
   return fl;
@@ -185,48 +164,38 @@ File File::single(std::filesystem::path file)
 
 spdlog::sink_ptr createFileSink(const File& f)
 {
-  try
-  {
-    switch (f.type)
-    {
-      case File::Daily:
-      {
-        return std::make_shared<spdlog::sinks::daily_file_sink_mt>(
+  try {
+    switch (f.type) {
+    case File::Daily: {
+      return std::make_shared<spdlog::sinks::daily_file_sink_mt>(
           f.file.native(), f.dailyHour, f.dailyMinute);
-      }
-
-      case File::Rotating:
-      {
-        return std::make_shared<spdlog::sinks::rotating_file_sink_mt>(
-          f.file.native(), f.maxSize, f.maxFiles);
-      }
-
-      case File::Single:
-      {
-        return std::make_shared<spdlog::sinks::basic_file_sink_mt>(
-          f.file.native(), true);
-      }
-
-      case File::None:  // fall-through
-      default:
-        return {};
     }
-  }
-  catch(spdlog::spdlog_ex& e)
-  {
+
+    case File::Rotating: {
+      return std::make_shared<spdlog::sinks::rotating_file_sink_mt>(
+          f.file.native(), f.maxSize, f.maxFiles);
+    }
+
+    case File::Single: {
+      return std::make_shared<spdlog::sinks::basic_file_sink_mt>(f.file.native(), true);
+    }
+
+    case File::None:  // fall-through
+    default:
+      return {};
+    }
+  } catch (spdlog::spdlog_ex& e) {
     std::cerr << "failed to create file log, " << e.what() << "\n";
     return {};
   }
 }
 
-
-Logger::Logger(LoggerConfiguration conf_moved)
-  : m_conf(std::move(conf_moved))
+Logger::Logger(LoggerConfiguration conf_moved) : m_conf(std::move(conf_moved))
 {
   createLogger(m_conf.name);
 
-  const auto timeType = m_conf.utc ?
-    spdlog::pattern_time_type::utc : spdlog::pattern_time_type::local;
+  const auto timeType =
+      m_conf.utc ? spdlog::pattern_time_type::utc : spdlog::pattern_time_type::local;
 
   m_logger->set_level(toSpdlog(m_conf.maxLevel));
   m_logger->set_pattern(m_conf.pattern, timeType);
@@ -261,16 +230,13 @@ void Logger::setFile(const File& f)
   }
 
   if (f.type != File::None) {
-    try
-    {
+    try {
       m_file = createFileSink(f);
 
       if (m_file) {
         addSink(m_file);
       }
-    }
-    catch(spdlog::spdlog_ex& e)
-    {
+    } catch (spdlog::spdlog_ex& e) {
       error(e.what());
     }
   }
@@ -288,44 +254,43 @@ void Logger::setCallback(Callback* f)
 
 void Logger::addToBlacklist(const std::string& filter, const std::string& replacement)
 {
-    if (filter.length() <= 0 || replacement.length() <= 0) {
-        // nothing to do
-        return;
-    }
+  if (filter.length() <= 0 || replacement.length() <= 0) {
+    // nothing to do
+    return;
+  }
 
-    bool present = false;
-    for (BlacklistEntry& e : m_conf.blacklist) {
-        if (boost::algorithm::iequals(e.filter, filter)) {
-            e.replacement = replacement;
-            present = true;
-            break;
-        }
+  bool present = false;
+  for (BlacklistEntry& e : m_conf.blacklist) {
+    if (boost::algorithm::iequals(e.filter, filter)) {
+      e.replacement = replacement;
+      present       = true;
+      break;
     }
-    if (!present) {
-        m_conf.blacklist.push_back(BlacklistEntry(filter, replacement));
-    }
+  }
+  if (!present) {
+    m_conf.blacklist.push_back(BlacklistEntry(filter, replacement));
+  }
 }
 
 void Logger::removeFromBlacklist(const std::string& filter)
 {
-    if (filter.length() <= 0) {
-        // nothing to do
-        return;
-    }
+  if (filter.length() <= 0) {
+    // nothing to do
+    return;
+  }
 
-    for (auto it = m_conf.blacklist.begin(); it != m_conf.blacklist.end(); ) {
-        if (boost::algorithm::iequals(it->filter, filter)) {
-            it = m_conf.blacklist.erase(it);
-        }
-        else {
-            ++it;
-        }
+  for (auto it = m_conf.blacklist.begin(); it != m_conf.blacklist.end();) {
+    if (boost::algorithm::iequals(it->filter, filter)) {
+      it = m_conf.blacklist.erase(it);
+    } else {
+      ++it;
     }
+  }
 }
 
 void Logger::resetBlacklist()
 {
-    m_conf.blacklist.clear();
+  m_conf.blacklist.clear();
 }
 
 void Logger::createLogger(const std::string& name)
@@ -334,15 +299,17 @@ void Logger::createLogger(const std::string& name)
 
   DWORD console_mode;
   if (::GetConsoleMode(::GetStdHandle(STD_ERROR_HANDLE), &console_mode) != 0) {
-      using sink_type = spdlog::sinks::wincolor_stderr_sink_mt;
-      m_console.reset(new sink_type);
+    using sink_type = spdlog::sinks::wincolor_stderr_sink_mt;
+    m_console.reset(new sink_type);
 
-      if (auto* cs = dynamic_cast<sink_type*>(m_console.get())) {
-          cs->set_color(spdlog::level::info, FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE);
-          cs->set_color(spdlog::level::debug, FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE);
-      }
+    if (auto* cs = dynamic_cast<sink_type*>(m_console.get())) {
+      cs->set_color(spdlog::level::info,
+                    FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE);
+      cs->set_color(spdlog::level::debug,
+                    FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE);
+    }
 
-      addSink(m_console);
+    addSink(m_console);
   }
 
   m_logger.reset(new spdlog::logger(name, m_sinks));
@@ -368,25 +335,23 @@ void Logger::addSink(std::shared_ptr<spdlog::sinks::sink> sink)
 
   auto* ds = static_cast<spdlog::sinks::dist_sink<std::mutex>*>(m_sinks.get());
 
-  const auto timeType = m_conf.utc ?
-    spdlog::pattern_time_type::utc : spdlog::pattern_time_type::local;
+  const auto timeType =
+      m_conf.utc ? spdlog::pattern_time_type::utc : spdlog::pattern_time_type::local;
 
-  sink->set_formatter(std::make_unique<spdlog::pattern_formatter>(
-    m_conf.pattern, timeType));
+  sink->set_formatter(
+      std::make_unique<spdlog::pattern_formatter>(m_conf.pattern, timeType));
 
   ds->add_sink(sink);
 }
 
-
 QString levelToString(Levels level)
 {
   const auto spdlogLevel = toSpdlog(level);
-  const auto sv = spdlog::level::to_string_view(spdlogLevel);
+  const auto sv          = spdlog::level::to_string_view(spdlogLevel);
   const std::string s(sv.begin(), sv.end());
 
   return QString::fromStdString(s);
 }
-
 
 void createDefault(LoggerConfiguration conf)
 {
@@ -399,8 +364,7 @@ Logger& getDefault()
   return *g_default;
 }
 
-} // namespace
-
+}  // namespace MOBase::log
 
 namespace MOBase::log::details
 {
@@ -427,15 +391,12 @@ std::string converter<QSize>::convert(const QSize& s)
 
 std::string converter<QRect>::convert(const QRect& r)
 {
-  return fmt::format(
-    "QRect({},{}-{},{})", r.left(), r.top(), r.right(), r.bottom());
+  return fmt::format("QRect({},{}-{},{})", r.left(), r.top(), r.right(), r.bottom());
 }
 
 std::string converter<QColor>::convert(const QColor& c)
 {
-  return fmt::format(
-    "QColor({}, {}, {}, {})",
-    c.red(), c.green(), c.blue(), c.alpha());
+  return fmt::format("QColor({}, {}, {}, {})", c.red(), c.green(), c.blue(), c.alpha());
 }
 
 std::string converter<QByteArray>::convert(const QByteArray& v)
@@ -445,19 +406,17 @@ std::string converter<QByteArray>::convert(const QByteArray& v)
 
 std::string converter<QVariant>::convert(const QVariant& v)
 {
-  return fmt::format(
-    "QVariant(type={}, value='{}')",
-    v.typeName(), (v.typeId() == QMetaType::Type::QByteArray ?
-      "(binary)" : v.toString().toStdString()));
+  return fmt::format("QVariant(type={}, value='{}')", v.typeName(),
+                     (v.typeId() == QMetaType::Type::QByteArray
+                          ? "(binary)"
+                          : v.toString().toStdString()));
 }
-
 
 void doLogImpl(spdlog::logger& lg, Levels lv, const std::string& s) noexcept
 {
-  try
-  {
+  try {
     const char* start = s.c_str();
-    const char* p = start;
+    const char* p     = start;
 
     for (;;) {
       while (*p && *p != '\n') {
@@ -474,18 +433,16 @@ void doLogImpl(spdlog::logger& lg, Levels lv, const std::string& s) noexcept
       ++p;
       start = p;
     }
-  }
-  catch(...)
-  {
+  } catch (...) {
     // eat it
   }
 }
 
-void ireplace_all(std::string& input, std::string const& search, std::string const& replace) noexcept
+void ireplace_all(std::string& input, std::string const& search,
+                  std::string const& replace) noexcept
 {
   // call boost here to avoid bringing the boost include in the header
   boost::algorithm::ireplace_all(input, search, replace);
 }
 
-
-}	// namespace
+}  // namespace MOBase::log::details

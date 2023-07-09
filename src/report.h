@@ -22,23 +22,27 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 #define REPORT_H
 
 #include "dllimport.h"
+#include <QCheckBox>
+#include <QComboBox>
 #include <QList>
 #include <QMessageBox>
 #include <QPlainTextEdit>
-#include <QComboBox>
-#include <QCheckBox>
 #include <wchar.h>
 
-namespace Ui { class TaskDialog; }
+namespace Ui
+{
+class TaskDialog;
+}
 
-namespace MOBase {
+namespace MOBase
+{
 
 class ExpanderWidget;
 
 // Convenience function displaying an error message box. This function uses
 // WinAPI if no Qt Window is available yet or QMessageBox otherwise.
 //
-QDLLEXPORT void reportError(const QString &message);
+QDLLEXPORT void reportError(const QString& message);
 
 // shows a critical message box that's raised to the top of the zorder, useful
 // for messages without a main window, which sometimes makes them pop up behind
@@ -48,21 +52,20 @@ QDLLEXPORT void reportError(const QString &message);
 //
 QDLLEXPORT void criticalOnTop(const QString& message);
 
-
 struct QDLLEXPORT TaskDialogButton
 {
   QString text, description;
   QMessageBox::StandardButton button;
 
-  TaskDialogButton(QString text, QString description, QMessageBox::StandardButton button);
+  TaskDialogButton(QString text, QString description,
+                   QMessageBox::StandardButton button);
   TaskDialogButton(QString text, QMessageBox::StandardButton button);
 };
-
 
 class QDLLEXPORT TaskDialog
 {
 public:
-  TaskDialog(QWidget* parent=nullptr, QString title={});
+  TaskDialog(QWidget* parent = nullptr, QString title = {});
   ~TaskDialog();
 
   TaskDialog& title(const QString& s);
@@ -71,7 +74,7 @@ public:
   TaskDialog& details(const QString& s);
   TaskDialog& icon(QMessageBox::Icon i);
   TaskDialog& button(TaskDialogButton b);
-  TaskDialog& remember(const QString& action, const QString& file={});
+  TaskDialog& remember(const QString& action, const QString& file = {});
 
   void addContent(QWidget* w);
   void setWidth(int w);
@@ -109,6 +112,6 @@ private:
   void setFontPercent(QWidget* w, double p);
 };
 
-} // namespace MOBase
+}  // namespace MOBase
 
-#endif // REPORT_H
+#endif  // REPORT_H
