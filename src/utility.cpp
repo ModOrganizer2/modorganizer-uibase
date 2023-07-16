@@ -717,9 +717,9 @@ std::wstring ToWString(const QString& source)
 {
   // FIXME
   // why not source.toStdWString() ?
-  wchar_t* buffer = new wchar_t[static_cast<std::size_t>(source.count()) + 1];
+  wchar_t* buffer = new wchar_t[static_cast<std::size_t>(source.size()) + 1];
   source.toWCharArray(buffer);
-  buffer[source.count()] = L'\0';
+  buffer[source.size()] = L'\0';
   std::wstring result(buffer);
   delete[] buffer;
 

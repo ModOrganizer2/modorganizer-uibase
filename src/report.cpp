@@ -383,8 +383,9 @@ QPixmap TaskDialog::standardIcon(QMessageBox::Icon icon) const
     break;
   case QMessageBox::Question:
     i = s->standardIcon(QStyle::SP_MessageBoxQuestion, 0, m_dialog.get());
-
-  case QMessageBox::NoIcon:  // fall-through
+    break;
+  case QMessageBox::NoIcon:
+    [[fallthrough]];
   default:
     break;
   }

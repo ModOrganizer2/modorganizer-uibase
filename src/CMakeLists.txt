@@ -12,8 +12,10 @@ mo2_install_target(uibase)
 
 mo2_add_filter(NAME src/extensions GROUPS
 	extension
+	iextensionlist
 	theme
 	translation
+	requirements
 	ipluginloader
 )
 
