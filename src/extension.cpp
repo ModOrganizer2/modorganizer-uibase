@@ -7,6 +7,10 @@
 
 #include "log.h"
 
+// name of the metadata file
+//
+static constexpr const char* METADATA_FILENAME = "metadata.json";
+
 namespace MOBase
 {
 
@@ -90,7 +94,8 @@ QString ExtensionMetaData::localized(QString const& value) const
 }
 
 IExtension::IExtension(std::filesystem::path path, ExtensionMetaData metadata)
-    : m_Path{std::move(path)}, m_MetaData{std::move(metadata)}
+    : m_Path{std::move(path)}, m_MetaData{std::move(metadata)},
+      m_Requirements{ExtensionRequirementFactory::parseRequirements(m_MetaData)}
 {}
 
 std::unique_ptr<IExtension>
@@ -301,13 +306,13 @@ PluginExtension::loadExtension(std::filesystem::path path, ExtensionMetaData met
 
       for (auto& prefix : prefixes) {
         const auto filePrefix = QFileInfo(prefix).fileName();
-        auto files            = globExtensionFiles(path, {prefix + "*.qm"});
+        const auto files      = globExtensionFiles(path, {prefix + "*.qm"});
         for (auto& file : files) {
           // extract the identifier from the match, e.g., if the prefix is
           // translations/installer_manual_, the filePrefix is installer_manual_,
           // and glob will be like translations/installer_manual_fr.qm
           const auto identifier =
-              QFileInfo(file).fileName().replace(".qm", "").replace(filePrefix, "");
+              QFileInfo(file).baseName().replace(filePrefix, "", Qt::CaseInsensitive);
           filesPerLanguage[identifier].push_back(file);
         }
       }
