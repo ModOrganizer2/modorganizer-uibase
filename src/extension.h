@@ -9,6 +9,8 @@
 #include <QTranslator>
 
 #include "dllimport.h"
+#include "iplugingame.h"
+#include "requirements.h"
 #include "theme.h"
 #include "translation.h"
 #include "versioninfo.h"
@@ -16,13 +18,6 @@
 namespace MOBase
 {
 class IExtension;
-
-class VersionRequirement
-{};
-class GameRequirement
-{};
-class ExtensionRequirement
-{};
 
 enum class ExtensionType
 {
@@ -62,18 +57,6 @@ public:
   //
   const auto& version() const { return m_Version; }
 
-  // retrieve the version requirement of the extension
-  //
-  const auto& versionRequirement() const { return m_VersionRequirement; }
-
-  // retrieve the game requirement of the extension
-  //
-  const auto& gameRequirement() const { return m_GameRequirement; }
-
-  // retrieve the extension requirement of the extension
-  //
-  const auto& extensionRequirement() const { return m_ExtensionRequirement; }
-
   // retrieve the raw JSON metadata, this is mostly useful for specific extension type
   // to extract custom parts
   //
@@ -100,10 +83,6 @@ private:
 
   std::filesystem::path m_TranslationFilesPrefix;
   std::filesystem::path m_StyleSheetFilePath;
-
-  VersionRequirement m_VersionRequirement;
-  GameRequirement m_GameRequirement;
-  ExtensionRequirement m_ExtensionRequirement;
 };
 
 class QDLLEXPORT IExtension
@@ -117,6 +96,10 @@ public:
   //
   const auto& metadata() const { return m_MetaData; }
 
+  // retrieve the requirements of the extension
+  //
+  const auto& requirements() const { return m_Requirements; }
+
   virtual ~IExtension() {}
 
 protected:
@@ -125,6 +108,7 @@ protected:
 private:
   std::filesystem::path m_Path;
   ExtensionMetaData m_MetaData;
+  std::vector<ExtensionRequirement> m_Requirements;
 };
 
 // factory for extensions
@@ -138,10 +122,6 @@ public:
   static std::unique_ptr<IExtension> loadExtension(std::filesystem::path directory);
 
 private:
-  // name of the metadata file
-  //
-  static constexpr const char* METADATA_FILENAME = "mo2-metadata.json";
-
   // load an extension from the given directory
   //
   static std::unique_ptr<IExtension> loadExtension(std::filesystem::path directory,
