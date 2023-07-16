@@ -264,9 +264,11 @@ PluginExtension::PluginExtension(
 std::unique_ptr<PluginExtension>
 PluginExtension::loadExtension(std::filesystem::path path, ExtensionMetaData metadata)
 {
+  namespace fs = std::filesystem;
+
   // load plugins
   std::optional<bool> autodetect;
-  std::map<std::string, std::filesystem::path> plugins;
+  std::map<std::string, fs::path> plugins;
   {
     auto jsonPlugins = metadata.json()["plugins"].toObject();
     if (jsonPlugins.contains("autodetect")) {
@@ -299,9 +301,15 @@ PluginExtension::loadExtension(std::filesystem::path path, ExtensionMetaData met
   {
     auto jsonTranslations = metadata.json()["translations"].toObject();
 
-    // * is a custom entry
     if (jsonTranslations.contains("*")) {
-      std::map<QString, std::vector<std::filesystem::path>> filesPerLanguage;
+      // * is a custom entry - * should point to a list of file prefix, e.g.,
+      // ["translations/foo_", "translations/bar_"] meaning that the translations files
+      // are prefixed by foo_ and bar_ inside the translations folder, language is
+      // extracted by removing the prefix
+      //
+      // TODO: remove this option
+      //
+      std::map<QString, std::vector<fs::path>> filesPerLanguage;
       const auto prefixes = jsonTranslations["*"].toVariant().toStringList();
 
       for (auto& prefix : prefixes) {
@@ -315,6 +323,27 @@ PluginExtension::loadExtension(std::filesystem::path path, ExtensionMetaData met
               QFileInfo(file).baseName().replace(filePrefix, "", Qt::CaseInsensitive);
           filesPerLanguage[identifier].push_back(file);
         }
+      }
+
+      for (auto& [language, files] : filesPerLanguage) {
+        translations.push_back(std::make_shared<TranslationAddition>(
+            language.toStdString(), std::move(files)));
+      }
+    } else if (jsonTranslations.contains("autodetect")) {
+
+      // autodetect is a custom entry - "autodetect": "xxx" means that the extension
+      // contains a translations folder named "xxx" where each subfolder is a language
+      // (identifier) containing translation files for the language
+
+      std::map<QString, std::vector<std::filesystem::path>> filesPerLanguage;
+      const auto folder = jsonTranslations["autodetect"].toString();
+      for (const auto& lang : fs::directory_iterator(path / folder.toStdString())) {
+        if (!fs::is_directory(lang)) {
+          continue;
+        }
+
+        filesPerLanguage[QString::fromStdWString(lang.path().filename().wstring())] =
+            globExtensionFiles(lang, {"*.qm"});
       }
 
       for (auto& [language, files] : filesPerLanguage) {
