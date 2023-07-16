@@ -35,7 +35,9 @@ set(root_headers
 )
 set(extension_headers
 	../include/uibase/extension.h
+	../include/uibase/iextensionlist.h
 	../include/uibase/ipluginloader.h
+	../include/uibase/requirements.h
 	../include/uibase/theme.h
 	../include/uibase/translation.h
 )
@@ -139,6 +141,7 @@ mo2_target_sources(uibase
 	${extension_headers}
 	extension.cpp
 	theme.cpp
+	requirements.cpp
 )
 
 mo2_target_sources(uibase
