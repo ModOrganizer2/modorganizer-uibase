@@ -62,6 +62,9 @@ public:
   //
   const auto& json() const { return m_JsonData; }
 
+  // retrieve the content objects of the extension
+  QJsonObject content() const;
+
 private:
   QString localized(QString const& value) const;
 
