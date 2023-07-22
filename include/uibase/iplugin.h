@@ -82,49 +82,6 @@ public:
   virtual QString localizedName() const { return name(); }
 
   /**
-   * @brief Retrieve the name of the master plugin of this plugin.
-   *
-   * It is often easier to implement a functionality as multiple plugins in MO2, but
-   * ship the plugins together, e.g. as a Python module or using `createFunctions()`. In
-   * this case, having a master plugin (one of the plugin, or a separate one) tells MO2
-   * that these plugins are linked and should also be displayed together in the UI. If
-   * MO2 ever implements automatic updates for plugins, the `master()` plugin will also
-   * be used for this purpose.
-   *
-   * @return the name of the master plugin of this plugin, or an empty string if this
-   * plugin does not have a master.
-   */
-  virtual QString master() const { return ""; }
-
-  /**
-   * @brief Retrieve the requirements for the plugins.
-   *
-   * This method is called right after init().
-   *
-   * @return the requirements for this plugin.
-   */
-  virtual std::vector<std::shared_ptr<const IPluginRequirement>> requirements() const
-  {
-    return {};
-  }
-
-  /**
-   * @return the author of this plugin.
-   */
-  virtual QString author() const = 0;
-
-  /**
-   * @return a short description of the plugin to be displayed to the user.
-   */
-  virtual QString description() const = 0;
-
-  /**
-   * @return the version of the plugin. This can be used to detect outdated versions of
-   * plugins.
-   */
-  virtual VersionInfo version() const = 0;
-
-  /**
    * @return the list of configurable settings for this plugin (in the user interface).
    * The list may be empty.
    *
