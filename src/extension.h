@@ -28,11 +28,26 @@ enum class ExtensionType
   GAME
 };
 
+class QDLLEXPORT ExtensionContributor
+{
+public:
+  ExtensionContributor(QString name);
+
+  // retrieve the name of the contributor
+  //
+  const auto& name() const { return m_Name; }
+
+private:
+  ExtensionContributor() = default;
+
+  friend class ExtensionMetaData;
+
+  QString m_Name;
+};
+
 class QDLLEXPORT ExtensionMetaData
 {
 public:
-  ExtensionMetaData(QJsonObject const& jsonData);
-
   // check if that metadata object is valid
   //
   bool isValid() const;
@@ -45,6 +60,14 @@ public:
   //
   auto name() const { return localized(m_Name); }
 
+  // retrieve the author of the extension if set
+  //
+  const auto& author() const { return m_Author; }
+
+  // retrieve the list of contributors of the extension
+  //
+  const auto& contributors() const { return m_Contributors; }
+
   // retrieve the type of the extension
   //
   auto type() const { return m_Type; }
@@ -52,6 +75,10 @@ public:
   // retrieve the description of the extension.
   //
   auto description() const { return localized(m_Description); }
+
+  // retrieve the icon for the extension (might be an empty icon)
+  //
+  const auto& icon() const { return m_Icon; }
 
   // retrieve the version of the extension.
   //
@@ -69,10 +96,14 @@ private:
   QString localized(QString const& value) const;
 
 private:
+  friend class ExtensionFactory;
+
   constexpr static const char* DEFAULT_TRANSLATIONS_FOLDER = "translations";
   constexpr static const char* DEFAULT_STYLESHEET_PATH     = "stylesheets";
 
   ExtensionType parseType(QString const& value) const;
+
+  ExtensionMetaData(std::filesystem::path const& path, const QJsonObject& jsonData);
 
 private:
   QJsonObject m_JsonData;
@@ -80,8 +111,11 @@ private:
 
   QString m_Identifier;
   QString m_Name;
+  ExtensionContributor m_Author;
+  std::vector<ExtensionContributor> m_Contributors;
   ExtensionType m_Type;
   QString m_Description;
+  QIcon m_Icon;
   VersionInfo m_Version;
 
   std::filesystem::path m_TranslationFilesPrefix;
