@@ -3,6 +3,7 @@
 #include <QDirIterator>
 #include <QFile>
 #include <QFileInfo>
+#include <QJsonArray>
 #include <QJsonDocument>
 
 #include "log.h"
@@ -40,20 +41,53 @@ namespace
     return files;
   }
 
+  // parse an author from a JSON value
+  //
+  ExtensionContributor parseContributor(QJsonValue const& value)
+  {
+    if (value.isNull()) {
+      return ExtensionContributor("");
+    }
+
+    // TODO: handle more fields in the future, handle string authors similar to NPM
+
+    if (value.isObject()) {
+      const auto contrib = value.toObject();
+      return ExtensionContributor(contrib["name"].toString());
+    }
+
+    return ExtensionContributor(value.toString());
+  }
+
 }  // namespace
 
-ExtensionMetaData::ExtensionMetaData(QJsonObject const& jsonData) : m_JsonData{jsonData}
+ExtensionContributor::ExtensionContributor(QString name) : m_Name{name} {}
+
+ExtensionMetaData::ExtensionMetaData(std::filesystem::path const& path,
+                                     QJsonObject const& jsonData)
+    : m_JsonData{jsonData}
 {
   // read basic fields
   m_Identifier  = jsonData["id"].toString();
   m_Type        = parseType(jsonData["type"].toString());
   m_Name        = jsonData["name"].toString();
+  m_Author      = parseContributor(jsonData["author"]);
   m_Description = jsonData["description"].toString();
   m_Version.parse(jsonData["version"].toString("0.0.0"));
 
   // TODO: name of the key
   // translation context
   m_TranslationContext = jsonData["translationContext"].toString("");
+
+  if (jsonData.contains("icon")) {
+    m_Icon = QIcon(QDir(path).filePath(jsonData["icon"].toString()));
+  }
+
+  if (jsonData.contains("contributors")) {
+    for (const auto& jsonContributor : jsonData["contributors"].toArray()) {
+      m_Contributors.push_back(parseContributor(jsonContributor));
+    }
+  }
 }
 
 bool ExtensionMetaData::isValid() const
@@ -142,7 +176,8 @@ ExtensionFactory::loadExtension(std::filesystem::path directory)
     return nullptr;
   }
 
-  return loadExtension(std::move(directory), ExtensionMetaData(jsonMetaData.object()));
+  return loadExtension(std::move(directory),
+                       ExtensionMetaData(directory, jsonMetaData.object()));
 }
 
 std::unique_ptr<IExtension>
@@ -318,9 +353,9 @@ PluginExtension::loadExtension(std::filesystem::path path, ExtensionMetaData met
 
     if (jsonTranslations.contains("*")) {
       // * is a custom entry - * should point to a list of file prefix, e.g.,
-      // ["translations/foo_", "translations/bar_"] meaning that the translations files
-      // are prefixed by foo_ and bar_ inside the translations folder, language is
-      // extracted by removing the prefix
+      // ["translations/foo_", "translations/bar_"] meaning that the translations
+      // files are prefixed by foo_ and bar_ inside the translations folder, language
+      // is extracted by removing the prefix
       //
       // TODO: remove this option
       //
