@@ -31,6 +31,10 @@ bool ExtensionRequirement::check(IOrganizer* organizer) const
 std::vector<ExtensionRequirement>
 ExtensionRequirementFactory::parseRequirements(const ExtensionMetaData& metadata)
 {
+  if (!metadata.json().contains("requirements")) {
+    return {};
+  }
+
   const auto json_requirements = metadata.json()["requirements"];
 
   if (!json_requirements.isArray()) {
