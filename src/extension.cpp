@@ -45,7 +45,7 @@ namespace
 ExtensionMetaData::ExtensionMetaData(QJsonObject const& jsonData) : m_JsonData{jsonData}
 {
   // read basic fields
-  m_Identifier  = jsonData["identifier"].toString();
+  m_Identifier  = jsonData["id"].toString();
   m_Type        = parseType(jsonData["type"].toString());
   m_Name        = jsonData["name"].toString();
   m_Description = jsonData["description"].toString();
@@ -91,6 +91,21 @@ QString ExtensionMetaData::localized(QString const& value) const
   const auto result = QCoreApplication::translate(m_TranslationContext.toUtf8().data(),
                                                   value.toUtf8().data());
   return result.isEmpty() ? value : result;
+}
+
+QJsonObject ExtensionMetaData::content() const
+{
+  if (!m_JsonData.contains("content")) {
+    return {};
+  }
+
+  const auto value = m_JsonData["content"];
+  if (!value.isObject()) {
+    log::error("invalid metadata for {}, 'content' should be an object", m_Identifier);
+    return {};
+  }
+
+  return value.toObject();
 }
 
 IExtension::IExtension(std::filesystem::path path, ExtensionMetaData metadata)
@@ -166,7 +181,7 @@ std::unique_ptr<ThemeExtension>
 ThemeExtension::loadExtension(std::filesystem::path path, ExtensionMetaData metadata)
 {
   std::vector<std::shared_ptr<const Theme>> themes;
-  const auto& jsonThemes = metadata.json()["themes"].toObject();
+  const auto& jsonThemes = metadata.content()["themes"].toObject();
   for (auto it = jsonThemes.begin(); it != jsonThemes.end(); ++it) {
     const auto theme = parseTheme(path, it.key(), it.value().toObject());
     if (theme) {
@@ -213,7 +228,7 @@ TranslationExtension::loadExtension(std::filesystem::path path,
                                     ExtensionMetaData metadata)
 {
   std::vector<std::shared_ptr<const Translation>> translations;
-  const auto& jsonTranslations = metadata.json()["translations"].toObject();
+  const auto& jsonTranslations = metadata.content()["translations"].toObject();
   for (auto it = jsonTranslations.begin(); it != jsonTranslations.end(); ++it) {
     const auto translation = parseTranslation(path, it.key(), it.value().toObject());
     if (translation) {
@@ -270,7 +285,7 @@ PluginExtension::loadExtension(std::filesystem::path path, ExtensionMetaData met
   std::optional<bool> autodetect;
   std::map<std::string, fs::path> plugins;
   {
-    auto jsonPlugins = metadata.json()["plugins"].toObject();
+    auto jsonPlugins = metadata.content()["plugins"].toObject();
     if (jsonPlugins.contains("autodetect")) {
       autodetect = jsonPlugins["autodetect"].toBool();
     }
