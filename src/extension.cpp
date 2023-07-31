@@ -80,7 +80,28 @@ ExtensionMetaData::ExtensionMetaData(std::filesystem::path const& path,
   m_TranslationContext = jsonData["translationContext"].toString("");
 
   if (jsonData.contains("icon")) {
-    m_Icon = QIcon(QDir(path).filePath(jsonData["icon"].toString()));
+    const QFileInfo icon{QDir(path), jsonData["icon"].toString()};
+    if (icon.exists()) {
+      m_Icon = QIcon(icon.absoluteFilePath());
+    }
+  }
+
+  // TODO: move code in a better place or use a custom icon
+  if (m_Icon.isNull()) {
+    const QImage baseIcon(":/MO/gui/app_icon");
+    QImage grayIcon = baseIcon.convertToFormat(QImage::Format_ARGB32);
+    {
+      for (int y = 0; y < grayIcon.height(); ++y) {
+        QRgb* scanLine = (QRgb*)grayIcon.scanLine(y);
+        for (int x = 0; x < grayIcon.width(); ++x) {
+          QRgb pixel = *scanLine;
+          uint ci    = uint(qGray(pixel));
+          *scanLine  = qRgba(ci, ci, ci, qAlpha(pixel) / 3);
+          ++scanLine;
+        }
+      }
+    }
+    m_Icon = QIcon(QPixmap::fromImage(grayIcon));
   }
 
   if (jsonData.contains("contributors")) {
