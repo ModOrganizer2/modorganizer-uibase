@@ -308,14 +308,24 @@ TranslationExtension::parseTranslation(std::filesystem::path const& extensionFol
                                        const QString& identifier,
                                        const QJsonObject& jsonTranslation)
 {
-  const auto name          = jsonTranslation["name"].toString();
   const auto jsonGlobFiles = jsonTranslation["files"].toVariant().toStringList();
 
   std::vector<std::filesystem::path> qm_files =
       globExtensionFiles(extensionFolder, jsonGlobFiles);
 
-  if (name.isEmpty() || qm_files.empty()) {
+  if (qm_files.empty()) {
     return nullptr;
+  }
+
+  const auto jsonName = jsonTranslation["name"];
+  QString name;
+  if (jsonName.isString()) {
+    name = jsonName.toString();
+  } else {
+    QLocale locale(identifier);
+    name = QString("%1 (%2)")
+               .arg(locale.nativeLanguageName())
+               .arg(locale.nativeCountryName());
   }
 
   return std::make_shared<Translation>(identifier.toStdString(), name.toStdString(),
