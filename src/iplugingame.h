@@ -165,7 +165,7 @@ public:
    *
    * @return directories where we may find data files outside the main location
    */
-  virtual QList<QDir> secondaryDataDirectories() const = 0;
+  virtual QMap<QString, QDir> secondaryDataDirectories() const = 0;
 
   /**
    * @brief set the path to the managed game
