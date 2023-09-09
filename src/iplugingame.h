@@ -40,6 +40,7 @@ class IPluginGame : public QObject, public IPlugin
 public:
   enum class LoadOrderMechanism
   {
+    None,
     FileTime,
     PluginsTxt
   };
