@@ -40,6 +40,7 @@ class IPluginGame : public QObject, public IPlugin
 public:
   enum class LoadOrderMechanism
   {
+    None,
     FileTime,
     PluginsTxt
   };
@@ -169,6 +170,13 @@ public:
    * @return directory where the game expects to find its data files
    */
   virtual QDir dataDirectory() const = 0;
+
+  /**
+   * this function may be called before init()
+   *
+   * @return directories where we may find data files outside the main location
+   */
+  virtual QMap<QString, QDir> secondaryDataDirectories() const = 0;
 
   /**
    * @brief set the path to the managed game
