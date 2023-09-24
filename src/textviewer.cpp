@@ -209,9 +209,14 @@ void TextViewer::addFile(const QString& fileName, bool writable)
   }
   QByteArray temp = file.readAll();
 
-  QWidget* page       = new QWidget();
-  QVBoxLayout* layout = new QVBoxLayout(page);
-  QTextEdit* editor   = new QTextEdit(page);
+  QWidget* page           = new QWidget();
+  QVBoxLayout* layout     = new QVBoxLayout(page);
+  QTextEdit* editor       = new QTextEdit(page);
+  QTextDocument* document = new QTextDocument(page);
+  QTextOption option;
+  option.setFlags(QTextOption::ShowTabsAndSpaces);
+  document->setDefaultTextOption(option);
+  editor->setDocument(document);
   editor->setAcceptRichText(false);
   editor->setPlainText(QString(temp));
   editor->setLineWrapMode(QTextEdit::NoWrap);
