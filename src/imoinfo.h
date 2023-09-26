@@ -395,12 +395,16 @@ public:
    *
    * Parameters of the callback:
    *   - Path (absolute) to the application to be run.
+   *   - [Optional] Working directory for the run.
+   *   - [Optional] Argument for the binary.
    *
    * The callback can return false to prevent the application from being launched.
    *
    * @param func Function to be called when an application is run.
    */
   virtual bool onAboutToRun(const std::function<bool(const QString&)>& func) = 0;
+  virtual bool onAboutToRun(
+      const std::function<bool(const QString&, const QDir&, const QString&)>& func) = 0;
 
   /**
    * @brief Add a new callback to be called when an has finished running.
