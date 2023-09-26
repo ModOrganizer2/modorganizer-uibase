@@ -432,6 +432,17 @@ public:
   onUserInterfaceInitialized(std::function<void(QMainWindow*)> const& func) = 0;
 
   /**
+   * @brief Add a new callback to be called when the next refresh finishes (or
+   * immediately if possible).
+   *
+   * @param func Callback.
+   * @param immediateIfPossible If true and no refresh is in progress, the callback will
+   * be called immediately.
+   */
+  virtual bool onNextRefresh(std::function<void()> const& func,
+                             bool immediateIfPossible = true) = 0;
+
+  /**
    * @brief Add a new callback to be called when a new profile is created.
    *
    * Parameters of the callback:
