@@ -21,6 +21,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 #ifndef IMOINFO_H
 #define IMOINFO_H
 
+#include <QDir>
 #include <QList>
 #include <QMainWindow>
 #include <QString>
@@ -395,12 +396,16 @@ public:
    *
    * Parameters of the callback:
    *   - Path (absolute) to the application to be run.
+   *   - [Optional] Working directory for the run.
+   *   - [Optional] Argument for the binary.
    *
    * The callback can return false to prevent the application from being launched.
    *
    * @param func Function to be called when an application is run.
    */
   virtual bool onAboutToRun(const std::function<bool(const QString&)>& func) = 0;
+  virtual bool onAboutToRun(
+      const std::function<bool(const QString&, const QDir&, const QString&)>& func) = 0;
 
   /**
    * @brief Add a new callback to be called when an has finished running.
@@ -426,6 +431,17 @@ public:
    */
   virtual bool
   onUserInterfaceInitialized(std::function<void(QMainWindow*)> const& func) = 0;
+
+  /**
+   * @brief Add a new callback to be called when the next refresh finishes (or
+   * immediately if possible).
+   *
+   * @param func Callback.
+   * @param immediateIfPossible If true and no refresh is in progress, the callback will
+   * be called immediately.
+   */
+  virtual bool onNextRefresh(std::function<void()> const& func,
+                             bool immediateIfPossible = true) = 0;
 
   /**
    * @brief Add a new callback to be called when a new profile is created.
