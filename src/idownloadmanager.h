@@ -40,7 +40,7 @@ public:
    * @return absoute path to the downloaded file. This file may not yet exist if the
    * download is incomplete
    */
-  virtual QString downloadPath(int id) = 0;
+  virtual QString downloadPath(QString fileName) = 0;
 
   /**
    * @brief Installs a handler to be called when a download complete.
@@ -51,7 +51,8 @@ public:
    * @return true if the handler was successfully installed (there is as of now no known
    * reason this should fail).
    */
-  virtual bool onDownloadComplete(const std::function<void(int)>& callback) = 0;
+  virtual bool
+  onDownloadComplete(const std::function<void(QString fileName)>& callback) = 0;
 
   /**
    * @brief Installs a handler to be called when a download is paused.
@@ -62,7 +63,8 @@ public:
    * @return true if the handler was successfully installed (there is as of now no known
    * reason this should fail).
    */
-  virtual bool onDownloadPaused(const std::function<void(int)>& callback) = 0;
+  virtual bool
+  onDownloadPaused(const std::function<void(QString fileName)>& callback) = 0;
 
   /**
    * @brief Installs a handler to be called when a download fails.
@@ -73,7 +75,8 @@ public:
    * @return true if the handler was successfully installed (there is as of now no known
    * reason this should fail).
    */
-  virtual bool onDownloadFailed(const std::function<void(int)>& callback) = 0;
+  virtual bool
+  onDownloadFailed(const std::function<void(QString fileName)>& callback) = 0;
 
   /**
    * @brief Installs a handler to be called when a download is removed.
@@ -84,7 +87,8 @@ public:
    * @return true if the handler was successfully installed (there is as of now no known
    * reason this should fail).
    */
-  virtual bool onDownloadRemoved(const std::function<void(int)>& callback) = 0;
+  virtual bool
+  onDownloadRemoved(const std::function<void(QString fileName)>& callback) = 0;
 };
 
 }  // namespace MOBase
