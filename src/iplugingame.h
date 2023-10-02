@@ -223,6 +223,11 @@ public:
   virtual QStringList primaryPlugins() const = 0;
 
   /**
+   * @return list of plugins enabled by the game but not in a strict load order
+   */
+  virtual QStringList enabledPlugins() const = 0;
+
+  /**
    * this function may be called before init()
    *
    * @return list of game variants
