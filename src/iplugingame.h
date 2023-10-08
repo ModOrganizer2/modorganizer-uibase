@@ -176,7 +176,7 @@ public:
    *
    * @return directories where we may find data files outside the main location
    */
-  virtual QMap<QString, QDir> secondaryDataDirectories() const = 0;
+  virtual QMap<QString, QDir> secondaryDataDirectories() const { return {}; }
 
   /**
    * @brief set the path to the managed game
@@ -202,7 +202,7 @@ public:
    * @return list of automatically discovered executables of the game itself and tools
    * surrounding it
    */
-  virtual QList<ExecutableInfo> executables() const = 0;
+  virtual QList<ExecutableInfo> executables() const { return {}; }
 
   /**
    * @brief Get the default list of libraries that can be force loaded with executables
@@ -215,12 +215,17 @@ public:
    * @note if a game is available in multiple versions those might have different app
    * ids. the plugin should try to return the right one
    */
-  virtual QString steamAPPId() const = 0;
+  virtual QString steamAPPId() const { return ""; }
 
   /**
    * @return list of plugins that are part of the game and not considered optional
    */
-  virtual QStringList primaryPlugins() const = 0;
+  virtual QStringList primaryPlugins() const { return {}; }
+
+  /**
+   * @return list of plugins enabled by the game but not in a strict load order
+   */
+  virtual QStringList enabledPlugins() const { return {}; }
 
   /**
    * this function may be called before init()
@@ -230,7 +235,7 @@ public:
    * to the plugin) like a regular one and a GOTY-edition the plugin can return a list
    * of them and the user gets to chose which one he owns.
    */
-  virtual QStringList gameVariants() const = 0;
+  virtual QStringList gameVariants() const { return {}; }
 
   /**
    * @brief if there are multiple game variants (returned by gameVariants) this will get
@@ -259,7 +264,7 @@ public:
    * considered a 'primary' source for the game so that it isn't flagged as an
    * alternative source
    */
-  virtual QStringList primarySources() const = 0;
+  virtual QStringList primarySources() const { return {}; }
 
   /**
    * @brief Get any valid 'short' name for the game
@@ -271,7 +276,7 @@ public:
    * the short name should be considered the primary handler for a directly supported
    * game for puroses of auto-launching an instance
    */
-  virtual QStringList validShortNames() const = 0;
+  virtual QStringList validShortNames() const { return {}; }
 
   /**
    * @brief Get the 'short' name of the game
@@ -279,41 +284,44 @@ public:
    * the short name of the game is used for - save ames, registry entries and
    * nexus mod pages as far as I can see.
    */
-  virtual QString gameNexusName() const = 0;
+  virtual QString gameNexusName() const { return ""; }
 
   /**
    * @brief Get the list of .ini files this game uses
    *
    * @note It is important that the 'main' .ini file comes first in this list
    */
-  virtual QStringList iniFiles() const = 0;
+  virtual QStringList iniFiles() const { return {}; }
 
   /**
    * @brief Get a list of esp/esm files that are part of known dlcs
    */
-  virtual QStringList DLCPlugins() const = 0;
+  virtual QStringList DLCPlugins() const { return {}; }
 
   /**
    * @brief Get the current list of active Creation Club plugins
    */
-  virtual QStringList CCPlugins() const = 0;
+  virtual QStringList CCPlugins() const { return {}; }
 
   /*
    * @brief determine the load order mechanism used by this game.
    *
    * @note this may throw an exception if the mechanism can't be determined
    */
-  virtual LoadOrderMechanism loadOrderMechanism() const = 0;
+  virtual LoadOrderMechanism loadOrderMechanism() const
+  {
+    return LoadOrderMechanism::None;
+  }
 
   /**
    * @brief determine the sorting mech
    */
-  virtual SortMechanism sortMechanism() const = 0;
+  virtual SortMechanism sortMechanism() const { return SortMechanism::NONE; }
 
   /**
    * @brief Get the Nexus ID of Mod Organizer
    */
-  virtual int nexusModOrganizerID() const = 0;
+  virtual int nexusModOrganizerID() const { return 0; }
 
   /**
    * @brief Get the Nexus Game ID
