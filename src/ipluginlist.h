@@ -212,6 +212,14 @@ public:
    * update existing records
    */
   virtual bool isOverlayFlagged(const QString& name) const = 0;
+
+  /**
+   * @brief determine if a plugin has no records
+   * @param name filename of the plugin (without path but with file extension)
+   * @return true if the file has no records, false if it does OR if the file doesn't
+   * exist.
+   */
+  virtual bool hasNoRecords(const QString& name) const = 0;
 };
 
 }  // namespace MOBase
