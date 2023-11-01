@@ -78,6 +78,7 @@ private slots:
   void modified();
   void patternChanged(QString newPattern);
   void findNext();
+  void showWhitespace_changed(int state);
 
 private:
   void saveFile(const QTextEdit* editor);

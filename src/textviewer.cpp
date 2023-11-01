@@ -42,6 +42,8 @@ TextViewer::TextViewer(const QString& title, QWidget* parent)
   ui->setupUi(this);
   setWindowTitle(title);
   m_EditorTabs = findChild<QTabWidget*>("editorTabs");
+  connect(ui->showWhitespace, SIGNAL(stateChanged(int)), this,
+          SLOT(showWhitespace_changed(int)));
 }
 
 TextViewer::~TextViewer()
@@ -116,6 +118,25 @@ void TextViewer::findNext()
       // there are no matches in the document,
       // restore previous cursor.
       editor->setTextCursor(oldCursor);
+    }
+  }
+}
+
+void TextViewer::showWhitespace_changed(int state)
+{
+  for (int i = 0; i < m_EditorTabs->count(); ++i) {
+    QTextEdit* editor = m_EditorTabs->widget(i)->findChild<QTextEdit*>();
+    if (editor != nullptr) {
+      auto document   = editor->document();
+      auto textOption = document->defaultTextOption();
+      auto flags      = textOption.flags();
+      if (!ui->showWhitespace->isChecked())
+        flags = flags & (~QTextOption::ShowTabsAndSpaces);
+      else
+        flags = flags | QTextOption::ShowTabsAndSpaces;
+      textOption.setFlags(flags);
+      document->setDefaultTextOption(textOption);
+      editor->setDocument(document);
     }
   }
 }
@@ -213,9 +234,11 @@ void TextViewer::addFile(const QString& fileName, bool writable)
   QVBoxLayout* layout     = new QVBoxLayout(page);
   QTextEdit* editor       = new QTextEdit(page);
   QTextDocument* document = new QTextDocument(page);
-  QTextOption option;
-  option.setFlags(QTextOption::ShowTabsAndSpaces);
-  document->setDefaultTextOption(option);
+  if (ui->showWhitespace->isChecked()) {
+    QTextOption option;
+    option.setFlags(QTextOption::ShowTabsAndSpaces);
+    document->setDefaultTextOption(option);
+  }
   editor->setDocument(document);
   editor->setAcceptRichText(false);
   editor->setPlainText(QString(temp));
