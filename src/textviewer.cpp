@@ -43,7 +43,7 @@ TextViewer::TextViewer(const QString& title, QWidget* parent)
   setWindowTitle(title);
   m_EditorTabs = findChild<QTabWidget*>("editorTabs");
   connect(ui->showWhitespace, SIGNAL(stateChanged(int)), this,
-          SLOT(showWhitespace_changed(int)));
+          SLOT(showWhitespaceChanged(int)));
 }
 
 TextViewer::~TextViewer()
@@ -122,7 +122,7 @@ void TextViewer::findNext()
   }
 }
 
-void TextViewer::showWhitespace_changed(int state)
+void TextViewer::showWhitespaceChanged(int state)
 {
   for (int i = 0; i < m_EditorTabs->count(); ++i) {
     QTextEdit* editor = m_EditorTabs->widget(i)->findChild<QTextEdit*>();
@@ -130,7 +130,7 @@ void TextViewer::showWhitespace_changed(int state)
       auto document   = editor->document();
       auto textOption = document->defaultTextOption();
       auto flags      = textOption.flags();
-      if (!ui->showWhitespace->isChecked())
+      if (state == Qt::Unchecked)
         flags = flags & (~QTextOption::ShowTabsAndSpaces);
       else
         flags = flags | QTextOption::ShowTabsAndSpaces;
