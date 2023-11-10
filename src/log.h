@@ -108,6 +108,12 @@ struct QDLLEXPORT converter<QVariant>
   static std::string convert(const QVariant& v);
 };
 
+template <>
+struct QDLLEXPORT converter<std::filesystem::path>
+{
+  static std::string convert(const std::filesystem::path& v);
+};
+
 // custom converter for enum and enum class that seems to not work with latest fmt
 template <typename T>
 struct QDLLEXPORT converter<T, std::enable_if_t<std::is_enum_v<T>>>

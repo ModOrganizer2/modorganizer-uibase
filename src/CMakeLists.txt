@@ -10,6 +10,15 @@ mo2_configure_uibase(uibase
 target_compile_definitions(uibase PRIVATE -DUIBASE_EXPORT)
 mo2_install_target(uibase)
 
+mo2_add_filter(NAME src/extensions GROUPS
+	extension
+	iextensionlist
+	theme
+	translation
+	requirements
+	ipluginloader
+)
+
 mo2_add_filter(NAME src/interfaces GROUPS
 	ifiletree
 	imoinfo
@@ -24,7 +33,6 @@ mo2_add_filter(NAME src/interfaces GROUPS
 	ipluginlist
 	ipluginmodpage
 	ipluginpreview
-	ipluginproxy
 	iplugintool
 	iprofile
 	isavegame

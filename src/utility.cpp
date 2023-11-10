@@ -717,9 +717,9 @@ std::wstring ToWString(const QString& source)
 {
   // FIXME
   // why not source.toStdWString() ?
-  wchar_t* buffer = new wchar_t[static_cast<std::size_t>(source.count()) + 1];
+  wchar_t* buffer = new wchar_t[static_cast<std::size_t>(source.size()) + 1];
   source.toWCharArray(buffer);
-  buffer[source.count()] = L'\0';
+  buffer[source.size()] = L'\0';
   std::wstring result(buffer);
   delete[] buffer;
 
@@ -743,10 +743,20 @@ QString ToQString(const std::string& source)
   return QString::fromStdString(source);
 }
 
+QString ToQString(std::string_view source)
+{
+  return QString::fromUtf8(source.data(), static_cast<qsizetype>(source.size()));
+}
+
 QString ToQString(const std::wstring& source)
 {
   // return QString::fromWCharArray(source.c_str());
   return QString::fromStdWString(source);
+}
+
+QString ToQString(std::wstring_view source)
+{
+  return QString::fromWCharArray(source.data(), static_cast<qsizetype>(source.size()));
 }
 
 QString ToString(const SYSTEMTIME& time)

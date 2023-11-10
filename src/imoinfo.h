@@ -38,6 +38,7 @@ namespace MOBase
 {
 
 class IFileTree;
+class IExtensionList;
 class IModInterface;
 class IModRepositoryBridge;
 class IDownloadManager;
@@ -303,6 +304,11 @@ public:
    * @return interface to the download manager
    */
   virtual MOBase::IDownloadManager* downloadManager() const = 0;
+
+  /**
+   * @return the interface to the extension list.
+   */
+  virtual IExtensionList& extensionList() const = 0;
 
   /**
    * @return interface to the list of plugins (esps, esms, and esls)
