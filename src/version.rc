@@ -24,7 +24,7 @@ BEGIN
         VALUE "FileDescription",  "MO2 Base UI plugin API library\0"
         VALUE "OriginalFilename", "uibase.dll\0"
         VALUE "InternalName", "uibase\0"
-        VALUE "LegalCopyright", "Copyright 2011-2016 Sebastian Herbord\r\nCopyright 2016-2021 Mod Organizer 2 contributors\0"
+        VALUE "LegalCopyright", "Copyright 2011-2016 Sebastian Herbord\r\nCopyright 2016-2023 Mod Organizer 2 contributors\0"
         VALUE "ProductName",      "Mod Organizer 2 UI Base\0"
         VALUE "ProductVersion", VER_FILEVERSION_STR
       END
