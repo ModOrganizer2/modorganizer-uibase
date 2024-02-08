@@ -12,7 +12,7 @@ bool fixDirectoryName(QString& name)
   while (temp.endsWith('.'))
     temp.chop(1);
 
-  temp.replace(QRegularExpression("[<>:\"/\\|?*]"), "");
+  temp.replace(QRegularExpression(R"([<>:"/\\|?*])"), "");
   static QString invalidNames[] = {"CON",  "PRN",  "AUX",  "NUL",  "COM1", "COM2",
                                    "COM3", "COM4", "COM5", "COM6", "COM7", "COM8",
                                    "COM9", "LPT1", "LPT2", "LPT3", "LPT4", "LPT5",
