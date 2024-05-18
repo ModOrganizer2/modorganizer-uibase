@@ -34,6 +34,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 #include <sstream>
 #define WIN32_LEAN_AND_MEAN
 #include <Windows.h>
+#include <format>
 
 #define FO_RECYCLE 0x1003
 
@@ -715,15 +716,7 @@ bool copyFileRecursive(const QString& source, const QString& baseDir,
 
 std::wstring ToWString(const QString& source)
 {
-  // FIXME
-  // why not source.toStdWString() ?
-  wchar_t* buffer = new wchar_t[static_cast<std::size_t>(source.count()) + 1];
-  source.toWCharArray(buffer);
-  buffer[source.count()] = L'\0';
-  std::wstring result(buffer);
-  delete[] buffer;
-
-  return result;
+  return source.toStdWString();
 }
 
 std::string ToString(const QString& source, bool utf8)
@@ -986,7 +979,7 @@ QString getProductVersion(QString const& filepath)
 
   WORD* lpw = (WORD*)lpb;
   auto query =
-      fmt::format(L"\\StringFileInfo\\{:04x}{:04x}\\ProductVersion", lpw[0], lpw[1]);
+      std::format(L"\\StringFileInfo\\{:04x}{:04x}\\ProductVersion", lpw[0], lpw[1]);
   if (!::VerQueryValueW(buff.data(), query.data(), (void**)&lpb, &uiSize) &&
       uiSize > 0) {
     log::debug("VerQueryValue Error %d", ::GetLastError());
