@@ -715,15 +715,7 @@ bool copyFileRecursive(const QString& source, const QString& baseDir,
 
 std::wstring ToWString(const QString& source)
 {
-  // FIXME
-  // why not source.toStdWString() ?
-  wchar_t* buffer = new wchar_t[static_cast<std::size_t>(source.count()) + 1];
-  source.toWCharArray(buffer);
-  buffer[source.count()] = L'\0';
-  std::wstring result(buffer);
-  delete[] buffer;
-
-  return result;
+  return source.toStdWString();
 }
 
 std::string ToString(const QString& source, bool utf8)

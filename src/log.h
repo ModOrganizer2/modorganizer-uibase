@@ -1,6 +1,8 @@
 #pragma once
 
 #include <QColor>
+#include <QFlag>
+#include <QFlags>
 #include <QList>
 #include <QRect>
 #include <QSize>
@@ -108,6 +110,18 @@ struct QDLLEXPORT converter<QVariant>
   static std::string convert(const QVariant& v);
 };
 
+template <>
+struct QDLLEXPORT converter<QFlag>
+{
+  static int convert(const QFlag& v) { return v; }
+};
+
+template <typename T>
+struct QDLLEXPORT converter<QFlags<T>>
+{
+  static auto convert(const QFlags<T>& v) { return v.toInt(); }
+};
+
 // custom converter for enum and enum class that seems to not work with latest fmt
 template <typename T>
 struct QDLLEXPORT converter<T, std::enable_if_t<std::is_enum_v<T>>>
@@ -133,9 +147,18 @@ void doLog(spdlog::logger& logger, Levels lv,
     if constexpr (sizeof...(Args) == 0) {
       s = fmt::format("{}", std::forward<F>(format));
     } else {
+      // fmt::make_format_args takes lvalue-reference, so we cannot pass the converted
+      // arguments directly, instead, converted values are stored in a tuple<> and
+      // std::apply is used to call make_format_args
+      //
+      const auto converted_args = std::make_tuple(
+          converter<std::decay_t<Args>>::convert(std::forward<Args>(args))...);
       s = fmt::vformat(std::forward<F>(format),
-                       fmt::make_format_args(converter<std::decay_t<Args>>::convert(
-                           std::forward<Args>(args))...));
+                       std::apply(
+                           [](auto&... values) {
+                             return fmt::make_format_args(values...);
+                           },
+                           converted_args));
     }
 
     // check the blacklist
