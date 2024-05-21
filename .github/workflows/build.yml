@@ -11,5 +11,5 @@ jobs:
       - name: Build UI Base
         uses: ModOrganizer2/build-with-mob-action@master
         with:
-          mo2-third-parties: fmt gtest spdlog boost
+          mo2-third-parties: gtest spdlog boost
           mo2-dependencies: cmake_common
