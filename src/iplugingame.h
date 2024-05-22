@@ -83,10 +83,12 @@ public:
 
   /**
    * used to override display-specific text in place of the gameName
-   * for example the text for the main window or the initial instance creation game plugin selection/list
-   * 
-   * added for future translation purposes or to make plugins visually more accurate in the ui
-   * 
+   * for example the text for the main window or the initial instance creation game
+   * plugin selection/list
+   *
+   * added for future translation purposes or to make plugins visually more accurate in
+   * the ui
+   *
    * @return display-specific name of the game
    */
   virtual QString displayGameName() const { return gameName(); }
@@ -269,7 +271,7 @@ public:
 
   /**
    * @brief game name that's passed to the LOOT cli --game argument
-   * 
+   *
    * only applicable for games using LOOT based sorting
    * defaults to gameShortName()
    */
