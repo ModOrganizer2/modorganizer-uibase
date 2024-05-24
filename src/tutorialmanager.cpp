@@ -93,8 +93,8 @@ void TutorialManager::registerControl(const QString& windowName,
   std::map<QString, QString>::iterator iter = m_PendingTutorials.find(windowName);
   if (iter != m_PendingTutorials.end()) {
     // there is a pending tutorial for this window, display it
-    QTimer::singleShot(0, [=] {
-      control->startTutorial(m_TutorialPath + iter->second);
+    QTimer::singleShot(0, [control, tutorial = m_TutorialPath + iter->second] {
+      control->startTutorial(tutorial);
     });
     m_PendingTutorials.erase(iter);
   }
