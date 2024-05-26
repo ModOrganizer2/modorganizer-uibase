@@ -47,6 +47,19 @@ struct BlacklistEntry
 
 namespace MOBase::log::details
 {
+
+// TODO: remove for C++23
+template <typename T>
+concept formattable = requires(T& v, std::format_context ctx) {
+  std::formatter<std::remove_cvref_t<T>>().format(v, ctx);
+};
+
+template <typename F, typename... Args>
+concept RuntimeFormatString = requires(F&& f, Args&&... args) {
+  (formattable<Args> && ...);
+  !std::is_convertible_v<std::decay_t<F>, std::string_view>;
+};
+
 void QDLLEXPORT doLogImpl(spdlog::logger& lg, Levels lv, const std::string& s) noexcept;
 
 void QDLLEXPORT ireplace_all(std::string& input, std::string const& search,
@@ -94,11 +107,9 @@ void doLog(spdlog::logger& logger, Levels lv,
     if constexpr (sizeof...(Args) == 0) {
       s = std::format("{}", std::forward<F>(format));
     } else if constexpr (std::is_same_v<std::decay_t<F>, QString>) {
-      s = std::vformat(format.toStdString(),
-                       std::make_format_args(std::forward<Args>(args)...));
+      s = std::vformat(format.toStdString(), std::make_format_args(args...));
     } else {
-      s = std::vformat(std::forward<F>(format),
-                       std::make_format_args(std::forward<Args>(args)...));
+      s = std::vformat(std::forward<F>(format), std::make_format_args(args...));
     }
 
     // check the blacklist
@@ -187,7 +198,7 @@ public:
   void resetBlacklist();
 
   template <class F, class... Args>
-    requires(!std::is_constructible_v<std::string_view, std::decay_t<F>>)
+    requires(details::RuntimeFormatString<F, Args...>)
   void debug(F&& format, Args&&... args) noexcept
   {
     log(Debug, std::forward<F>(format), std::forward<Args>(args)...);
@@ -200,7 +211,7 @@ public:
   }
 
   template <class F, class... Args>
-    requires(!std::is_constructible_v<std::string_view, std::decay_t<F>>)
+    requires(details::RuntimeFormatString<F, Args...>)
   void info(F&& format, Args&&... args) noexcept
   {
     log(Info, std::forward<F>(format), std::forward<Args>(args)...);
@@ -213,7 +224,7 @@ public:
   }
 
   template <class F, class... Args>
-    requires(!std::is_constructible_v<std::string_view, std::decay_t<F>>)
+    requires(details::RuntimeFormatString<F, Args...>)
   void warn(F&& format, Args&&... args) noexcept
   {
     log(Warning, std::forward<F>(format), std::forward<Args>(args)...);
@@ -226,7 +237,7 @@ public:
   }
 
   template <class F, class... Args>
-    requires(!std::is_constructible_v<std::string_view, std::decay_t<F>>)
+    requires(details::RuntimeFormatString<F, Args...>)
   void error(F&& format, Args&&... args) noexcept
   {
     log(Error, std::forward<F>(format), std::forward<Args>(args)...);
@@ -239,7 +250,7 @@ public:
   }
 
   template <class F, class... Args>
-    requires(!std::is_constructible_v<std::string_view, std::decay_t<F>>)
+    requires(details::RuntimeFormatString<F, Args...>)
   void log(Levels lv, F&& format, Args&&... args) noexcept
   {
     details::doLog(*m_logger, lv, m_conf.blacklist, std::forward<F>(format),
@@ -267,7 +278,7 @@ QDLLEXPORT void createDefault(LoggerConfiguration conf);
 QDLLEXPORT Logger& getDefault();
 
 template <class F, class... Args>
-  requires(!std::is_constructible_v<std::string_view, std::decay_t<F>>)
+  requires(details::RuntimeFormatString<F, Args...>)
 void debug(F&& format, Args&&... args) noexcept
 {
   getDefault().debug(std::forward<F>(format), std::forward<Args>(args)...);
@@ -280,7 +291,7 @@ void debug(std::format_string<Args...> format, Args&&... args) noexcept
 }
 
 template <class F, class... Args>
-  requires(!std::is_constructible_v<std::string_view, std::decay_t<F>>)
+  requires(details::RuntimeFormatString<F, Args...>)
 void info(F&& format, Args&&... args) noexcept
 {
   getDefault().info(std::forward<F>(format), std::forward<Args>(args)...);
@@ -293,7 +304,7 @@ void info(std::format_string<Args...> format, Args&&... args) noexcept
 }
 
 template <class F, class... Args>
-  requires(!std::is_constructible_v<std::string_view, std::decay_t<F>>)
+  requires(details::RuntimeFormatString<F, Args...>)
 void warn(F&& format, Args&&... args) noexcept
 {
   getDefault().warn(std::forward<F>(format), std::forward<Args>(args)...);
@@ -306,7 +317,7 @@ void warn(std::format_string<Args...> format, Args&&... args) noexcept
 }
 
 template <class F, class... Args>
-  requires(!std::is_constructible_v<std::string_view, std::decay_t<F>>)
+  requires(details::RuntimeFormatString<F, Args...>)
 void error(F&& format, Args&&... args) noexcept
 {
   getDefault().error(std::forward<F>(format), std::forward<Args>(args)...);
@@ -319,7 +330,7 @@ void error(std::format_string<Args...> format, Args&&... args) noexcept
 }
 
 template <class F, class... Args>
-  requires(!std::is_constructible_v<std::string_view, std::decay_t<F>>)
+  requires(details::RuntimeFormatString<F, Args...>)
 void log(Levels lv, F&& format, Args&&... args) noexcept
 {
   getDefault().log(lv, std::forward<F>(format), std::forward<Args>(args)...);
