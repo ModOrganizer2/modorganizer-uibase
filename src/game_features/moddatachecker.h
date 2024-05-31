@@ -1,14 +1,15 @@
-#ifndef MODDATACHECKER_H
-#define MODDATACHECKER_H
+#ifndef UIBASE_GAMEFEATURES_MODDATACHECKER_H
+#define UIBASE_GAMEFEATURES_MODDATACHECKER_H
 
 #include <memory>
+
+#include "./game_feature.h"
 
 namespace MOBase
 {
 class IFileTree;
-}
 
-class ModDataChecker
+class ModDataChecker : public details::GameFeatureCRTP<ModDataChecker>
 {
 public:
   /**
@@ -59,12 +60,7 @@ public:
   {
     return nullptr;
   }
-
-public:
-  /**
-   *
-   */
-  virtual ~ModDataChecker() {}
 };
+}  // namespace MOBase
 
 #endif

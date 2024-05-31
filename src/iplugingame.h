@@ -93,26 +93,6 @@ public:
    */
   virtual QString displayGameName() const { return gameName(); }
 
-  template <typename T>
-  T* feature() const
-  {
-    auto list = featureList();
-    auto iter = list.find(typeid(T));
-    if (iter != list.end()) {
-      try {
-        return std::any_cast<T*>(iter->second);
-      } catch (const std::bad_any_cast&) {
-        // don't use log::error() here so log.h and fmt aren't pulled into
-        // plugins
-        qCritical("failed to retrieve feature type %s (got %s)", typeid(T).name(),
-                  typeid(iter->second).name());
-        return nullptr;
-      }
-    } else {
-      return nullptr;
-    }
-  }
-
   /**
    * @brief Detect the game.
    *
@@ -369,9 +349,6 @@ public:
    * @brief Get a URL for the support page for the game
    */
   virtual QString getSupportURL() const { return ""; }
-
-protected:
-  virtual std::map<std::type_index, std::any> featureList() const = 0;
 };
 
 Q_DECLARE_OPERATORS_FOR_FLAGS(IPluginGame::ProfileSettings)

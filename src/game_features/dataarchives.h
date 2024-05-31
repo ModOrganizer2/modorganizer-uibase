@@ -1,20 +1,18 @@
-#ifndef DATAARCHIVES
-#define DATAARCHIVES
+#ifndef UIBASE_GAMEFEATURES_DATAARCHIVES_H
+#define UIBASE_GAMEFEATURES_DATAARCHIVES_H
 
 #include <QString>
 #include <QStringList>
 
+#include "./game_feature.h"
+
 namespace MOBase
 {
 class IProfile;
-}
 
-class DataArchives
+class DataArchives : public details::GameFeatureCRTP<DataArchives>
 {
-
 public:
-  virtual ~DataArchives() {}
-
   virtual QStringList vanillaArchives() const = 0;
 
   virtual QStringList archives(const MOBase::IProfile* profile) const = 0;
@@ -31,5 +29,7 @@ public:
 
   virtual void removeArchive(MOBase::IProfile* profile, const QString& archiveName) = 0;
 };
+
+}  // namespace MOBase
 
 #endif  // DATAARCHIVES

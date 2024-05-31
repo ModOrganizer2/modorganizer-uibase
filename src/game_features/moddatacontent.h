@@ -1,5 +1,5 @@
-#ifndef MODDATACONTENT_H
-#define MODDATACONTENT_H
+#ifndef UIBASE_GAMEFEATURES_MODDATACONTENT_H
+#define UIBASE_GAMEFEATURES_MODDATACONTENT_H
 
 #include <algorithm>
 #include <memory>
@@ -7,10 +7,11 @@
 
 #include <QString>
 
+#include "./game_feature.h"
+
 namespace MOBase
 {
 class IFileTree;
-}
 
 /**
  * The ModDataContent feature is used (when available) to indicate to users the content
@@ -55,7 +56,7 @@ class IFileTree;
  *  - modgroup:
  * https://github.com/ModOrganizer2/modorganizer/blob/master/src/resources/contents/xedit.png
  */
-class ModDataContent
+class ModDataContent : public details::GameFeatureCRTP<ModDataContent>
 {
 public:
   struct Content
@@ -115,12 +116,7 @@ public:
    */
   virtual std::vector<int>
   getContentsFor(std::shared_ptr<const MOBase::IFileTree> fileTree) const = 0;
-
-public:
-  /**
-   *
-   */
-  virtual ~ModDataContent() {}
 };
+}  // namespace MOBase
 
 #endif
