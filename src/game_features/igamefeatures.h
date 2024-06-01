@@ -136,7 +136,7 @@ public:
   template <BaseGameFeature Feature>
   int unregisterFeatures()
   {
-    unregisterFeaturesImpl(typeid(Feature));
+    return unregisterFeaturesImpl(typeid(Feature));
   }
 
   /**
