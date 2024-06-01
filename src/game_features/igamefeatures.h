@@ -145,19 +145,20 @@ public:
    * @return the feature of the given type, if one exists, otherwise a null pointer.
    */
   template <BaseGameFeature T>
-  T* gameFeature() const
+  std::shared_ptr<T> gameFeature() const
   {
     // gameFeatureImpl ensure that the returned pointer is of the right type (or
     // nullptr), so reinterpret_cast should be fine here
-    return dynamic_cast<T*>(gameFeatureImpl(typeid(T)));
+    return std::dynamic_pointer_cast<T>(gameFeatureImpl(typeid(T)));
   }
 
 public:
   virtual ~IGameFeatures() = default;
 
 protected:
-  virtual GameFeature* gameFeatureImpl(std::type_info const& info) const = 0;
-  virtual int unregisterFeaturesImpl(std::type_info const& info)         = 0;
+  virtual std::shared_ptr<GameFeature>
+  gameFeatureImpl(std::type_info const& info) const              = 0;
+  virtual int unregisterFeaturesImpl(std::type_info const& info) = 0;
 };
 
 }  // namespace MOBase
