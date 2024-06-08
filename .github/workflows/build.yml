@@ -1,15 +1,24 @@
 name: Build UIBase
+
 on:
   push:
     branches: master
   pull_request:
     types: [opened, synchronize, reopened]
+
 jobs:
   build:
     runs-on: windows-2022
     steps:
       - name: Build UI Base
+        id: build-uibase
         uses: ModOrganizer2/build-with-mob-action@master
         with:
           mo2-third-parties: gtest spdlog boost
           mo2-dependencies: cmake_common
+      - name: Build UI Base Tests
+        run: cmake --build vsbuild --config RelWithDebInfo -j4 --target uibase-tests
+        working-directory: ${{ steps.build-uibase.outputs.working-directory }}
+      - name: Test UI Base
+        run: ctest --test-dir vsbuild -C RelWithDebInfo --output-on-failure
+        working-directory: ${{ steps.build-uibase.outputs.working-directory }}
