@@ -18,6 +18,7 @@ mo2_add_filter(NAME src/interfaces GROUPS
 	iplugindiagnose
 	ipluginfilemapper
 	iplugingame
+	iplugingamefeatures
 	iplugininstaller
 	iplugininstallercustom
 	iplugininstallersimple

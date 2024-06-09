@@ -1,22 +1,20 @@
-#ifndef SAVEGAMEINFO_H
-#define SAVEGAMEINFO_H
-
-namespace MOBase
-{
-class ISaveGame;
-}
-namespace MOBase
-{
-class ISaveGameInfoWidget;
-}
+#ifndef UIBASE_GAMEFEATURES_SAVEGAMEINFO_H
+#define UIBASE_GAMEFEATURES_SAVEGAMEINFO_H
 
 #include <QMap>
 #include <QString>
 #include <QStringList>
 #include <QWidget>
 
+#include "./game_feature.h"
+
+namespace MOBase
+{
+class ISaveGame;
+class ISaveGameInfoWidget;
+
 /** Feature to get hold of stuff to do with save games */
-class SaveGameInfo
+class SaveGameInfo : public details::GameFeatureCRTP<SaveGameInfo>
 {
 public:
   virtual ~SaveGameInfo() {}
@@ -49,5 +47,6 @@ public:
    */
   virtual MOBase::ISaveGameInfoWidget* getSaveGameWidget(QWidget* parent = 0) const = 0;
 };
+}  // namespace MOBase
 
 #endif  // SAVEGAMEINFO_H

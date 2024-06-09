@@ -1,14 +1,17 @@
-#ifndef UNMANAGEDMODS_H
-#define UNMANAGEDMODS_H
+#ifndef UIBASE_GAMEFEATURES_UNMANAGEDMODS_H
+#define UIBASE_GAMEFEATURES_UNMANAGEDMODS_H
 
 #include <QFileInfo>
 #include <QString>
 #include <QStringList>
 
-class UnmanagedMods
+#include "./game_feature.h"
+
+namespace MOBase
 {
 
-public:
+class UnmanagedMods : public details::GameFeatureCRTP<UnmanagedMods>
+{
 public:
   virtual ~UnmanagedMods() {}
 
@@ -36,5 +39,7 @@ public:
    */
   virtual QStringList secondaryFiles(const QString& modName) const = 0;
 };
+
+}  // namespace MOBase
 
 #endif  // UNMANAGEDMODS_H

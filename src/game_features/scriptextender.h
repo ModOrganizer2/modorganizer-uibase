@@ -1,12 +1,17 @@
-#ifndef SCRIPTEXTENDER
-#define SCRIPTEXTENDER
+#ifndef UIBASE_GAMEFEATURES_SCRIPTEXTENDER
+#define UIBASE_GAMEFEATURES_SCRIPTEXTENDER
 
 #include <windows.h>
 
 #include <QString>
 #include <QStringList>
 
-class ScriptExtender
+#include "./game_feature.h"
+
+namespace MOBase
+{
+
+class ScriptExtender : public details::GameFeatureCRTP<ScriptExtender>
 {
 
 public:
@@ -36,5 +41,7 @@ public:
   /** Get CPU platform of extender */
   virtual WORD getArch() const = 0;
 };
+
+}  // namespace MOBase
 
 #endif  // SCRIPTEXTENDER

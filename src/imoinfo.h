@@ -27,8 +27,10 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 #include <QString>
 #include <QVariant>
 #include <Windows.h>
+#include <any>
 #include <functional>
 
+#include "game_feature.h"
 #include "guessedvalue.h"
 #include "imodlist.h"
 #include "iprofile.h"
@@ -44,6 +46,7 @@ class IDownloadManager;
 class IPluginList;
 class IPlugin;
 class IPluginGame;
+class IGameFeatures;
 
 /**
  * @brief Interface to class that provides information about the running session
@@ -302,22 +305,27 @@ public:
   /**
    * @return interface to the download manager
    */
-  virtual MOBase::IDownloadManager* downloadManager() const = 0;
+  virtual IDownloadManager* downloadManager() const = 0;
 
   /**
    * @return interface to the list of plugins (esps, esms, and esls)
    */
-  virtual MOBase::IPluginList* pluginList() const = 0;
+  virtual IPluginList* pluginList() const = 0;
 
   /**
    * @return interface to the list of mods
    */
-  virtual MOBase::IModList* modList() const = 0;
+  virtual IModList* modList() const = 0;
 
   /**
    * @return interface to the active profile
    */
-  virtual MOBase::IProfile* profile() const = 0;
+  virtual IProfile* profile() const = 0;
+
+  /**
+   * @return interface to game features.
+   */
+  virtual IGameFeatures* gameFeatures() const = 0;
 
   /**
    * @brief runs a program using the virtual filesystem
