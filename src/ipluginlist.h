@@ -195,6 +195,16 @@ public:
   virtual bool isMasterFlagged(const QString& name) const = 0;
 
   /**
+   * @brief determine if a plugin is flagged as medium
+   * @param name filename of the plugin (without path but with file extension)
+   * @return true if the file is flagged as medium, false if it isn't OR if the file
+   * doesn't exist.
+   * @note this plugin flag was added in Starfield and signifies plugins in between
+   * master and light plugins.
+   */
+  virtual bool isMediumFlagged(const QString& name) const = 0;
+
+  /**
    * @brief determine if a plugin is flagged as light
    * @param name filename of the plugin (without path but with file extension)
    * @return true if the file is flagged as light, false if it isn't OR if the file
@@ -202,16 +212,6 @@ public:
    * @note in gamebryo games, a light file will usually have a .esl file
    */
   virtual bool isLightFlagged(const QString& name) const = 0;
-
-  /**
-   * @brief determine if a plugin is flagged as an overlay
-   * @param name filename of the plugin (without path but with file extension)
-   * @return true if the file is flagged as overlay, false if it isn't OR if the file
-   * doesn't exist.
-   * @note this plugin flag was added in Starfield and signifies plugin records that
-   * update existing records
-   */
-  virtual bool isOverlayFlagged(const QString& name) const = 0;
 
   /**
    * @brief determine if a plugin has no records
