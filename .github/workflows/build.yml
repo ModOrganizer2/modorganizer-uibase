@@ -21,8 +21,7 @@ jobs:
         working-directory: ${{ steps.build-uibase.outputs.working-directory }}
 
       - name: Test UI Base
-        # there are missing stuffs in the CI currently that fails the test, to be
-        # investigated
-        continue-on-error: true
-        run: ctest --test-dir vsbuild -C RelWithDebInfo --output-on-failure
+        run: |
+          windeployqt.exe vsbuild/tests/RelWithDebInfo/uibase-tests.exe vsbuild/src/RelWithDebInfo/uibase.dll
+          ctest --test-dir vsbuild -C RelWithDebInfo --output-on-failure
         working-directory: ${{ steps.build-uibase.outputs.working-directory }}
