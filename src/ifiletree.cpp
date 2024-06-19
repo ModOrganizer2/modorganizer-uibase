@@ -265,8 +265,7 @@ IFileTree::iterator IFileTree::insert(std::shared_ptr<FileTreeEntry> entry,
     return existingIt;
   }
 
-  // Find the insertion iterator:
-  auto insertionIt = std::lower_bound(begin(), end(), entry, FileEntryComparator{});
+  auto insertionIt = end();
 
   if (existingIt != end()) {
     if (insertPolicy == InsertPolicy::FAIL_IF_EXISTS) {
@@ -282,13 +281,15 @@ IFileTree::iterator IFileTree::insert(std::shared_ptr<FileTreeEntry> entry,
         // to remove the entry since we are replacing it):
         (*existingIt)->m_Parent.reset();
         entries().erase(existingIt);
-        insertionIt = entries().insert(insertionIt, entry);
+
+        // insert at the right place
+        insertionIt = entries().insert(
+            std::lower_bound(begin(), end(), entry, FileEntryComparator{}), entry);
       } else {
         return end();
       }
-    }
-    // If we arrive here and one of the entry is a file, we fail:
-    else if ((*existingIt)->isFile() || entry->isFile()) {
+    } else if ((*existingIt)->isFile() || entry->isFile()) {
+      // If we arrive here and one of the entry is a file, we fail:
       return end();
     } else {
       // If we end up here, we know that the policy is MERGE and that both
@@ -297,7 +298,8 @@ IFileTree::iterator IFileTree::insert(std::shared_ptr<FileTreeEntry> entry,
       insertionIt = existingIt;
     }
   } else if (beforeInsert(this, entry.get())) {
-    insertionIt = entries().insert(insertionIt, entry);
+    insertionIt = entries().insert(
+        std::lower_bound(begin(), end(), entry, FileEntryComparator{}), entry);
   }
 
   // Remove the tree from its parent (parent() can be null if we are inserting
