@@ -10,5 +10,8 @@ endif()
 
 add_subdirectory(src)
 
-enable_testing()
-add_subdirectory(tests)
+set(UIBASE_TESTS ${UIBASE_TESTS} CACHE BOOL "build tests for uibase")
+if (UIBASE_TESTS)
+	enable_testing()
+	add_subdirectory(tests)
+endif()
