@@ -97,7 +97,7 @@ protected:
       Entry e;
       e.time    = m.time;
       e.level   = fromSpdlog(m.level);
-      e.message = fmt::to_string(m.payload);
+      e.message = std::string(m.payload);
 
       spdlog::memory_buf_t formatted;
       base_sink::formatter_->format(m, formatted);
@@ -106,7 +106,7 @@ protected:
         // remove \r\n
         e.formattedMessage.assign(formatted.begin(), formatted.end() - 2);
       } else {
-        e.formattedMessage = fmt::to_string(formatted);
+        e.formattedMessage = std::string(formatted);
       }
 
       (*m_f)(std::move(e));
