@@ -62,3 +62,11 @@ list(TRANSFORM game_features REPLACE ".*game_features[/\\](.*)[.]h" "game_featur
 mo2_add_filter(NAME src/game_features GROUPS
 	${game_features}
 )
+
+get_target_property(formatters uibase SOURCES)
+list(FILTER formatters INCLUDE REGEX ".*formatters.*")
+list(TRANSFORM formatters REPLACE ".*formatters[/\\](.*)[.]h" "formatters/\\1")
+
+mo2_add_filter(NAME src/formatters GROUPS
+	${formatters}
+)
