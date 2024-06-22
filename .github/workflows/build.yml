@@ -16,13 +16,12 @@ jobs:
         with:
           mo2-third-parties: gtest spdlog boost
           mo2-dependencies: cmake_common
+          mo2-cmake-command: -DUIBASE_TESTS=1 ..
+
       - name: Build UI Base Tests
         run: cmake --build vsbuild --config RelWithDebInfo -j4 --target uibase-tests
         working-directory: ${{ steps.build-uibase.outputs.working-directory }}
 
       - name: Test UI Base
-        # there are missing stuffs in the CI currently that fails the test, to be
-        # investigated
-        continue-on-error: true
         run: ctest --test-dir vsbuild -C RelWithDebInfo --output-on-failure
         working-directory: ${{ steps.build-uibase.outputs.working-directory }}
