@@ -36,6 +36,12 @@ public:
   virtual std::set<QString> supportedExtensions() const = 0;
 
   /**
+   * @return return whether or not the preview supports raw data previews (likely
+   * sourced from an archive)
+   */
+  virtual bool supportsArchives() const { return false; }
+
+  /**
    * @brief generate a preview widget for the specified file
    * @param fileName name of the file to preview
    * @param maxSize maximum size of the generated widget
@@ -43,6 +49,18 @@ public:
    */
   virtual QWidget* genFilePreview(const QString& fileName,
                                   const QSize& maxSize) const = 0;
+
+  /**
+   * @brief generate a preview widget from an archive file loaded into memory
+   * @param fileData data of file to preview
+   * @param fileName path of file in virtual filesystem
+   * @param maxSize maxiumum size of the generated widget
+   */
+  virtual QWidget* genDataPreview(const QByteArray& fileData, const QString& fileName,
+                                  const QSize& maxSize) const
+  {
+    return nullptr;
+  }
 
 private:
 };
