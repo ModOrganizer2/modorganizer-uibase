@@ -137,10 +137,15 @@ public:
   //
   const auto& requirements() const { return m_Requirements; }
 
+public:
   virtual ~IExtension() {}
+  IExtension& operator=(const IExtension&) = delete;
 
 protected:
   IExtension(std::filesystem::path path, ExtensionMetaData metadata);
+
+public:
+  IExtension(const IExtension&) = default;
 
 private:
   std::filesystem::path m_Path;

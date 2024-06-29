@@ -23,7 +23,7 @@ ExtensionRequirement::ExtensionRequirement(
 
 ExtensionRequirement::~ExtensionRequirement() = default;
 
-bool ExtensionRequirement::check(IOrganizer* organizer) const
+bool ExtensionRequirement::check([[maybe_unused]] IOrganizer* organizer) const
 {
   return true;
 }
@@ -45,6 +45,7 @@ ExtensionRequirementFactory::parseRequirements(const ExtensionMetaData& metadata
 
   std::vector<ExtensionRequirement> requirements;
   for (const auto& json_requirement : json_requirements.toArray()) {
+    // TODO
   }
 
   return requirements;
