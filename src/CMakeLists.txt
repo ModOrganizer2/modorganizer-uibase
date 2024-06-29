@@ -34,12 +34,12 @@ set(root_headers
 	../include/uibase/versioninfo.h
 )
 set(extension_headers
-	../include/uibase/extension.h
-	../include/uibase/iextensionlist.h
-	../include/uibase/ipluginloader.h
-	../include/uibase/requirements.h
-	../include/uibase/theme.h
-	../include/uibase/translation.h
+	../include/uibase/extensions/extension.h
+	../include/uibase/extensions/iextensionlist.h
+	../include/uibase/extensions/ipluginloader.h
+	../include/uibase/extensions/requirements.h
+	../include/uibase/extensions/theme.h
+	../include/uibase/extensions/translation.h
 )
 set(interface_headers
 	../include/uibase/ifiletree.h
@@ -97,6 +97,7 @@ set(game_features_header
 set(formatters_header
 	../include/uibase/formatters/enums.h
 	../include/uibase/formatters/qt.h
+	../include/uibase/formatters/path.h
 	../include/uibase/formatters/random_access_containers.h
 	../include/uibase/formatters/strings.h
 	../include/uibase/formatters.h
