@@ -34,6 +34,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 #include "guessedvalue.h"
 #include "imodlist.h"
 #include "iprofile.h"
+#include "version.h"
 #include "versioninfo.h"
 
 namespace MOBase
@@ -121,7 +122,12 @@ public:
   /**
    * @return the running version of Mod Organizer
    */
-  virtual VersionInfo appVersion() const = 0;
+  [[deprecated]] virtual VersionInfo appVersion() const = 0;
+
+  /**
+   * @return the running version of Mod Organizer
+   */
+  virtual Version version() const = 0;
 
   /**
    * @brief create a new mod with the specified name
