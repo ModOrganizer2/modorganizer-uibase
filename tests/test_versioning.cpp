@@ -38,11 +38,15 @@ TEST(VersioningTest, VersionParse)
   ASSERT_EQ(Version(1, 0, 0, Alpha, 1), Version::parse("1.0.0a1", ParseMode::MO2));
   ASSERT_EQ(Version(1, 0, 0, Alpha, 1), Version::parse("1.0.0alpha1", ParseMode::MO2));
   ASSERT_EQ(Version(1, 0, 0, Beta, 2), Version::parse("1.0.0beta2", ParseMode::MO2));
-  ASSERT_EQ(Version(2, 2, 2, {1}), Version::parse("2.2.2.1", ParseMode::MO2));
+  ASSERT_EQ(Version(1, 0, 0, Beta, 2), Version::parse("1.0.0beta2", ParseMode::MO2));
+  ASSERT_EQ(Version(2, 4, 1, {ReleaseCandidate, 1, 1}),
+            Version::parse("2.4.1rc1.1", ParseMode::MO2));
   ASSERT_EQ(Version(2, 2, 2, {1, Beta, 2}),
             Version::parse("2.2.2.1beta2", ParseMode::MO2));
   ASSERT_EQ(Version(2, 5, 2, ReleaseCandidate, 1),
-            Version::parse("2.5.2rc1", ParseMode::MO2));
+            Version::parse("v2.5.2rc1", ParseMode::MO2));
+  ASSERT_EQ(Version(2, 5, 2, ReleaseCandidate, 2),
+            Version::parse("2.5.2rc2", ParseMode::MO2));
 }
 
 TEST(VersioningTest, VersionString)
@@ -74,5 +78,10 @@ TEST(VersioningTest, VersionCompare)
   ASSERT_TRUE(v(1, 0, 0, {Beta, 11}) < v(1, 0, 0, {ReleaseCandidate, 1}));
   ASSERT_TRUE(v(1, 0, 0, {ReleaseCandidate, 1}) < v(1, 0, 0));
 
+  ASSERT_TRUE(v(2, 4, 1, {ReleaseCandidate, 1, 0}) ==
+              v(2, 4, 1, {ReleaseCandidate, 1}));
+  ASSERT_TRUE(v(2, 4, 1, {ReleaseCandidate, 1, 0}) <
+              v(2, 4, 1, {ReleaseCandidate, 1, 1}));
+  ASSERT_TRUE(v(2, 4, 1, {ReleaseCandidate, 1}) < v(2, 4, 1, {ReleaseCandidate, 1, 1}));
   ASSERT_TRUE(v(1, 0, 0) < v(2, 0, 0, {Alpha}));
 }

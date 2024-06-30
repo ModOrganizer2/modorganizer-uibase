@@ -10,9 +10,9 @@
 static const QRegularExpression s_SemVerStrictRegEx{
     R"(^(?P<major>0|[1-9]\d*)\.(?P<minor>0|[1-9]\d*)\.(?P<patch>0|[1-9]\d*)(?:-(?P<prerelease>(?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*)(?:\.(?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*))*))?(?:\+(?P<buildmetadata>[0-9a-zA-Z-]+(?:\.[0-9a-zA-Z-]+)*))?$)"};
 
-// for MO2, to match stuff like 1.2.3rc1 or 1.2.3a1+XXX
+// for MO2, to match stuff like 1.2.3rc1 or v1.2.3a1+XXX
 static const QRegularExpression s_SemVerMO2RegEx{
-    R"(^(?P<major>0|[1-9]\d*)\.(?P<minor>0|[1-9]\d*)\.(?P<patch>0|[1-9]\d*)(?:\.(?P<subpatch>0|[1-9]\d*))?(?:(?P<type>dev|a|alpha|b|beta|rc)(?P<prerelease>0|[1-9]\d*))?(?:\+(?P<buildmetadata>[0-9a-zA-Z-]+(?:\.[0-9a-zA-Z-]+)*))?$)"};
+    R"(^v?(?P<major>0|[1-9]\d*)\.(?P<minor>0|[1-9]\d*)\.(?P<patch>0|[1-9]\d*)(?:\.(?P<subpatch>0|[1-9]\d*))?(?:(?P<type>dev|a|alpha|b|beta|rc)(?P<prerelease>0|[1-9](?:[.0-9])*))?(?:\+(?P<buildmetadata>[0-9a-zA-Z-]+(?:\.[0-9a-zA-Z-]+)*))?$)"};
 
 // match from value to release type
 static const std::unordered_map<QString, MOBase::Version::ReleaseType>
@@ -88,7 +88,15 @@ namespace
     // unlike semver, the regex will only match valid values
     if (match.hasCaptured("type")) {
       prereleases.push_back(s_StringToRelease.at(match.captured("type")));
-      prereleases.push_back(match.captured("prerelease").toInt());
+
+      // for version with decimal point, e.g., 2.4.1rc1.1, we split the components into
+      // pre-release components to get {rc, 1, 1} - this works fine since {rc, 1} < {rc,
+      // 1, 1}
+      //
+      for (const auto& preVersion :
+           match.captured("prerelease").split(".", Qt::SkipEmptyParts)) {
+        prereleases.push_back(preVersion.toInt());
+      }
     }
 
     const auto buildMetadata = match.captured("buildmetadata").trimmed();
@@ -164,6 +172,23 @@ QString Version::string() const
   return QString::fromStdString(value);
 }
 
+namespace
+{
+  // consume the given iterator until the given end iterator or until a non-zero value
+  // is found
+  //
+  template <class It>
+  It consumePreReleaseZeros(It it, It end)
+  {
+    for (; it != end; ++it) {
+      if (!std::holds_alternative<int>(*it) != 0 || std::get<int>(*it) != 0) {
+        break;
+      }
+    }
+    return it;
+  };
+}  // namespace
+
 std::strong_ordering operator<=>(const Version& lhs, const Version& rhs)
 {
   auto mmp_cmp = std::forward_as_tuple(lhs.major(), lhs.minor(), lhs.patch()) <=>
@@ -185,11 +210,11 @@ std::strong_ordering operator<=>(const Version& lhs, const Version& rhs)
   }
 
   // compare pre-release fields
-  for (std::size_t i = 0;
-       i < std::min(lhs.preReleases().size(), rhs.preReleases().size()); ++i) {
+  auto lhsIt = lhs.preReleases().begin(), rhsIt = rhs.preReleases().begin();
+  for (; lhsIt != lhs.preReleases().end() && rhsIt != rhs.preReleases().end();
+       ++lhsIt, ++rhsIt) {
 
-    const auto& lhsPre = lhs.preReleases()[i];
-    const auto& rhsPre = rhs.preReleases()[i];
+    const auto &lhsPre = *lhsIt, rhsPre = *rhsIt;
 
     // if one is alpha/beta/etc. and the other is numeric, the alpha/beta/etc. is lower
     // than the numeric one, which matches the index
@@ -205,9 +230,26 @@ std::strong_ordering operator<=>(const Version& lhs, const Version& rhs)
     }
   }
 
-  // if we land here, the prefix of both pre were identical, so we need to compare the
-  // size and the comparison is the reverse (i.e., the shorter wins)
-  return lhs.preReleases().size() <=> rhs.preReleases().size();
+  // the code below does not follow semver 100% (I think) - basically, this makes stuff
+  // like 2.4.1rc1.0 equals to 2.4.1rc1, which according to semver is probably not right
+  // but is probably best for us
+  //
+
+  // if we land here, we have consumed one of the pre-release, we skip all the 0 in the
+  // remaining one
+  lhsIt = consumePreReleaseZeros(lhsIt, lhs.preReleases().end());
+  rhsIt = consumePreReleaseZeros(rhsIt, rhs.preReleases().end());
+
+  const auto lhsConsumed = lhsIt == lhs.preReleases().end(),
+             rhsConsumed = rhsIt == rhs.preReleases().end();
+
+  if (lhsConsumed && rhsConsumed) {
+    return std::strong_ordering::equal;
+  } else if (!lhsConsumed) {
+    return std::strong_ordering::greater;
+  } else {
+    return std::strong_ordering::less;
+  }
 }
 
 }  // namespace MOBase
