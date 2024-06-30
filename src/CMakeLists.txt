@@ -30,6 +30,7 @@ set(root_headers
 	../include/uibase/steamutility.h
 	../include/uibase/strings.h
 	../include/uibase/utility.h
+	../include/uibase/version.h
 	../include/uibase/versioninfo.h
 )
 set(interface_headers
@@ -123,6 +124,7 @@ mo2_target_sources(uibase
 	steamutility.cpp
 	strings.cpp
 	utility.cpp
+	version.cpp
 	versioninfo.cpp
 )
 
