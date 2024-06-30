@@ -12,7 +12,7 @@ static const QRegularExpression s_SemVerStrictRegEx{
 
 // for MO2, to match stuff like 1.2.3rc1 or 1.2.3a1+XXX
 static const QRegularExpression s_SemVerMO2RegEx{
-    R"(^(?P<major>0|[1-9]\d*)\.(?P<minor>0|[1-9]\d*)\.(?P<patch>0|[1-9]\d*)(?:(?P<type>dev|a|alpha|b|beta|rc)(?P<prerelease>0|[1-9]\d*))?(?:\+(?P<buildmetadata>[0-9a-zA-Z-]+(?:\.[0-9a-zA-Z-]+)*))?$)"};
+    R"(^(?P<major>0|[1-9]\d*)\.(?P<minor>0|[1-9]\d*)\.(?P<patch>0|[1-9]\d*)(?:\.(?P<subpatch>0|[1-9]\d*))?(?:(?P<type>dev|a|alpha|b|beta|rc)(?P<prerelease>0|[1-9]\d*))?(?:\+(?P<buildmetadata>[0-9a-zA-Z-]+(?:\.[0-9a-zA-Z-]+)*))?$)"};
 
 // match from value to release type
 static const std::unordered_map<QString, MOBase::Version::ReleaseType>
@@ -81,8 +81,12 @@ namespace
     const auto patch = match.captured("patch").toInt();
 
     std::vector<std::variant<int, Version::ReleaseType>> prereleases;
+    if (match.hasCaptured("subpatch")) {
+      prereleases.push_back(match.captured("subpatch").toInt());
+    }
+
+    // unlike semver, the regex will only match valid values
     if (match.hasCaptured("type")) {
-      // unlike semver, the regex will only match valid values
       prereleases.push_back(s_StringToRelease.at(match.captured("type")));
       prereleases.push_back(match.captured("prerelease").toInt());
     }
