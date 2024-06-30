@@ -38,6 +38,9 @@ TEST(VersioningTest, VersionParse)
   ASSERT_EQ(Version(1, 0, 0, Alpha, 1), Version::parse("1.0.0a1", ParseMode::MO2));
   ASSERT_EQ(Version(1, 0, 0, Alpha, 1), Version::parse("1.0.0alpha1", ParseMode::MO2));
   ASSERT_EQ(Version(1, 0, 0, Beta, 2), Version::parse("1.0.0beta2", ParseMode::MO2));
+  ASSERT_EQ(Version(2, 2, 2, {1}), Version::parse("2.2.2.1", ParseMode::MO2));
+  ASSERT_EQ(Version(2, 2, 2, {1, Beta, 2}),
+            Version::parse("2.2.2.1beta2", ParseMode::MO2));
   ASSERT_EQ(Version(2, 5, 2, ReleaseCandidate, 1),
             Version::parse("2.5.2rc1", ParseMode::MO2));
 }
