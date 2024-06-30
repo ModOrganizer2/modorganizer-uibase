@@ -108,26 +108,6 @@ inline bool operator==(const Version& lhs, const Version& rhs)
 {
   return (lhs <=> rhs) == 0;
 }
-inline bool operator!=(const Version& lhs, const Version& rhs)
-{
-  return (lhs <=> rhs) != 0;
-}
-inline bool operator<(const Version& lhs, const Version& rhs)
-{
-  return (lhs <=> rhs) < 0;
-}
-inline bool operator>(const Version& lhs, const Version& rhs)
-{
-  return (lhs <=> rhs) > 0;
-}
-inline bool operator<=(const Version& lhs, const Version& rhs)
-{
-  return (lhs <=> rhs) <= 0;
-}
-inline bool operator>=(const Version& lhs, const Version& rhs)
-{
-  return (lhs <=> rhs) >= 0;
-}
 
 }  // namespace MOBase
 
