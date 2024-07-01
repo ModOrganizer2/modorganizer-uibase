@@ -10,10 +10,30 @@ mo2_configure_uibase(uibase
 target_compile_definitions(uibase PRIVATE -DUIBASE_EXPORT)
 mo2_install_target(uibase)
 
+mo2_add_filter(NAME src/extensions GROUPS
+	extension
+	iextensionlist
+	theme
+	translation
+	requirements
+	ipluginloader
+)
+
 mo2_add_filter(NAME src/interfaces GROUPS
+	idownloadmanager
 	ifiletree
+	iinstallationmanager
+	imodinterface
+	imodlist
+	imodrepositorybridge
 	imoinfo
-	installationtester
+	ipluginlist
+	iprofile
+)
+
+mo2_add_filter(NAME src/plugins GROUPS
+	executableinfo
+	filemapping
 	iplugin
 	iplugindiagnose
 	ipluginfilemapper
@@ -22,18 +42,13 @@ mo2_add_filter(NAME src/interfaces GROUPS
 	iplugininstaller
 	iplugininstallercustom
 	iplugininstallersimple
-	ipluginlist
 	ipluginmodpage
 	ipluginpreview
-	ipluginproxy
 	iplugintool
-	iprofile
 	isavegame
 	isavegameinfowidget
-	iinstallationmanager
-	imodinterface
-	imodlist
-	imodrepositorybridge
+	pluginrequirements
+	pluginsetting
 )
 
 mo2_add_filter(NAME src/tutorials GROUPS
@@ -42,17 +57,44 @@ mo2_add_filter(NAME src/tutorials GROUPS
 	tutorialmanager
 )
 
+mo2_add_filter(NAME src/versioning GROUPS
+	version
+	versionrange
+	versioninfo
+)
+
+
+mo2_add_filter(NAME src/utility GROUPS
+	delayedfilewriter
+	diagnosisreport
+	eventfilter
+	errorcodes
+	exceptions
+	filesystemutilities
+	guessedvalue
+	json
+	log
+	memoizedlock
+	moassert
+	registry
+	report
+	safewritefile
+	scopeguard
+	steamutility
+	utility
+)
+
 mo2_add_filter(NAME src/widgets GROUPS
+	expanderwidget
 	finddialog
 	lineeditclear
+	linklabel
 	questionboxmemory
 	sortabletreewidget
 	taskprogressmanager
 	textviewer
-	expanderwidget
-    filterwidget
-	linklabel
 	widgetutility
+    filterwidget
 )
 
 get_target_property(game_features uibase SOURCES)
@@ -68,5 +110,6 @@ list(FILTER formatters INCLUDE REGEX ".*formatters.*")
 list(TRANSFORM formatters REPLACE ".*formatters[/\\](.*)[.]h" "formatters/\\1")
 
 mo2_add_filter(NAME src/formatters GROUPS
+	formatters
 	${formatters}
 )
