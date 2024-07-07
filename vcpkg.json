@@ -1,0 +1,22 @@
+{
+  "dependencies": [
+    "mo2-cmake",
+    {
+      "name": "spdlog",
+      "features": ["wchar"]
+    },
+    "boost-thread"
+  ],
+  "overrides": [
+    {
+      "name": "spdlog",
+      "version": "1.14.1"
+    }
+  ],
+  "features": {
+    "testing": {
+      "description": "Build UI Base tests.",
+      "dependencies": ["gtest"]
+    }
+  }
+}
