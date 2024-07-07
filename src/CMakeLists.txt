@@ -1,13 +1,16 @@
 cmake_minimum_required(VERSION 3.16)
 
+find_package(Qt6 CONFIG REQUIRED COMPONENTS Network Qml Quick QuickWidgets Widgets)
+find_package(spdlog CONFIG REQUIRED)
+find_package(Boost REQUIRED CONFIG COMPONENTS thread)
+
 add_library(uibase SHARED)
-mo2_configure_uibase(uibase
-	WARNINGS ON
-	EXTERNAL_WARNINGS ON
-	TRANSLATIONS OFF
-	PUBLIC_DEPENDS Qt::Widgets Qt::Network Qt::QuickWidgets
-	PRIVATE_DEPENDS boost boost::thread Qt::Qml Qt::Quick spdlog)
-target_compile_definitions(uibase PRIVATE -DUIBASE_EXPORT)
+mo2_configure_uibase(uibase WARNINGS ON EXTERNAL_WARNINGS ON TRANSLATIONS OFF)
+target_compile_definitions(uibase PRIVATE -DUIBASE_EXPORT SPDLOG_USE_STD_FORMAT)
+
+target_link_libraries(uibase
+	PUBLIC Qt6::Widgets Qt6::Network Qt6::QuickWidgets
+	PRIVATE Boost::headers Boost::thread spdlog::spdlog_header_only Qt6::Qml Qt6::Quick)
 mo2_install_target(uibase)
 
 mo2_add_filter(NAME src/interfaces GROUPS
