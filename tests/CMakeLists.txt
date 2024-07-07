@@ -1,5 +1,11 @@
 cmake_minimum_required(VERSION 3.16)
 
 add_executable(uibase-tests EXCLUDE_FROM_ALL)
-mo2_configure_tests(uibase-tests
-    WARNINGS OFF DEPENDS uibase)
+target_sources(uibase-tests
+	PRIVATE
+		test_formatters.cpp
+		test_ifiletree.cpp
+		test_strings.cpp
+)
+mo2_configure_tests(uibase-tests NO_SOURCES WARNINGS 4)
+target_link_libraries(uibase-tests PRIVATE uibase)

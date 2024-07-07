@@ -7,7 +7,7 @@
 #include <string>
 #include <variant>
 
-#include "ifiletree.h"
+#include <uibase/ifiletree.h>
 
 std::ostream& operator<<(std::ostream& os, const QString& str)
 {
