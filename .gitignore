@@ -4,3 +4,5 @@ CMakeLists.txt.user
 /*std*.log
 /*build
 /src/uibasetests_en.ts
+/install
+/tests/cmake/build

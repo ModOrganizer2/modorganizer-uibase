@@ -1,0 +1,15 @@
+{
+  "dependencies": ["mo2-cmake", "spdlog"],
+  "overrides": [
+    {
+      "name": "spdlog",
+      "version": "1.14.1"
+    }
+  ],
+  "features": {
+    "testing": {
+      "description": "Build UI Base tests.",
+      "dependencies": ["gtest"]
+    }
+  }
+}
