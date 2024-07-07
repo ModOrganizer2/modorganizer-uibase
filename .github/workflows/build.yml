@@ -35,10 +35,19 @@ jobs:
 
       - name: Configure UI Base build
         shell: pwsh
-        run: cmake --preset vs2022-windows "-DCMAKE_PREFIX_PATH=${env:QT_ROOT_DIR}\msvc2019_64" -DBUILD_TESTING=ON
+        run: cmake --preset vs2022-windows "-DCMAKE_PREFIX_PATH=${env:QT_ROOT_DIR}\msvc2019_64" -DBUILD_TESTING=ON -DMO2_UIBASE_STANDALONE=TRUE
 
       - name: Build UI Base
         run: cmake --build vsbuild --config RelWithDebInfo --target uibase-tests
 
       - name: Test UI Base
         run: ctest --test-dir vsbuild -C RelWithDebInfo --output-on-failure
+
+      - name: Install UI Base
+        run: cmake --install vsbuild --config RelWithDebInfo
+
+      - name: Upload UI Base artifact
+        uses: actions/upload-artifact@master
+        with:
+          name: uibase
+          path: ./install
