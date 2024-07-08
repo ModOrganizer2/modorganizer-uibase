@@ -39,8 +39,8 @@ jobs:
           cmake --preset vs2022-windows `
             "-DCMAKE_PREFIX_PATH=${env:QT_ROOT_DIR}\msvc2019_64" `
             "-DCMAKE_INSTALL_PREFIX=install" `
-            -DBUILD_TESTING=ON `
-            -DMO2_UIBASE_STANDALONE=TRUE
+            -DUIBASE_TESTING=ON `
+            -DUIBASE_INSTALL=ON
 
       - name: Build UI Base
         run: cmake --build vsbuild --config RelWithDebInfo --target uibase-tests --verbose
