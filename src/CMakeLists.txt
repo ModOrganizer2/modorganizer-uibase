@@ -96,6 +96,7 @@ else()
 	)
 
 	install(TARGETS uibase EXPORT uibaseTargets FILE_SET HEADERS)
+	install(FILES $<TARGET_PDB_FILE:uibase> DESTINATION lib)
 	install(EXPORT uibaseTargets
 		FILE mo2-uibase-targets.cmake
 		NAMESPACE mo2::
