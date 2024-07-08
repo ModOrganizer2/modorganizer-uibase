@@ -30,8 +30,6 @@ jobs:
 
       - uses: actions/checkout@v4
       - uses: lukka/run-vcpkg@v11
-        with:
-          vcpkgJsonGlob: ${{ github.workspace }}/usvfs/vcpkg.json
 
       - name: Configure UI Base build
         shell: pwsh
