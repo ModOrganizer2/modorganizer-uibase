@@ -14,7 +14,6 @@ $env:VCPKG_ROOT = "C:\vcpkg"
 
 cmake --preset vs2022-windows "-DCMAKE_PREFIX_PATH=$env:QT_ROOT" `
     -DCMAKE_INSTALL_PREFIX=install `
-    -DUIBASE_INSTALL=ON `
     -DUIBASE_TESTING=ON
 
 # build uibase
@@ -30,9 +29,6 @@ ctest --test-dir vsbuild -C RelWithDebInfo --output-on-failure
 Check [`CMakePresets.json`](CMakePresets.json) for some predefined values. Extra options
 include:
 
-- `UIBASE_INSTALL` - if specified, generate and install proper CMake targets for
-  `uibase` in `CMAKE_INSTALL_PREFIX`, otherwise, will install `uibase` as part of a MO2
-  complete build.
 - `UIBASE_TESTING` - if specified, build tests for UIBase, requires the VCPKG `testing`
   feature to be enabled (enabled in the preset).
 
