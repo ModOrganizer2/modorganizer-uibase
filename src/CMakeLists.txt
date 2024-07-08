@@ -19,10 +19,6 @@ target_link_libraries(uibase
 	PUBLIC Qt6::Widgets Qt6::Network Qt6::QuickWidgets
 	PRIVATE Boost::headers Boost::thread spdlog::spdlog_header_only Qt6::Qml Qt6::Quick)
 
-if (NOT MO2_UIBASE_STANDALONE)
-	mo2_install_target(uibase)
-endif()
-
 mo2_add_filter(NAME src/interfaces GROUPS
 	ifiletree
 	imoinfo
@@ -84,21 +80,25 @@ mo2_add_filter(NAME src/formatters GROUPS
 	${formatters}
 )
 
-# installation
-get_target_property(uibase_headers uibase SOURCES)
-list(FILTER uibase_headers INCLUDE REGEX ".*\\.h")
-list(FILTER uibase_headers EXCLUDE REGEX ".*uibase_autogen.*")
-list(FILTER uibase_headers EXCLUDE REGEX ".*pch.h")
-target_sources(uibase
-    PUBLIC
-        FILE_SET HEADERS
-        BASE_DIRS ${CMAKE_CURRENT_SOURCE_DIR}
-        FILES ${uibase_headers}
-)
+if (NOT UIBASE_INSTALL)
+	mo2_install_target(uibase)
+else()
+	# installation
+	get_target_property(uibase_headers uibase SOURCES)
+	list(FILTER uibase_headers INCLUDE REGEX ".*\\.h")
+	list(FILTER uibase_headers EXCLUDE REGEX ".*uibase_autogen.*")
+	list(FILTER uibase_headers EXCLUDE REGEX ".*pch.h")
+	target_sources(uibase
+		PUBLIC
+			FILE_SET HEADERS
+			BASE_DIRS ${CMAKE_CURRENT_SOURCE_DIR}
+			FILES ${uibase_headers}
+	)
 
-install(TARGETS uibase EXPORT uibaseTargets FILE_SET HEADERS)
-install(EXPORT uibaseTargets
-    FILE mo2-uibase-targets.cmake
-    NAMESPACE mo2::
-    DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/mo2-uibase
-)
+	install(TARGETS uibase EXPORT uibaseTargets FILE_SET HEADERS)
+	install(EXPORT uibaseTargets
+		FILE mo2-uibase-targets.cmake
+		NAMESPACE mo2::
+		DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/mo2-uibase
+	)
+endif()
