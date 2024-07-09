@@ -35,7 +35,7 @@ install(FILES $<TARGET_PDB_FILE:uibase> DESTINATION pdb)
 install(EXPORT uibaseTargets
 	FILE mo2-uibase-targets.cmake
 	NAMESPACE mo2::
-	DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/mo2-uibase
+	DESTINATION lib/cmake/mo2-uibase
 )
 
 # filters
