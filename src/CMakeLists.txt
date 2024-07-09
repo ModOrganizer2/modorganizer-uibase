@@ -21,6 +21,8 @@ target_include_directories(uibase PRIVATE
 	$<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include/uibase/game_features>
 )
 
+add_library(mo2::uibase ALIAS uibase)
+
 target_compile_definitions(uibase PRIVATE -DUIBASE_EXPORT SPDLOG_USE_STD_FORMAT)
 
 target_link_libraries(uibase
