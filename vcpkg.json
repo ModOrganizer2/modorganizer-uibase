@@ -1,10 +1,7 @@
 {
   "dependencies": [
     "mo2-cmake",
-    {
-      "name": "spdlog",
-      "features": ["wchar"]
-    },
+    "spdlog",
     "boost-thread"
   ],
   "overrides": [
