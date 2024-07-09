@@ -4,7 +4,7 @@
 #include <QDir>
 
 #include "./game_feature.h"
-#include "filemapping.h"
+#include "../filemapping.h"
 
 namespace MOBase
 {

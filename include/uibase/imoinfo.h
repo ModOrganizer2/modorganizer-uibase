@@ -30,7 +30,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 #include <any>
 #include <functional>
 
-#include "game_feature.h"
+#include "game_features/game_feature.h"
 #include "guessedvalue.h"
 #include "imodlist.h"
 #include "iprofile.h"
