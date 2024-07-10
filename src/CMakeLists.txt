@@ -29,7 +29,9 @@ target_compile_definitions(uibase PRIVATE -DUIBASE_EXPORT SPDLOG_USE_STD_FORMAT)
 
 target_link_libraries(uibase
 	PUBLIC Qt6::Widgets Qt6::Network Qt6::QuickWidgets
-	PRIVATE Boost::headers Boost::thread spdlog::spdlog_header_only Qt6::Qml Qt6::Quick)
+	PRIVATE
+		Boost::headers Boost::thread spdlog::spdlog_header_only
+		Qt6::Qml Qt6::Quick Version)
 
 # installation
 install(TARGETS uibase EXPORT uibaseTargets FILE_SET HEADERS)
