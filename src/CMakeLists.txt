@@ -15,6 +15,8 @@ target_sources(uibase
 		FILES ${uibase_headers}
 )
 
+set_target_properties(uibase PROPERTIES DEBUG_POSTFIX d)
+
 # TODO: remove this after fixing UIBase #include<> directives
 target_include_directories(uibase PRIVATE
 	$<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include/uibase>

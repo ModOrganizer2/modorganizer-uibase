@@ -38,14 +38,31 @@ jobs:
             "-DCMAKE_PREFIX_PATH=${env:QT_ROOT_DIR}\msvc2019_64" `
             "-DCMAKE_INSTALL_PREFIX=install" -DUIBASE_TESTING=ON
 
+      # build both Debug and RelWithDebInfo for package
       - name: Build UI Base
-        run: cmake --build vsbuild --config RelWithDebInfo --target uibase-tests --verbose
+        run: |
+          cmake --build vsbuild --config Debug --target uibase-tests --verbose
+          cmake --build vsbuild --config RelWithDebInfo --target uibase-tests --verbose
 
       - name: Test UI Base
-        run: ctest --test-dir vsbuild -C RelWithDebInfo --output-on-failure
+        run: |
+          ctest --test-dir vsbuild -C Debug --output-on-failure
+          ctest --test-dir vsbuild -C RelWithDebInfo --output-on-failure
 
       - name: Install UI Base
-        run: cmake --install vsbuild --config RelWithDebInfo
+        run: |
+          cmake --install vsbuild --config Debug
+          cmake --install vsbuild --config RelWithDebInfo
+
+      # this tests that UI Base can be properly used as a CMake package
+      - name: Test UI Base package
+        run: |
+          cmake -B build . "-DCMAKE_PREFIX_PATH=${env:QT_ROOT_DIR}\msvc2019_64;..\..\install\lib\cmake\"
+          cmake --build build --config Debug
+          cmake --build build --config Release
+          cmake --build build --config RelWithDebInfo
+        working-directory: tests/cmake
+
 
       - name: Upload UI Base artifact
         uses: actions/upload-artifact@master
