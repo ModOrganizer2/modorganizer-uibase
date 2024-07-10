@@ -3,8 +3,8 @@
 
 #include <QDir>
 
-#include "./game_feature.h"
 #include "../filemapping.h"
+#include "./game_feature.h"
 
 namespace MOBase
 {
