@@ -35,10 +35,15 @@ jobs:
 
       - name: Configure UI Base build
         shell: pwsh
-        run: cmake --preset vs2022-windows "-DCMAKE_PREFIX_PATH=${env:QT_ROOT_DIR}\msvc2019_64" -DBUILD_TESTING=ON -DMO2_UIBASE_STANDALONE=TRUE
+        run: |
+          cmake --preset vs2022-windows `
+            "-DCMAKE_PREFIX_PATH=${env:QT_ROOT_DIR}\msvc2019_64" `
+            "-DCMAKE_INSTALL_PREFIX=install" `
+            -DBUILD_TESTING=ON `
+            -DMO2_UIBASE_STANDALONE=TRUE
 
       - name: Build UI Base
-        run: cmake --build vsbuild --config RelWithDebInfo --target uibase-tests
+        run: cmake --build vsbuild --config RelWithDebInfo --target uibase-tests --verbose
 
       - name: Test UI Base
         run: ctest --test-dir vsbuild -C RelWithDebInfo --output-on-failure
