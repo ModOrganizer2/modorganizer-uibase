@@ -7,7 +7,7 @@ find_package(Boost REQUIRED CONFIG COMPONENTS thread)
 file(GLOB_RECURSE uibase_headers RELATIVE ${CMAKE_CURRENT_LIST_DIR} "${CMAKE_CURRENT_LIST_DIR}/../include/**/*.h")
 
 add_library(uibase SHARED)
-mo2_configure_target(uibase WARNINGS ON EXTERNAL_WARNINGS ON TRANSLATIONS OFF)
+mo2_configure_target(uibase WARNINGS ON EXTERNAL_WARNINGS ON)
 target_sources(uibase
 	PUBLIC
 		FILE_SET HEADERS
