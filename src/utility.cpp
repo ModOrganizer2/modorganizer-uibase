@@ -849,9 +849,6 @@ bool shellDeleteQuiet(const QString& fileName, QWidget* dialog)
 
 QString readFileText(const QString& fileName, QString* encoding)
 {
-  QStringConverter::Encoding codec = QStringConverter::Encoding::Utf8;
-  QStringEncoder encoder(codec);
-  QStringDecoder decoder(codec);
 
   QFile textFile(fileName);
   if (!textFile.open(QIODevice::ReadOnly)) {
@@ -859,20 +856,28 @@ QString readFileText(const QString& fileName, QString* encoding)
   }
 
   QByteArray buffer = textFile.readAll();
-  QString text      = decoder.decode(buffer);
+  return decodeTextData(buffer);
+}
+
+QString decodeTextData(const QByteArray& fileData, QString* encoding)
+{
+  QStringConverter::Encoding codec = QStringConverter::Encoding::Utf8;
+  QStringEncoder encoder(codec);
+  QStringDecoder decoder(codec);
+  QString text = decoder.decode(fileData);
 
   // check reverse conversion. If this was unicode text there can't be data loss
   // this assumes QString doesn't normalize the data in any way so this is a bit unsafe
-  if (encoder.encode(text) != buffer) {
+  if (encoder.encode(text) != fileData) {
     log::debug("conversion failed assuming local encoding");
-    auto codecSearch = QStringConverter::encodingForData(buffer);
+    auto codecSearch = QStringConverter::encodingForData(fileData);
     if (codecSearch.has_value()) {
       codec   = codecSearch.value();
       decoder = QStringDecoder(codec);
     } else {
       decoder = QStringDecoder(QStringConverter::Encoding::System);
     }
-    text = decoder.decode(buffer);
+    text = decoder.decode(fileData);
   }
 
   if (encoding != nullptr) {
