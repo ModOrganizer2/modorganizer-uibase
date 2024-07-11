@@ -856,7 +856,7 @@ QString readFileText(const QString& fileName, QString* encoding)
   }
 
   QByteArray buffer = textFile.readAll();
-  return decodeTextData(buffer);
+  return decodeTextData(buffer, encoding);
 }
 
 QString decodeTextData(const QByteArray& fileData, QString* encoding)
