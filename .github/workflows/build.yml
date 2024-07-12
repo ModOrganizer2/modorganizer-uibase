@@ -85,10 +85,10 @@ jobs:
           path: ./install
 
       - name: Create UI Base archive
-        run: 7z a uibase.7z ./install/*
+        run: 7z a uibase_${{ github.ref_name }}.7z ./install/*
 
       - name: Publish Release
         env:
           GH_TOKEN: ${{ github.token }}
           GH_REPO: ${{ github.repository }}
-        run: gh release create --draft=false --notes="${{ github.ref_name }}" "${{ github.ref_name }}" ./uibase.7z
+        run: gh release create --draft=false --notes="${{ github.ref_name }}" "${{ github.ref_name }}" ./uibase_${{ github.ref_name }}.7z
