@@ -3,6 +3,8 @@ name: Build UIBase
 on:
   push:
     branches: master
+    tags:
+      - "*"
   pull_request:
     types: [opened, synchronize, reopened]
 
@@ -63,9 +65,30 @@ jobs:
           cmake --build build --config RelWithDebInfo
         working-directory: tests/cmake
 
-
       - name: Upload UI Base artifact
         uses: actions/upload-artifact@master
         with:
           name: uibase
           path: ./install
+
+  publish:
+    if: github.ref_type == 'tag'
+    needs: build
+    runs-on: windows-2022
+    permissions:
+      contents: write
+    steps:
+      - name: Download Artifact
+        uses: actions/download-artifact@master
+        with:
+          name: uibase
+          path: ./install
+
+      - name: Create UI Base archive
+        run: 7z a uibase.7z ./install/*
+
+      - name: Publish Release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+        run: gh release create --draft=false --notes="${{ github.ref_name }}" "${{ github.ref_name }}" ./uibase.7z
