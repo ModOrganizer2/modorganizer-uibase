@@ -40,7 +40,7 @@ SafeWriteFile::SafeWriteFile(const QString& fileName) : m_FileName(fileName)
 
     QString errorMsg =
         QObject::tr(
-            "Failed to save '{}', could not create a temporary file: {} (error {})")
+            "Failed to save '%1', could not create a temporary file: %2 (error %3)")
             .arg(m_FileName)
             .arg(m_TempFile.errorString())
             .arg(m_TempFile.error());
