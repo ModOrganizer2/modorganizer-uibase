@@ -1,4 +1,4 @@
-#include "version.h"
+#include "versioning.h"
 
 #include <QRegularExpression>
 #include <format>
@@ -16,11 +16,12 @@ static const QRegularExpression s_SemVerMO2RegEx{
 
 // match from value to release type
 static const std::unordered_map<QString, MOBase::Version::ReleaseType>
-    s_StringToRelease{
-        {"dev", MOBase::Version::Development},    {"alpha", MOBase::Version::Alpha},
-        {"alpha", MOBase::Version::Alpha},        {"a", MOBase::Version::Alpha},
-        {"beta", MOBase::Version::Beta},          {"b", MOBase::Version::Beta},
-        {"rc", MOBase::Version::ReleaseCandidate}};
+    s_StringToRelease{{"dev", MOBase::Version::Development},
+                      {"alpha", MOBase::Version::Alpha},
+                      {"a", MOBase::Version::Alpha},
+                      {"beta", MOBase::Version::Beta},
+                      {"b", MOBase::Version::Beta},
+                      {"rc", MOBase::Version::ReleaseCandidate}};
 
 namespace MOBase
 {
@@ -64,7 +65,7 @@ namespace
 
     const auto buildMetadata = match.captured("buildmetadata").trimmed();
 
-    return Version(major, minor, patch, prereleases, buildMetadata);
+    return Version(major, minor, patch, 0, prereleases, buildMetadata);
   }
 
   Version parseVersionMO2(QString const& value)
@@ -80,12 +81,10 @@ namespace
     const auto minor = match.captured("minor").toInt();
     const auto patch = match.captured("patch").toInt();
 
-    std::vector<std::variant<int, Version::ReleaseType>> prereleases;
-    if (match.hasCaptured("subpatch")) {
-      prereleases.push_back(match.captured("subpatch").toInt());
-    }
+    const auto subpatch = match.captured("subpatch").toInt();
 
     // unlike semver, the regex will only match valid values
+    std::vector<std::variant<int, Version::ReleaseType>> prereleases;
     if (match.hasCaptured("type")) {
       prereleases.push_back(s_StringToRelease.at(match.captured("type")));
 
@@ -101,7 +100,7 @@ namespace
 
     const auto buildMetadata = match.captured("buildmetadata").trimmed();
 
-    return Version(major, minor, patch, prereleases, buildMetadata);
+    return Version(major, minor, patch, subpatch, prereleases, buildMetadata);
   }
 
 }  // namespace
@@ -111,45 +110,68 @@ Version Version::parse(QString const& value, ParseMode mode)
   return mode == ParseMode::SemVer ? parseVersionSemVer(value) : parseVersionMO2(value);
 }
 
+// constructors
+
 Version::Version(int major, int minor, int patch, QString metadata)
-    : Version(major, minor, patch, std::vector<std::variant<int, ReleaseType>>{},
-              std::move(metadata))
+    : Version(major, minor, patch, 0, std::move(metadata))
+{}
+Version::Version(int major, int minor, int patch, int subpatch, QString metadata)
+    : m_Major{major}, m_Minor{minor}, m_Patch{patch}, m_SubPatch{subpatch},
+      m_PreReleases{}, m_BuildMetadata{std::move(metadata)}
 {}
 
 Version::Version(int major, int minor, int patch, ReleaseType type, QString metadata)
-    : Version(major, minor, patch, std::vector<std::variant<int, ReleaseType>>{type},
-              std::move(metadata))
+    : Version(major, minor, patch, 0, type, std::move(metadata))
+{}
+Version::Version(int major, int minor, int patch, int subpatch, ReleaseType type,
+                 QString metadata)
+    : m_Major{major}, m_Minor{minor}, m_Patch{patch}, m_SubPatch{subpatch},
+      m_PreReleases{type}, m_BuildMetadata{std::move(metadata)}
 {}
 
 Version::Version(int major, int minor, int patch, ReleaseType type, int prerelease,
                  QString metadata)
-    : Version(major, minor, patch, {type, prerelease}, std::move(metadata))
+    : Version(major, minor, patch, 0, type, prerelease, std::move(metadata))
+{}
+Version::Version(int major, int minor, int patch, int subpatch, ReleaseType type,
+                 int prerelease, QString metadata)
+    : Version(major, minor, patch, subpatch, {type, prerelease}, std::move(metadata))
 {}
 
-Version::Version(int major, int minor, int patch,
+Version::Version(int major, int minor, int patch, int subpatch,
                  std::vector<std::variant<int, ReleaseType>> prereleases,
                  QString metadata)
-    : m_Major{major}, m_Minor{minor}, m_Patch{patch},
+    : m_Major{major}, m_Minor{minor}, m_Patch{patch}, m_SubPatch{subpatch},
       m_PreReleases{std::move(prereleases)}, m_BuildMetadata{std::move(metadata)}
 {}
 
-QString Version::string() const
+// string
+
+QString Version::string(const FormatModes& modes) const
 {
-  auto value = std::format("{}.{}.{}", m_Major, m_Minor, m_Patch);
+  const bool noSeparator    = modes.testFlag(FormatMode::NoSeparator);
+  const bool shortAlphaBeta = modes.testFlag(FormatMode::ShortAlphaBeta);
+  auto value                = std::format("{}.{}.{}", m_Major, m_Minor, m_Patch);
+
+  if (m_SubPatch || modes.testFlag(FormatMode::ForceSubPatch)) {
+    value += std::format(".{}", m_SubPatch);
+  }
 
   if (!m_PreReleases.empty()) {
-    value += "-";
+    if (!noSeparator) {
+      value += "-";
+    }
     for (std::size_t i = 0; i < m_PreReleases.size(); ++i) {
       value += std::visit(
-          [](auto const& pre) -> std::string {
+          [shortAlphaBeta](auto const& pre) -> std::string {
             if constexpr (std::is_same_v<decltype(pre), ReleaseType const&>) {
               switch (pre) {
               case Development:
                 return "dev";
               case Alpha:
-                return "alpha";
+                return shortAlphaBeta ? "a" : "alpha";
               case Beta:
-                return "beta";
+                return shortAlphaBeta ? "b" : "beta";
               case ReleaseCandidate:
                 return "rc";
               }
@@ -159,13 +181,13 @@ QString Version::string() const
             }
           },
           m_PreReleases[i]);
-      if (i < m_PreReleases.size() - 1) {
+      if (!noSeparator && i < m_PreReleases.size() - 1) {
         value += ".";
       }
     }
   }
 
-  if (!m_BuildMetadata.isEmpty()) {
+  if (!modes.testFlag(FormatMode::NoMetadata) && !m_BuildMetadata.isEmpty()) {
     value += "+" + m_BuildMetadata.toStdString();
   }
 
@@ -191,8 +213,9 @@ namespace
 
 std::strong_ordering operator<=>(const Version& lhs, const Version& rhs)
 {
-  auto mmp_cmp = std::forward_as_tuple(lhs.major(), lhs.minor(), lhs.patch()) <=>
-                 std::forward_as_tuple(rhs.major(), rhs.minor(), rhs.patch());
+  auto mmp_cmp =
+      std::forward_as_tuple(lhs.major(), lhs.minor(), lhs.patch(), lhs.subpatch()) <=>
+      std::forward_as_tuple(rhs.major(), rhs.minor(), rhs.patch(), rhs.subpatch());
 
   // major.minor.patch have precedence over everything else
   if (mmp_cmp != std::strong_ordering::equal) {

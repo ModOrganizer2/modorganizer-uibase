@@ -34,8 +34,8 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 #include "guessedvalue.h"
 #include "imodlist.h"
 #include "iprofile.h"
-#include "version.h"
 #include "versioninfo.h"
+#include "versioning.h"
 
 namespace MOBase
 {
