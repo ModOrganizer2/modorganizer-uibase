@@ -508,6 +508,19 @@ public:
   onProfileChanged(std::function<void(IProfile*, IProfile*)> const& func) = 0;
 
   /**
+   * @brief Add a new callback to be called when a profile setting is changed.
+   * 
+   * Parameters of the callback:
+   *   - The changed profile, cannot be null.
+   *   - Name of the setting.
+   *   - Old value
+   *   - New value
+   */
+  virtual bool onProfileSettingChanged(
+      std::function<void(IProfile*, const QString& key, const QVariant&,
+                         const QVariant&)> const& func) = 0;
+
+  /**
    * @brief Add a new callback to be called when a plugin setting is changed.
    *
    * Parameters of the callback:
