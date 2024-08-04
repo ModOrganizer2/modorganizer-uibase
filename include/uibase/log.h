@@ -16,6 +16,7 @@
 
 #include "dllimport.h"
 #include "formatters.h"
+#include "strings.h"
 
 namespace spdlog
 {
@@ -61,9 +62,6 @@ concept RuntimeFormatString = requires(F&& f, Args&&... args) {
 };
 
 void QDLLEXPORT doLogImpl(spdlog::logger& lg, Levels lv, const std::string& s) noexcept;
-
-void QDLLEXPORT ireplace_all(std::string& input, std::string const& search,
-                             std::string const& replace) noexcept;
 
 template <class... Args>
 void doLog(spdlog::logger& logger, Levels lv,

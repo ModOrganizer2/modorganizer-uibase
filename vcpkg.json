@@ -1,9 +1,5 @@
 {
-  "dependencies": [
-    "mo2-cmake",
-    "spdlog",
-    "boost-thread"
-  ],
+  "dependencies": ["mo2-cmake", "spdlog"],
   "overrides": [
     {
       "name": "spdlog",

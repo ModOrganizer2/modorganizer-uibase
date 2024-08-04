@@ -2,7 +2,6 @@ cmake_minimum_required(VERSION 3.16)
 
 find_package(Qt6 CONFIG REQUIRED COMPONENTS Network Qml Quick QuickWidgets Widgets)
 find_package(spdlog CONFIG REQUIRED)
-find_package(Boost REQUIRED CONFIG COMPONENTS thread)
 
 set(root_headers
 	../include/uibase/delayedfilewriter.h
@@ -29,6 +28,7 @@ set(root_headers
 	../include/uibase/safewritefile.h
 	../include/uibase/scopeguard.h
 	../include/uibase/steamutility.h
+	../include/uibase/strings.h
 	../include/uibase/utility.h
 	../include/uibase/versioninfo.h
 )
@@ -121,6 +121,7 @@ mo2_target_sources(uibase
 	safewritefile.cpp
 	scopeguard.cpp
 	steamutility.cpp
+	strings.cpp
 	utility.cpp
 	versioninfo.cpp
 )
@@ -201,9 +202,7 @@ target_compile_definitions(uibase PRIVATE -DUIBASE_EXPORT SPDLOG_USE_STD_FORMAT)
 
 target_link_libraries(uibase
 	PUBLIC Qt6::Widgets Qt6::Network Qt6::QuickWidgets
-	PRIVATE
-		Boost::headers Boost::thread spdlog::spdlog_header_only
-		Qt6::Qml Qt6::Quick Version)
+	PRIVATE spdlog::spdlog_header_only Qt6::Qml Qt6::Quick Version)
 
 # installation
 install(TARGETS uibase EXPORT uibaseTargets FILE_SET HEADERS)

@@ -180,7 +180,8 @@
     </message>
     <message>
         <location filename="safewritefile.cpp" line="42"/>
-        <source>Failed to save &apos;{}&apos;, could not create a temporary file: {} (error {})</source>
+        <source>Failed to save &apos;%1&apos;, could not create a temporary file: %2 (error %3)</source>
+        <oldsource>Failed to save &apos;{}&apos;, could not create a temporary file: {} (error {})</oldsource>
         <translation type="unfinished"></translation>
     </message>
     <message>
