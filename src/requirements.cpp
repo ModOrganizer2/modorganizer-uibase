@@ -1,8 +1,8 @@
-#include "requirements.h"
+#include "extensions/requirements.h"
 
 #include <QJsonArray>
 
-#include "extension.h"
+#include "extensions/extension.h"
 #include "imoinfo.h"
 #include "log.h"
 

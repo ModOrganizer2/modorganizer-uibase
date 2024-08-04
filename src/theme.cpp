@@ -1,4 +1,4 @@
-#include "theme.h"
+#include "extensions/theme.h"
 
 #include "utility.h"
 
