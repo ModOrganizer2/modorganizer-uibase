@@ -30,6 +30,7 @@ set(root_headers
 	../include/uibase/steamutility.h
 	../include/uibase/strings.h
 	../include/uibase/utility.h
+	../include/uibase/versioning.h
 	../include/uibase/versioninfo.h
 )
 set(interface_headers
@@ -115,7 +116,6 @@ mo2_target_sources(uibase
 	nxmurl.cpp
 	pch.cpp
 	pluginrequirements.cpp
-	pluginsetting.cpp
 	registry.cpp
 	report.cpp
 	safewritefile.cpp
@@ -123,6 +123,7 @@ mo2_target_sources(uibase
 	steamutility.cpp
 	strings.cpp
 	utility.cpp
+	versioning.cpp
 	versioninfo.cpp
 )
 
@@ -133,7 +134,6 @@ mo2_target_sources(uibase
 	ifiletree.cpp
 	imodrepositorybridge.cpp
 	imoinfo.cpp
-	iplugininstaller.cpp
 )
 
 mo2_target_sources(uibase
