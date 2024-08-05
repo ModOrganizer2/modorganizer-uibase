@@ -90,6 +90,7 @@ set(game_features_header
 set(formatters_header
 	../include/uibase/formatters/enums.h
 	../include/uibase/formatters/qt.h
+	../include/uibase/formatters/path.h
 	../include/uibase/formatters/random_access_containers.h
 	../include/uibase/formatters/strings.h
 	../include/uibase/formatters.h
