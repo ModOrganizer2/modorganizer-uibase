@@ -40,6 +40,7 @@ set(extension_headers
 	../include/uibase/extensions/requirements.h
 	../include/uibase/extensions/theme.h
 	../include/uibase/extensions/translation.h
+	../include/uibase/extensions/versionconstraints.h
 )
 set(interface_headers
 	../include/uibase/ifiletree.h
@@ -143,6 +144,7 @@ mo2_target_sources(uibase
 	extension.cpp
 	theme.cpp
 	requirements.cpp
+	versionconstraints.cpp
 )
 
 mo2_target_sources(uibase
