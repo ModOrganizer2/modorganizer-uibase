@@ -101,7 +101,7 @@ ExtensionMetaData::ExtensionMetaData(std::filesystem::path const& path,
 
   // TODO: name of the key
   // translation context
-  m_TranslationContext = jsonData["translationContext"].toString("");
+  m_TranslationContext = jsonData["translation-context"].toString("");
 
   if (jsonData.contains("icon")) {
     const QFileInfo icon{QDir(path), jsonData["icon"].toString()};
@@ -178,23 +178,21 @@ IExtension::IExtension(std::filesystem::path const& path, ExtensionMetaData&& me
     : m_Path{path}, m_MetaData{std::move(metadata)}
 {}
 
-std::unique_ptr<IExtension>
-ExtensionFactory::loadExtension(std::filesystem::path const& directory)
+ExtensionMetaData ExtensionFactory::loadMetaData(std::filesystem::path const& path)
 {
-  const auto metadataPath = directory / METADATA_FILENAME;
-
-  if (!exists(metadataPath)) {
-    log::warn("missing extension metadata in '{}'", directory.native());
-    return nullptr;
+  if (!exists(path)) {
+    throw InvalidExtensionMetaDataException(
+        std::format("metadata file '{}' not found", path));
   }
 
   // load the meta data
   QJsonParseError jsonError;
   QJsonDocument jsonMetaData;
   {
-    QFile file(metadataPath);
+    QFile file(path);
     if (!file.open(QFile::ReadOnly)) {
-      return {};
+      throw InvalidExtensionMetaDataException(
+          std::format("failed to open metadata file '{}'", path));
     }
 
     const auto jsonContent = file.readAll();
@@ -202,14 +200,18 @@ ExtensionFactory::loadExtension(std::filesystem::path const& directory)
   }
 
   if (jsonMetaData.isNull()) {
-    log::warn("failed to read metadata from '{}': {}", metadataPath.native(),
-              jsonError.errorString());
-    return nullptr;
+    throw InvalidExtensionMetaDataException(
+        std::format("invalid metadata file '{}': {}", path, jsonError.errorString()));
   }
 
+  return ExtensionMetaData(path.parent_path(), jsonMetaData.object());
+}
+
+std::unique_ptr<IExtension>
+ExtensionFactory::loadExtension(std::filesystem::path const& directory)
+{
   try {
-    return loadExtension(directory,
-                         ExtensionMetaData(directory, jsonMetaData.object()));
+    return loadExtension(directory, loadMetaData(directory / METADATA_FILENAME));
   } catch (InvalidExtensionMetaDataException const& ex) {
     log::warn("failed to load extension from '{}': invalid metadata ({})",
               directory.native(), ex.what());

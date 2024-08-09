@@ -9,46 +9,24 @@
 
 #include <format>
 
-using namespace MOBase;
+#include "test_utils.h"
 
-class TestMetaData : public ExtensionMetaData
-{
-public:
-  TestMetaData(std::filesystem::path const& path, QByteArray const& metadata)
-      : ExtensionMetaData(path, QJsonDocument::fromJson(metadata).object())
-  {}
-};
+using namespace MOBase;
 
 TEST(ExtensionsTest, MetaData)
 {
-  const auto metadata = TestMetaData({}, R"({
-  "id": "mo2-game-bethesda",
-  "name": "Elder Scrolls & Fallout Games",
-  "version": "1.0.0",
-  "description": "ModOrganizer2 support for The Elder Scrolls & Fallout games.",
-  "author": {
-    "name": "Mod Organizer 2",
-    "homepage": "https://www.modorganizer.org/"
-  },
-  "icon": "./tests/icon.png",
-  "contributors": [
-    "AL",
-    "AnyOldName3",
-    "Holt59",
-    "Silarn"
-  ],
-  "type": "game",
-  "content": {
-    "plugins": {
-      "autodetect": true
-    },
-    "translations": {
-      "autodetect": "translations"
-    }
-  }
-})");
+  mo2::tests::TranslationHelper tr;
 
-  EXPECT_EQ("mo2-game-bethesda", metadata.identifier());
-  EXPECT_EQ("Elder Scrolls & Fallout Games", metadata.name());
+  const auto metadata = ExtensionFactory::loadMetaData(
+      "./tests/data/extensions/mo2-example-extension/metadata.json");
+
+  tr.switchLanguage("en");
+  EXPECT_EQ("mo2-example-extension", metadata.identifier());
+  EXPECT_EQ("Example Extension for UI Base Tests", metadata.name());
+
+  tr.switchLanguage("fr");
+  EXPECT_EQ("mo2-example-extension", metadata.identifier());
+  EXPECT_EQ("Extension Démo pour les tests UI Base", metadata.name());
+
   EXPECT_FALSE(metadata.icon().isNull());
 }

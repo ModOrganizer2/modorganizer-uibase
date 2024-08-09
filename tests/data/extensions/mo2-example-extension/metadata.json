@@ -1,0 +1,22 @@
+{
+  "id": "mo2-example-extension",
+  "name": "Example Extension for UI Base Tests",
+  "version": "1.0.0",
+  "description": "ModOrganizer2 example extension for UI Base Tests.",
+  "author": {
+    "name": "Mod Organizer 2",
+    "homepage": "https://www.modorganizer.org/"
+  },
+  "icon": "icon.png",
+  "contributors": ["AL", "AnyOldName3", "Holt59", "Silarn"],
+  "type": "plugin",
+  "translation-context": "mo2-example-extension",
+  "content": {
+    "plugins": {
+      "autodetect": true
+    },
+    "translations": {
+      "autodetect": "translations"
+    }
+  }
+}

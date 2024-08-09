@@ -3,6 +3,8 @@ cmake_minimum_required(VERSION 3.16)
 add_executable(uibase-tests EXCLUDE_FROM_ALL)
 target_sources(uibase-tests
 	PRIVATE
+		test_utils.h
+		test_utils.cpp
 		test_main.cpp
 		test_formatters.cpp
 		test_ifiletree.cpp

@@ -159,6 +159,11 @@ private:
 class QDLLEXPORT ExtensionFactory
 {
 public:
+  // load metadata from the given file, throws InvalidExtensionMetaDataException if the
+  // file does not exist or is invalid
+  //
+  static ExtensionMetaData loadMetaData(std::filesystem::path const& path);
+
   // load an extension from the given directory, return a null-pointer if the extension
   // could not be load
   //
