@@ -30,16 +30,18 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 #include <any>
 #include <functional>
 
-#include "game_feature.h"
+#include "game_features/game_feature.h"
 #include "guessedvalue.h"
 #include "imodlist.h"
 #include "iprofile.h"
 #include "versioninfo.h"
+#include "versioning.h"
 
 namespace MOBase
 {
 
 class IFileTree;
+class IExtensionList;
 class IModInterface;
 class IModRepositoryBridge;
 class IDownloadManager;
@@ -121,7 +123,12 @@ public:
   /**
    * @return the running version of Mod Organizer
    */
-  virtual VersionInfo appVersion() const = 0;
+  [[deprecated]] virtual VersionInfo appVersion() const = 0;
+
+  /**
+   * @return the running version of Mod Organizer
+   */
+  virtual Version version() const = 0;
 
   /**
    * @brief create a new mod with the specified name
@@ -306,6 +313,11 @@ public:
    * @return interface to the download manager
    */
   virtual IDownloadManager* downloadManager() const = 0;
+
+  /**
+   * @return the interface to the extension list.
+   */
+  virtual IExtensionList& extensionList() const = 0;
 
   /**
    * @return interface to the list of plugins (esps, esms, and esls)
