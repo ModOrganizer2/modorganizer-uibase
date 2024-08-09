@@ -11,14 +11,15 @@
     <message>
         <location line="-2"/>
         <source>ModOrganizer2 example extension for UI Base Tests.</source>
-        <translation type="unfinished">Exemple d&apos;extension ModOrganizer2 pour les tests UI Base.</translation>
+        <translation>Exemple d&apos;extension ModOrganizer2 pour les tests UI Base.</translation>
     </message>
 </context>
 <context>
     <name>uibase-tests</name>
     <message>
+        <location filename="extract_translations.py"/>
         <source>Translate to French</source>
-        <translation type="vanished">Traduction en Français</translation>
+        <translation>Traduction en Français</translation>
     </message>
 </context>
 </TS>

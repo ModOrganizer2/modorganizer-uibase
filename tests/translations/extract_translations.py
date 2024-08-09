@@ -12,6 +12,25 @@ tr_files = [
     for path in folder.glob("*.ts")
 ]
 
+sources: list[SourceFile] = []
+
+# add custom source used in test
+source = SourceFile(filename="uibase-tests")
+context = Context(name="uibase-tests")
+context.messages = [
+    Message(
+        filename=__file__,
+        line_nr=-1,
+        source="Translate to French",
+        comment=None,
+        numerus=None,
+    )
+]
+source.contexts.append(context)
+sources.append(source)
+
+
+# add metadata for tests extension
 for metadata_path in folder.parent.joinpath("data", "extensions").glob("**/*.json"):
     with open(metadata_path, "rb") as fp:
         metadata = json.load(fp)
@@ -39,8 +58,12 @@ for metadata_path in folder.parent.joinpath("data", "extensions").glob("**/*.jso
 
     source.contexts.append(context)
 
-    for tr_file in tr_files:
+    sources.append(source)
+
+for tr_file in tr_files:
+    for source in sources:
         tr_file.update(source)
+
 
 for tr_file in tr_files:
     tr_file.write()

@@ -17,8 +17,9 @@
 <context>
     <name>uibase-tests</name>
     <message>
+        <location filename="extract_translations.py"/>
         <source>Translate to French</source>
-        <translation type="vanished">Translate to French</translation>
+        <translation>Translate to French</translation>
     </message>
 </context>
 </TS>
