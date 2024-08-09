@@ -4,7 +4,7 @@
 #include <filesystem>
 #include <string>
 
-#include "dllimport.h"
+#include "../dllimport.h"
 
 namespace MOBase
 {

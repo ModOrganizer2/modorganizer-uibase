@@ -117,7 +117,6 @@ mo2_target_sources(uibase
 	errorcodes.cpp
 	eventfilter.cpp
 	executableinfo.cpp
-	extension.cpp
 	filesystemutilities.cpp
 	guessedvalue.cpp
 	json.cpp

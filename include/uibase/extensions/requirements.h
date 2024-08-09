@@ -6,12 +6,25 @@
 #include <QJsonValue>
 #include <QString>
 
-#include "dllimport.h"
+#include "../dllimport.h"
+#include "../exceptions.h"
 
 namespace MOBase
 {
 class IOrganizer;
 class ExtensionMetaData;
+
+class InvalidRequirementException : public Exception
+{
+public:
+  using Exception::Exception;
+};
+
+class InvalidRequirementsException : public Exception
+{
+public:
+  using Exception::Exception;
+};
 
 class ExtensionRequirementImpl;
 
@@ -44,13 +57,22 @@ public:
   //
   bool check(IOrganizer* organizer) const;
 
+  // retrieve the type of this extension
+  //
+  Type type() const;
+
+  // retrieve a textual representation of this requirement, e.g. "ModOrganizer 2.5.4"
+  // for a requirement that requires MO2 2.5.4
+  //
+  QString string() const;
+
+public:
   ~ExtensionRequirement();
 
 private:
   friend class ExtensionRequirementFactory;
 
   ExtensionRequirement(std::shared_ptr<ExtensionRequirementImpl> impl);
-
   std::shared_ptr<ExtensionRequirementImpl> m_Impl;
 };
 
@@ -62,7 +84,7 @@ public:
   // extract requirements from the given metadata
   //
   static std::vector<ExtensionRequirement>
-  parseRequirements(const ExtensionMetaData& metadata);
+  parseRequirements(const QJsonValue& json_requirements);
 
 private:
 };

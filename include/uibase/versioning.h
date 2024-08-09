@@ -76,7 +76,8 @@ public:
 
     // do not add metadata even if present
     //
-    NoMetadata = 0b1000
+    NoMetadata = 0b1000,
+
   };
   Q_DECLARE_FLAGS(FormatModes, FormatMode);
 

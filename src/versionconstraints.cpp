@@ -169,7 +169,6 @@ VersionConstraint VersionConstraint::parse(QString const& value,
     }
   }
 
-  constexpr auto min_int = std::numeric_limits<int>::min();
   constexpr auto max_int = std::numeric_limits<int>::max();
 
   std::shared_ptr<VersionConstraintImpl> impl;
@@ -284,10 +283,14 @@ VersionConstraints VersionConstraints::parse(QString const& value,
                                              Version::ParseMode mode)
 {
   std::vector<VersionConstraint> constraints;
-  for (const auto& part : value.split(",")) {
-    constraints.push_back(VersionConstraint::parse(part.trimmed(), mode));
+  auto parts = value.split(",");
+  for (auto& part : parts) {
+    // replace the part in-place to create a proper representation
+    part = part.simplified().replace(" ", "");
+
+    constraints.push_back(VersionConstraint::parse(part, mode));
   }
-  return VersionConstraints(std::move(constraints));
+  return VersionConstraints(parts.join(", "), std::move(constraints));
 }
 
 bool VersionConstraints::matches(Version const& version) const
@@ -298,8 +301,9 @@ bool VersionConstraints::matches(Version const& version) const
                      });
 }
 
-VersionConstraints::VersionConstraints(std::vector<VersionConstraint> checkers)
-    : m_Constraints{std::move(checkers)}
+VersionConstraints::VersionConstraints(QString const& repr,
+                                       std::vector<VersionConstraint> checkers)
+    : m_Repr{repr}, m_Constraints{std::move(checkers)}
 {}
 
 }  // namespace MOBase

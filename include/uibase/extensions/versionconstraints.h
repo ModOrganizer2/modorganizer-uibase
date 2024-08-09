@@ -57,13 +57,18 @@ public:
 public:
   // construct a set of constraints
   //
-  VersionConstraints(std::vector<VersionConstraint> constraints);
+  VersionConstraints(QString const& repr, std::vector<VersionConstraint> constraints);
 
   // check if the given version matches the set of constraints
   //
   bool matches(Version const& version) const;
 
+  // retrieve a string representation of this set of constraints
+  //
+  auto string() const { return m_Repr; }
+
 private:
+  QString m_Repr;
   std::vector<VersionConstraint> m_Constraints;
 };
 

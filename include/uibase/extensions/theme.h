@@ -6,7 +6,7 @@
 
 #include <QRegularExpression>
 
-#include "dllimport.h"
+#include "../dllimport.h"
 
 namespace MOBase
 {

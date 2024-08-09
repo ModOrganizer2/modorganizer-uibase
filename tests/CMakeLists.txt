@@ -8,6 +8,7 @@ target_sources(uibase-tests
 		test_ifiletree.cpp
 		test_strings.cpp
 		test_versioning.cpp
+		test_extensions.cpp
 )
 mo2_configure_tests(uibase-tests NO_SOURCES NO_MAIN NO_MOCK WARNINGS 4)
 target_link_libraries(uibase-tests PRIVATE uibase)

@@ -8,20 +8,25 @@
 #include <QJsonObject>
 #include <QTranslator>
 
-#include "dllimport.h"
-#include "iplugingame.h"
+#include "../dllimport.h"
+#include "../iplugingame.h"
+#include "../versioning.h"
 #include "requirements.h"
 #include "theme.h"
 #include "translation.h"
-#include "versioninfo.h"
 
 namespace MOBase
 {
 class IExtension;
 
+class InvalidExtensionMetaDataException : public Exception
+{
+public:
+  using Exception::Exception;
+};
+
 enum class ExtensionType
 {
-  INVALID,
   THEME,
   TRANSLATION,
   PLUGIN,
@@ -48,10 +53,6 @@ private:
 class QDLLEXPORT ExtensionMetaData
 {
 public:
-  // check if that metadata object is valid
-  //
-  bool isValid() const;
-
   // retrieve the identifier of the extension
   //
   const auto& identifier() const { return m_Identifier; }
@@ -72,7 +73,7 @@ public:
   //
   auto type() const { return m_Type; }
 
-  // retrieve the description of the extension.
+  // retrieve the description of the extension
   //
   auto description() const { return localized(m_Description); }
 
@@ -80,9 +81,13 @@ public:
   //
   const auto& icon() const { return m_Icon; }
 
-  // retrieve the version of the extension.
+  // retrieve the version of the extension
   //
   const auto& version() const { return m_Version; }
+
+  // retrieve the requirements of the extension
+  //
+  const auto& requirements() const { return m_Requirements; }
 
   // retrieve the raw JSON metadata, this is mostly useful for specific extension type
   // to extract custom parts
@@ -92,8 +97,8 @@ public:
   // retrieve the content objects of the extension
   QJsonObject content() const;
 
-private:
-  QString localized(QString const& value) const;
+protected:
+  ExtensionMetaData(std::filesystem::path const& path, const QJsonObject& jsonData);
 
 private:
   friend class ExtensionFactory;
@@ -101,9 +106,7 @@ private:
   constexpr static const char* DEFAULT_TRANSLATIONS_FOLDER = "translations";
   constexpr static const char* DEFAULT_STYLESHEET_PATH     = "stylesheets";
 
-  ExtensionType parseType(QString const& value) const;
-
-  ExtensionMetaData(std::filesystem::path const& path, const QJsonObject& jsonData);
+  std::optional<ExtensionType> parseType(QString const& value) const;
 
 private:
   QJsonObject m_JsonData;
@@ -116,10 +119,13 @@ private:
   ExtensionType m_Type;
   QString m_Description;
   QIcon m_Icon;
-  VersionInfo m_Version;
+  Version m_Version;
+  std::vector<ExtensionRequirement> m_Requirements;
 
   std::filesystem::path m_TranslationFilesPrefix;
   std::filesystem::path m_StyleSheetFilePath;
+
+  QString localized(QString const& value) const;
 };
 
 class QDLLEXPORT IExtension
@@ -133,16 +139,12 @@ public:
   //
   const auto& metadata() const { return m_MetaData; }
 
-  // retrieve the requirements of the extension
-  //
-  const auto& requirements() const { return m_Requirements; }
-
 public:
   virtual ~IExtension() {}
   IExtension& operator=(const IExtension&) = delete;
 
 protected:
-  IExtension(std::filesystem::path path, ExtensionMetaData metadata);
+  IExtension(std::filesystem::path const& path, ExtensionMetaData&& metadata);
 
 public:
   IExtension(const IExtension&) = default;
@@ -150,7 +152,6 @@ public:
 private:
   std::filesystem::path m_Path;
   ExtensionMetaData m_MetaData;
-  std::vector<ExtensionRequirement> m_Requirements;
 };
 
 // factory for extensions
@@ -161,13 +162,14 @@ public:
   // load an extension from the given directory, return a null-pointer if the extension
   // could not be load
   //
-  static std::unique_ptr<IExtension> loadExtension(std::filesystem::path directory);
+  static std::unique_ptr<IExtension>
+  loadExtension(std::filesystem::path const& directory);
 
 private:
   // load an extension from the given directory
   //
-  static std::unique_ptr<IExtension> loadExtension(std::filesystem::path directory,
-                                                   ExtensionMetaData metadata);
+  static std::unique_ptr<IExtension>
+  loadExtension(std::filesystem::path const& directory, ExtensionMetaData&& metadata);
 };
 
 // theme extension that provides one or more base themes for MO2
@@ -180,12 +182,12 @@ public:
   const auto& themes() const { return m_Themes; }
 
 private:
-  ThemeExtension(std::filesystem::path path, ExtensionMetaData metadata,
+  ThemeExtension(std::filesystem::path const& path, ExtensionMetaData&& metadata,
                  std::vector<std::shared_ptr<const Theme>> themes);
 
   friend class ExtensionFactory;
-  static std::unique_ptr<ThemeExtension> loadExtension(std::filesystem::path path,
-                                                       ExtensionMetaData metadata);
+  static std::unique_ptr<ThemeExtension>
+  loadExtension(std::filesystem::path const& path, ExtensionMetaData&& metadata);
 
   static std::shared_ptr<const Theme>
   parseTheme(std::filesystem::path const& extensionFolder, const QString& identifier,
@@ -205,12 +207,12 @@ public:
   const auto& translations() const { return m_Translations; }
 
 private:
-  TranslationExtension(std::filesystem::path path, ExtensionMetaData metadata,
+  TranslationExtension(std::filesystem::path const& path, ExtensionMetaData&& metadata,
                        std::vector<std::shared_ptr<const Translation>> translations);
 
   friend class ExtensionFactory;
   static std::unique_ptr<TranslationExtension>
-  loadExtension(std::filesystem::path path, ExtensionMetaData metadata);
+  loadExtension(std::filesystem::path const& path, ExtensionMetaData&& metadata);
 
   static std::shared_ptr<const Translation>
   parseTranslation(std::filesystem::path const& extensionFolder,
@@ -241,14 +243,14 @@ public:
 
 protected:
   PluginExtension(
-      std::filesystem::path path, ExtensionMetaData metadata, bool autodetect,
+      std::filesystem::path const& path, ExtensionMetaData&& metadata, bool autodetect,
       std::map<std::string, std::filesystem::path> plugins,
       std::vector<std::shared_ptr<const ThemeAddition>> themeAdditions,
       std::vector<std::shared_ptr<const TranslationAddition>> translationAdditions);
 
   friend class ExtensionFactory;
-  static std::unique_ptr<PluginExtension> loadExtension(std::filesystem::path path,
-                                                        ExtensionMetaData metadata);
+  static std::unique_ptr<PluginExtension>
+  loadExtension(std::filesystem::path const& path, ExtensionMetaData&& metadata);
 
 private:
   // auto-detect plugins
@@ -271,8 +273,8 @@ private:
   GameExtension(PluginExtension&& pluginExtension);
 
   friend class ExtensionFactory;
-  static std::unique_ptr<GameExtension> loadExtension(std::filesystem::path path,
-                                                      ExtensionMetaData metadata);
+  static std::unique_ptr<GameExtension> loadExtension(std::filesystem::path const& path,
+                                                      ExtensionMetaData&& metadata);
 };
 
 }  // namespace MOBase

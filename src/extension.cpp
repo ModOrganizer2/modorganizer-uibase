@@ -65,15 +65,39 @@ ExtensionContributor::ExtensionContributor(QString name) : m_Name{name} {}
 
 ExtensionMetaData::ExtensionMetaData(std::filesystem::path const& path,
                                      QJsonObject const& jsonData)
-    : m_JsonData{jsonData}
+    : m_JsonData{jsonData}, m_Version{0, 0, 0}, m_Requirements{}
 {
   // read basic fields
-  m_Identifier  = jsonData["id"].toString();
-  m_Type        = parseType(jsonData["type"].toString());
-  m_Name        = jsonData["name"].toString();
+  m_Identifier = jsonData["id"].toString();
+  if (m_Identifier.isEmpty()) {
+    throw InvalidExtensionMetaDataException("missing identifier");
+  }
+
+  {
+    const auto maybeType = parseType(jsonData["type"].toString());
+    if (!maybeType.has_value()) {
+      throw InvalidExtensionMetaDataException(
+          std::format("invalid or missing type '{}'", jsonData["type"].toString()));
+    }
+
+    m_Type = *maybeType;
+  }
+
+  m_Name = jsonData["name"].toString();
+  if (m_Name.isEmpty()) {
+    throw InvalidExtensionMetaDataException("missing name");
+  }
+
   m_Author      = parseContributor(jsonData["author"]);
   m_Description = jsonData["description"].toString();
-  m_Version.parse(jsonData["version"].toString("0.0.0"));
+
+  try {
+    m_Version = Version::parse(jsonData["version"].toString("0.0.0"),
+                               Version::ParseMode::SemVer);
+  } catch (InvalidVersionException const& ex) {
+    throw InvalidExtensionMetaDataException(
+        std::format("invalid or missing version '{}'", jsonData["version"].toString()));
+  }
 
   // TODO: name of the key
   // translation context
@@ -86,38 +110,25 @@ ExtensionMetaData::ExtensionMetaData(std::filesystem::path const& path,
     }
   }
 
-  // TODO: move code in a better place or use a custom icon
-  if (m_Icon.isNull()) {
-    const QImage baseIcon(":/MO/gui/app_icon");
-    QImage grayIcon = baseIcon.convertToFormat(QImage::Format_ARGB32);
-    {
-      for (int y = 0; y < grayIcon.height(); ++y) {
-        QRgb* scanLine = (QRgb*)grayIcon.scanLine(y);
-        for (int x = 0; x < grayIcon.width(); ++x) {
-          QRgb pixel = *scanLine;
-          uint ci    = uint(qGray(pixel));
-          *scanLine  = qRgba(ci, ci, ci, qAlpha(pixel) / 3);
-          ++scanLine;
-        }
-      }
-    }
-    m_Icon = QIcon(QPixmap::fromImage(grayIcon));
-  }
-
   if (jsonData.contains("contributors")) {
     for (const auto& jsonContributor : jsonData["contributors"].toArray()) {
       m_Contributors.push_back(parseContributor(jsonContributor));
     }
   }
+
+  if (jsonData.contains("requirements")) {
+    try {
+      m_Requirements =
+          ExtensionRequirementFactory::parseRequirements(jsonData["requirements"]);
+    } catch (InvalidRequirementException const& ex) {
+      throw InvalidExtensionMetaDataException(ex.what());
+    } catch (InvalidRequirementsException const& ex) {
+      throw InvalidExtensionMetaDataException(ex.what());
+    }
+  }
 }
 
-bool ExtensionMetaData::isValid() const
-{
-  return !m_Identifier.isEmpty() && !m_Name.isEmpty() && m_Version.isValid() &&
-         m_Type != ExtensionType::INVALID;
-}
-
-ExtensionType ExtensionMetaData::parseType(QString const& value) const
+std::optional<ExtensionType> ExtensionMetaData::parseType(QString const& value) const
 {
   std::map<QString, ExtensionType> stringToTypes{
       {"theme", ExtensionType::THEME},
@@ -125,7 +136,7 @@ ExtensionType ExtensionMetaData::parseType(QString const& value) const
       {"plugin", ExtensionType::PLUGIN},
       {"game", ExtensionType::GAME}};
 
-  auto type = ExtensionType::INVALID;
+  std::optional<ExtensionType> type;
   for (auto& [k, v] : stringToTypes) {
     if (k.compare(value, Qt::CaseInsensitive) == 0) {
       type = v;
@@ -163,13 +174,12 @@ QJsonObject ExtensionMetaData::content() const
   return value.toObject();
 }
 
-IExtension::IExtension(std::filesystem::path path, ExtensionMetaData metadata)
-    : m_Path{std::move(path)}, m_MetaData{std::move(metadata)},
-      m_Requirements{ExtensionRequirementFactory::parseRequirements(m_MetaData)}
+IExtension::IExtension(std::filesystem::path const& path, ExtensionMetaData&& metadata)
+    : m_Path{path}, m_MetaData{std::move(metadata)}
 {}
 
 std::unique_ptr<IExtension>
-ExtensionFactory::loadExtension(std::filesystem::path directory)
+ExtensionFactory::loadExtension(std::filesystem::path const& directory)
 {
   const auto metadataPath = directory / METADATA_FILENAME;
 
@@ -197,44 +207,44 @@ ExtensionFactory::loadExtension(std::filesystem::path directory)
     return nullptr;
   }
 
-  return loadExtension(std::move(directory),
-                       ExtensionMetaData(directory, jsonMetaData.object()));
+  try {
+    return loadExtension(directory,
+                         ExtensionMetaData(directory, jsonMetaData.object()));
+  } catch (InvalidExtensionMetaDataException const& ex) {
+    log::warn("failed to load extension from '{}': invalid metadata ({})",
+              directory.native(), ex.what());
+    return nullptr;
+  }
 }
 
 std::unique_ptr<IExtension>
-ExtensionFactory::loadExtension(std::filesystem::path directory,
-                                ExtensionMetaData metadata)
+ExtensionFactory::loadExtension(std::filesystem::path const& directory,
+                                ExtensionMetaData&& metadata)
 {
-  if (!metadata.isValid()) {
-    log::warn("failed to load extension from '{}': invalid metadata",
-              directory.native());
-    return nullptr;
-  }
-
   switch (metadata.type()) {
   case ExtensionType::THEME:
-    return ThemeExtension::loadExtension(std::move(directory), std::move(metadata));
+    return ThemeExtension::loadExtension(directory, std::move(metadata));
   case ExtensionType::TRANSLATION:
-    return TranslationExtension::loadExtension(std::move(directory),
-                                               std::move(metadata));
+    return TranslationExtension::loadExtension(directory, std::move(metadata));
   case ExtensionType::PLUGIN:
-    return PluginExtension::loadExtension(std::move(directory), std::move(metadata));
+    return PluginExtension::loadExtension(directory, std::move(metadata));
   case ExtensionType::GAME:
-    return GameExtension::loadExtension(std::move(directory), std::move(metadata));
-  case ExtensionType::INVALID:
+    return GameExtension::loadExtension(directory, std::move(metadata));
   default:
     log::warn("failed to load extension from '{}': invalid type", directory.native());
     return nullptr;
   }
 }
 
-ThemeExtension::ThemeExtension(std::filesystem::path path, ExtensionMetaData metadata,
+ThemeExtension::ThemeExtension(std::filesystem::path const& path,
+                               ExtensionMetaData&& metadata,
                                std::vector<std::shared_ptr<const Theme>> themes)
-    : IExtension{std::move(path), std::move(metadata)}, m_Themes{std::move(themes)}
+    : IExtension{path, std::move(metadata)}, m_Themes{std::move(themes)}
 {}
 
 std::unique_ptr<ThemeExtension>
-ThemeExtension::loadExtension(std::filesystem::path path, ExtensionMetaData metadata)
+ThemeExtension::loadExtension(std::filesystem::path const& path,
+                              ExtensionMetaData&& metadata)
 {
   std::vector<std::shared_ptr<const Theme>> themes;
   const auto& jsonThemes = metadata.content()["themes"].toObject();
@@ -253,7 +263,7 @@ ThemeExtension::loadExtension(std::filesystem::path path, ExtensionMetaData meta
   }
 
   return std::unique_ptr<ThemeExtension>{
-      new ThemeExtension(path, metadata, std::move(themes))};
+      new ThemeExtension(path, std::move(metadata), std::move(themes))};
 }
 
 std::shared_ptr<const Theme>
@@ -273,15 +283,15 @@ ThemeExtension::parseTheme(std::filesystem::path const& extensionFolder,
 }
 
 TranslationExtension::TranslationExtension(
-    std::filesystem::path path, ExtensionMetaData metadata,
+    std::filesystem::path const& path, ExtensionMetaData&& metadata,
     std::vector<std::shared_ptr<const Translation>> translations)
     : IExtension{std::move(path), std::move(metadata)},
       m_Translations(std::move(translations))
 {}
 
 std::unique_ptr<TranslationExtension>
-TranslationExtension::loadExtension(std::filesystem::path path,
-                                    ExtensionMetaData metadata)
+TranslationExtension::loadExtension(std::filesystem::path const& path,
+                                    ExtensionMetaData&& metadata)
 {
   std::vector<std::shared_ptr<const Translation>> translations;
   const auto& jsonTranslations = metadata.content()["translations"].toObject();
@@ -300,7 +310,7 @@ TranslationExtension::loadExtension(std::filesystem::path path,
   }
 
   return std::unique_ptr<TranslationExtension>{
-      new TranslationExtension(path, metadata, std::move(translations))};
+      new TranslationExtension(path, std::move(metadata), std::move(translations))};
 }
 
 std::shared_ptr<const Translation>
@@ -333,17 +343,18 @@ TranslationExtension::parseTranslation(std::filesystem::path const& extensionFol
 }
 
 PluginExtension::PluginExtension(
-    std::filesystem::path path, ExtensionMetaData metadata, bool autodetect,
+    std::filesystem::path const& path, ExtensionMetaData&& metadata, bool autodetect,
     std::map<std::string, std::filesystem::path> plugins,
     std::vector<std::shared_ptr<const ThemeAddition>> themeAdditions,
     std::vector<std::shared_ptr<const TranslationAddition>> translationAdditions)
-    : IExtension(std::move(path), std::move(metadata)), m_AutoDetect{autodetect},
+    : IExtension(path, std::move(metadata)), m_AutoDetect{autodetect},
       m_Plugins{std::move(plugins)}, m_ThemeAdditions{std::move(themeAdditions)},
       m_TranslationAdditions{std::move(translationAdditions)}
 {}
 
 std::unique_ptr<PluginExtension>
-PluginExtension::loadExtension(std::filesystem::path path, ExtensionMetaData metadata)
+PluginExtension::loadExtension(std::filesystem::path const& path,
+                               ExtensionMetaData&& metadata)
 {
   namespace fs = std::filesystem;
 
@@ -450,8 +461,9 @@ GameExtension::GameExtension(PluginExtension&& pluginExtension)
     : PluginExtension(std::move(pluginExtension))
 {}
 
-std::unique_ptr<GameExtension> GameExtension::loadExtension(std::filesystem::path path,
-                                                            ExtensionMetaData metadata)
+std::unique_ptr<GameExtension>
+GameExtension::loadExtension(std::filesystem::path const& path,
+                             ExtensionMetaData&& metadata)
 {
   auto extension = PluginExtension::loadExtension(std::move(path), std::move(metadata));
   return extension
