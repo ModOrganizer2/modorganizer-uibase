@@ -36,7 +36,7 @@ jobs:
       - name: Configure UI Base build
         shell: pwsh
         run: |
-          cmake --preset vs2022-windows `
+          cmake --preset vs2022-windows-standalone `
             "-DCMAKE_PREFIX_PATH=${env:QT_ROOT_DIR}\msvc2019_64" `
             "-DCMAKE_INSTALL_PREFIX=install" -DUIBASE_TESTING=ON
 
