@@ -55,7 +55,7 @@
       "cacheVariables": {
         "VCPKG_MANIFEST_FEATURES": {
           "type": "STRING",
-          "value": "standalone"
+          "value": "standalone;testing"
         }
       },
       "inherits": "vs2022-windows",
