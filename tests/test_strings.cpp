@@ -3,6 +3,8 @@
 #include <gtest/gtest.h>
 #pragma warning(pop)
 
+#include <QCoreApplication>
+
 #include <uibase/strings.h>
 
 #include <format>
@@ -30,4 +32,11 @@ TEST(StringsTest, IReplaceAll)
   ASSERT_EQ("replace a stuff with a stuff som",
             ireplace_all("replace some stuff with some stuff som", "some", "a"));
   ASSERT_EQ("1YYY3YYY2", ireplace_all("1aBc3AbC2", "abC", "YYY"));
+}
+
+// this is more a tests of the tests
+TEST(StringsTest, Translation)
+{
+  ASSERT_EQ("Traduction en Français",
+            QCoreApplication::translate("uibase-tests", "Translate to French"));
 }
