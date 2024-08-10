@@ -86,6 +86,18 @@ public:
   virtual QString localizedName() const { return name(); }
 
   /**
+   * @brief Retrieve the requirements for the plugins.
+   *
+   * This method is called right after init().
+   *
+   * @return the requirements for this plugin.
+   */
+  virtual std::vector<std::shared_ptr<const IPluginRequirement>> requirements() const
+  {
+    return {};
+  }
+
+  /**
    * @return the list of configurable settings for this plugin (in the user interface).
    * The list may be empty.
    *
