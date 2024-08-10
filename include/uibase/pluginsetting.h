@@ -21,29 +21,13 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 #ifndef PLUGINSETTING_H
 #define PLUGINSETTING_H
 
-#include <QList>
-#include <QString>
-#include <QVariant>
+#include "extensions/extensionsetting.h"
 
 namespace MOBase
 {
 
-/**
- * @brief struct to hold the user-configurable parameters a plugin accepts. The purpose
- * of this struct is only to inform the application what settings to offer to the user,
- * it does not hold the actual value
- */
-struct PluginSetting
-{
-  PluginSetting(const QString& key, const QString& description,
-                const QVariant& defaultValue)
-      : key(key), description(description), defaultValue(defaultValue)
-  {}
-
-  QString key;
-  QString description;
-  QVariant defaultValue;
-};
+// deprecated alias
+using PluginSetting [[deprecated]] = Setting;
 
 }  // namespace MOBase
 

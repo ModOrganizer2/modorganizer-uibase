@@ -96,10 +96,10 @@ ExtensionMetaData::ExtensionMetaData(std::filesystem::path const& path,
                                Version::ParseMode::SemVer);
   } catch (InvalidVersionException const& ex) {
     throw InvalidExtensionMetaDataException(
-        std::format("invalid or missing version '{}'", jsonData["version"].toString()));
+        std::format("invalid or missing version '{}': {}",
+                    jsonData["version"].toString(), ex.what()));
   }
 
-  // TODO: name of the key
   // translation context
   m_TranslationContext = jsonData["translation-context"].toString("");
 
@@ -337,7 +337,7 @@ TranslationExtension::parseTranslation(std::filesystem::path const& extensionFol
     QLocale locale(identifier);
     name = QString("%1 (%2)")
                .arg(locale.nativeLanguageName())
-               .arg(locale.nativeCountryName());
+               .arg(locale.nativeTerritoryName());
   }
 
   return std::make_shared<Translation>(identifier.toStdString(), name.toStdString(),

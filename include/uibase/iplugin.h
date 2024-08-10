@@ -21,14 +21,18 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 #ifndef IPLUGIN_H
 #define IPLUGIN_H
 
-#include "imoinfo.h"
-#include "pluginrequirements.h"
-#include "pluginsetting.h"
-#include "versioninfo.h"
+#include <vector>
+
 #include <QList>
 #include <QObject>
 #include <QString>
-#include <vector>
+
+#include "extensions/extensionsetting.h"
+#include "imoinfo.h"
+#include "pluginrequirements.h"
+
+// deprecated header
+#include "pluginsetting.h"
 
 namespace MOBase
 {
@@ -88,7 +92,12 @@ public:
    * @note Plugin can store "hidden" (from the user) settings using
    * IOrganizer::persistent / IOrganizer::setPersistent.
    */
-  virtual QList<PluginSetting> settings() const = 0;
+  virtual QList<Setting> settings() const = 0;
+
+  /**
+   * @return the list of groups for settings.
+   */
+  virtual QList<SettingGroup> settingGroups() const { return {}; }
 
   /**
    * @return whether the plugin should be enabled by default

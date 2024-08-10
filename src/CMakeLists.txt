@@ -35,6 +35,7 @@ set(root_headers
 )
 set(extension_headers
 	../include/uibase/extensions/extension.h
+	../include/uibase/extensions/extensionsetting.h
 	../include/uibase/extensions/iextensionlist.h
 	../include/uibase/extensions/ipluginloader.h
 	../include/uibase/extensions/requirements.h
