@@ -46,22 +46,25 @@ namespace
   ExtensionContributor parseContributor(QJsonValue const& value)
   {
     if (value.isNull()) {
-      return ExtensionContributor("");
+      return ExtensionContributor("", "");
     }
 
     // TODO: handle more fields in the future, handle string authors similar to NPM
 
     if (value.isObject()) {
       const auto contrib = value.toObject();
-      return ExtensionContributor(contrib["name"].toString());
+      return ExtensionContributor(contrib["name"].toString(),
+                                  contrib["homepage"].toString());
     }
 
-    return ExtensionContributor(value.toString());
+    return ExtensionContributor(value.toString(), {});
   }
 
 }  // namespace
 
-ExtensionContributor::ExtensionContributor(QString name) : m_Name{name} {}
+ExtensionContributor::ExtensionContributor(QString name, QString homepage)
+    : m_Name{std::move(name)}, m_Homepage{std::move(homepage)}
+{}
 
 ExtensionMetaData::ExtensionMetaData(std::filesystem::path const& path,
                                      QJsonObject const& jsonData)

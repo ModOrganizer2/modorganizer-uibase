@@ -36,18 +36,22 @@ enum class ExtensionType
 class QDLLEXPORT ExtensionContributor
 {
 public:
-  ExtensionContributor(QString name);
+  ExtensionContributor(QString name, QString homepage);
 
   // retrieve the name of the contributor
   //
   const auto& name() const { return m_Name; }
+
+  // retrieve the homagepage of the contributor
+  //
+  const auto& homepage() const { return m_Homepage; }
 
 private:
   ExtensionContributor() = default;
 
   friend class ExtensionMetaData;
 
-  QString m_Name;
+  QString m_Name, m_Homepage;
 };
 
 class QDLLEXPORT ExtensionMetaData
