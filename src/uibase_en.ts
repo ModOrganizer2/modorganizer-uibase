@@ -181,7 +181,6 @@
     <message>
         <location filename="safewritefile.cpp" line="42"/>
         <source>Failed to save &apos;%1&apos;, could not create a temporary file: %2 (error %3)</source>
-        <oldsource>Failed to save &apos;{}&apos;, could not create a temporary file: {} (error {})</oldsource>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -223,52 +222,52 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="utility.cpp" line="1113"/>
+        <location filename="utility.cpp" line="1123"/>
         <source>%1 B</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="utility.cpp" line="1113"/>
+        <location filename="utility.cpp" line="1123"/>
         <source>%1 KB</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="utility.cpp" line="1114"/>
+        <location filename="utility.cpp" line="1124"/>
         <source>%1 MB</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="utility.cpp" line="1114"/>
+        <location filename="utility.cpp" line="1124"/>
         <source>%1 GB</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="utility.cpp" line="1115"/>
+        <location filename="utility.cpp" line="1125"/>
         <source>%1 TB</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="utility.cpp" line="1120"/>
+        <location filename="utility.cpp" line="1130"/>
         <source>%1 B/s</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="utility.cpp" line="1120"/>
+        <location filename="utility.cpp" line="1130"/>
         <source>%1 KB/s</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="utility.cpp" line="1121"/>
+        <location filename="utility.cpp" line="1131"/>
         <source>%1 MB/s</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="utility.cpp" line="1121"/>
+        <location filename="utility.cpp" line="1131"/>
         <source>%1 GB/s</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="utility.cpp" line="1122"/>
+        <location filename="utility.cpp" line="1132"/>
         <source>%1 TB/s</source>
         <translation type="unfinished"></translation>
     </message>
@@ -386,19 +385,19 @@
 <context>
     <name>uibase</name>
     <message>
-        <location filename="utility.cpp" line="1184"/>
+        <location filename="utility.cpp" line="1194"/>
         <source>h</source>
         <extracomment>Time remaining hours</extracomment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="utility.cpp" line="1187"/>
+        <location filename="utility.cpp" line="1197"/>
         <source>m</source>
         <extracomment>Time remaining minutes</extracomment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="utility.cpp" line="1190"/>
+        <location filename="utility.cpp" line="1200"/>
         <source>s</source>
         <extracomment>Time remaining seconds</extracomment>
         <translation type="unfinished"></translation>
