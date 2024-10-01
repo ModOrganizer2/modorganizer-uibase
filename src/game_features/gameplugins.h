@@ -15,8 +15,9 @@ public:
   virtual void writePluginLists(const MOBase::IPluginList* pluginList) = 0;
   virtual void readPluginLists(MOBase::IPluginList* pluginList)        = 0;
   virtual QStringList getLoadOrder()                                   = 0;
-  virtual bool lightPluginsAreSupported()                              = 0;
-  virtual bool mediumPluginsAreSupported()                             = 0;
+  virtual bool lightPluginsAreSupported() { return false; }
+  virtual bool mediumPluginsAreSupported() { return false; }
+  virtual bool blueprintPluginsAreSupported() { return false; }
 };
 
 }  // namespace MOBase
