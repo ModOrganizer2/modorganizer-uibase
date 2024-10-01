@@ -220,6 +220,21 @@ public:
    * exist.
    */
   virtual bool hasNoRecords(const QString& name) const = 0;
+
+  /**
+   * @brief retrieve the author of a plugin
+   * @param name filename of the plugin (without path but with file extension)
+   * @return the author of the plugin or an empty string if the plugin doesn't exist
+   */
+  virtual QString author(const QString& name) const = 0;
+
+  /**
+   * @brief retrieve the description of a plugin
+   * @param name filename of the plugin (without path but with file extension)
+   * @return the description of the plugin or an empty string if the plugin doesn't
+   * exist
+   */
+  virtual QString description(const QString& name) const = 0;
 };
 
 }  // namespace MOBase
