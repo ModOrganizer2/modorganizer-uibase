@@ -214,6 +214,16 @@ public:
   virtual bool isLightFlagged(const QString& name) const = 0;
 
   /**
+   * @brief determine if a plugin is flagged as blueprint
+   * @param name filename of the plugin (without path but with file extension)
+   * @return true if the file is flagged as blueprint, false if it isn't OR if the file
+   * doesn't exist.
+   * @note this plugin flag was added in Starfield and signifies plugins that are
+   * hidden in the Creation Kit and removed from Plugins.txt when the game loads a save
+   */
+  virtual bool isBlueprintFlagged(const QString& name) const = 0;
+
+  /**
    * @brief determine if a plugin has no records
    * @param name filename of the plugin (without path but with file extension)
    * @return true if the file has no records, false if it does OR if the file doesn't
