@@ -3,6 +3,7 @@
 
 #include <stdexcept>
 
+#include <QObject>
 #include <QString>
 
 #include "dllimport.h"
