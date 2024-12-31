@@ -35,6 +35,16 @@ public:
   virtual int startDownloadNexusFile(int modID, int fileID) = 0;
 
   /**
+   * @brief download a file from www.nexusmods.com/<gameName>.
+   * @param gameName 'short' name of the game the mod is for
+   * @param modID id of the mod for which to download a file
+   * @param fileID id of the file to download
+   * @return an id by which the download will be identified
+   */
+  virtual int startDownloadNexusFileForGame(const QString& gameName, int modID,
+                                            int fileID) = 0;
+
+  /**
    * @brief get the (absolute) file path of the specified download.
    * @param id id of the download as returned by the download... functions
    * @return absoute path to the downloaded file. This file may not yet exist if the
