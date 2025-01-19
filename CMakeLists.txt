@@ -1,17 +1,44 @@
 cmake_minimum_required(VERSION 3.16)
 
+include(CMakePackageConfigHelpers)
+
 project(uibase)
 
-if(DEFINED DEPENDENCIES_DIR)
-	include(${DEPENDENCIES_DIR}/modorganizer_super/cmake_common/mo2.cmake)
-else()
-	include(${CMAKE_CURRENT_LIST_DIR}/../cmake_common/mo2.cmake)
-endif()
+find_package(mo2-cmake CONFIG REQUIRED)
 
 add_subdirectory(src)
 
-set(UIBASE_TESTS ${UIBASE_TESTS} CACHE BOOL "build tests for uibase")
-if (UIBASE_TESTS)
+mo2_set_project_to_run_from_install(uibase EXECUTABLE ${CMAKE_INSTALL_PREFIX}/bin/ModOrganizer.exe)
+set_property(DIRECTORY ${PROJECT_SOURCE_DIR} PROPERTY VS_STARTUP_PROJECT uibase)
+
+configure_package_config_file(${CMAKE_CURRENT_SOURCE_DIR}/cmake/config.cmake.in
+  "${CMAKE_CURRENT_BINARY_DIR}/mo2-uibase-config.cmake"
+  INSTALL_DESTINATION "lib/cmake/mo2-uibase"
+  NO_SET_AND_CHECK_MACRO
+  NO_CHECK_REQUIRED_COMPONENTS_MACRO
+)
+
+file(READ "${CMAKE_CURRENT_SOURCE_DIR}/src/version.rc" uibase_version)
+string(REGEX MATCH "#define VER_FILEVERSION\\s*([0-9]+),([0-9]+),([0-9]+)" _ ${uibase_version})
+set(uibase_version_major ${CMAKE_MATCH_1})
+set(uibase_version_minor ${CMAKE_MATCH_2})
+set(uibase_version_patch ${CMAKE_MATCH_3})
+
+write_basic_package_version_file(
+  "${CMAKE_CURRENT_BINARY_DIR}/mo2-uibase-config-version.cmake"
+  VERSION "${uibase_version_major}.${uibase_version_minor}.${uibase_version_patch}"
+  COMPATIBILITY AnyNewerVersion
+  ARCH_INDEPENDENT
+)
+
+install(FILES
+  ${CMAKE_CURRENT_BINARY_DIR}/mo2-uibase-config.cmake
+  ${CMAKE_CURRENT_BINARY_DIR}/mo2-uibase-config-version.cmake
+  DESTINATION lib/cmake/mo2-uibase
+)
+
+set(UIBASE_TESTING ${UIBASE_TESTING} CACHE BOOL "build tests for uibase")
+if (UIBASE_TESTING)
 	enable_testing()
 	add_subdirectory(tests)
 endif()
