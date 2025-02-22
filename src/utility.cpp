@@ -847,7 +847,7 @@ bool shellDeleteQuiet(const QString& fileName, QWidget* dialog)
   return true;
 }
 
-QString readFileText(const QString& fileName, QString* encoding)
+QString readFileText(const QString& fileName, QString* encoding, bool* hadBOM)
 {
 
   QFile textFile(fileName);
@@ -856,14 +856,14 @@ QString readFileText(const QString& fileName, QString* encoding)
   }
 
   QByteArray buffer = textFile.readAll();
-  return decodeTextData(buffer, encoding);
+  return decodeTextData(buffer, encoding, hadBOM);
 }
 
-QString decodeTextData(const QByteArray& fileData, QString* encoding)
+QString decodeTextData(const QByteArray& fileData, QString* encoding, bool* hadBOM)
 {
   QStringConverter::Encoding codec = QStringConverter::Encoding::Utf8;
   QStringEncoder encoder(codec);
-  QStringDecoder decoder(codec);
+  QStringDecoder decoder(codec, QStringConverter::Flag::ConvertInitialBom);
   QString text = decoder.decode(fileData);
 
   // embedded nulls probably mean it was UTF-16 - they're rare/illegal in text files
@@ -882,7 +882,7 @@ QString decodeTextData(const QByteArray& fileData, QString* encoding)
     auto codecSearch = QStringConverter::encodingForData(fileData);
     if (codecSearch.has_value()) {
       codec   = codecSearch.value();
-      decoder = QStringDecoder(codec);
+      decoder = QStringDecoder(codec, QStringConverter::Flag::ConvertInitialBom);
     } else {
       // encodingForData doesn't handle UTF-16 without BOM
       decoder = QStringDecoder(hasEmbeddedNulls ? QStringConverter::Encoding::Utf16 : QStringConverter::Encoding::System);
@@ -892,6 +892,16 @@ QString decodeTextData(const QByteArray& fileData, QString* encoding)
 
   if (encoding != nullptr) {
     *encoding = QStringConverter::nameForEncoding(codec);
+  }
+
+  if (!text.isEmpty() && text.startsWith(QChar::ByteOrderMark)) {
+    text.remove(0, 1);
+
+    if (hadBOM != nullptr) {
+      *hadBOM = true;
+    }
+  } else if (hadBOM != nullptr) {
+    *hadBOM = false;
   }
 
   return text;

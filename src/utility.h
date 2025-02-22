@@ -452,7 +452,8 @@ QDLLEXPORT QString getStartMenuDirectory();
  *the encoding used
  * @return the textual content of the file or an empty string if the file doesn't exist
  **/
-QDLLEXPORT QString readFileText(const QString& fileName, QString* encoding = nullptr);
+QDLLEXPORT QString readFileText(const QString& fileName, QString* encoding = nullptr,
+                                bool* hadBOM = nullptr);
 
 /**
  * @brief decode raw text data. This tries to guess the encoding used in the file
@@ -462,7 +463,8 @@ QDLLEXPORT QString readFileText(const QString& fileName, QString* encoding = nul
  * @return the textual content of the file or an empty string if the file doesn't exist
  **/
 QDLLEXPORT QString decodeTextData(const QByteArray& fileData,
-                                  QString* encoding = nullptr);
+                                  QString* encoding = nullptr,
+                                  bool* hadBOM = nullptr);
 
 /**
  * @brief delete files matching a pattern
