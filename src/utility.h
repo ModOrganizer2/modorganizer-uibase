@@ -463,8 +463,7 @@ QDLLEXPORT QString readFileText(const QString& fileName, QString* encoding = nul
  * @return the textual content of the file or an empty string if the file doesn't exist
  **/
 QDLLEXPORT QString decodeTextData(const QByteArray& fileData,
-                                  QString* encoding = nullptr,
-                                  bool* hadBOM = nullptr);
+                                  QString* encoding = nullptr, bool* hadBOM = nullptr);
 
 /**
  * @brief delete files matching a pattern

@@ -885,7 +885,8 @@ QString decodeTextData(const QByteArray& fileData, QString* encoding, bool* hadB
       decoder = QStringDecoder(codec, QStringConverter::Flag::ConvertInitialBom);
     } else {
       // encodingForData doesn't handle UTF-16 without BOM
-      decoder = QStringDecoder(hasEmbeddedNulls ? QStringConverter::Encoding::Utf16 : QStringConverter::Encoding::System);
+      decoder = QStringDecoder(hasEmbeddedNulls ? QStringConverter::Encoding::Utf16
+                                                : QStringConverter::Encoding::System);
     }
     text = decoder.decode(fileData);
   }
