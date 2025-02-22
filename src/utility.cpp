@@ -866,16 +866,26 @@ QString decodeTextData(const QByteArray& fileData, QString* encoding)
   QStringDecoder decoder(codec);
   QString text = decoder.decode(fileData);
 
+  // embedded nulls probably mean it was UTF-16 - they're rare/illegal in text files
+  bool hasEmbeddedNulls = false;
+  for (const auto& character : text) {
+    if (character.isNull()) {
+      hasEmbeddedNulls = true;
+      break;
+    }
+  }
+
   // check reverse conversion. If this was unicode text there can't be data loss
   // this assumes QString doesn't normalize the data in any way so this is a bit unsafe
-  if (encoder.encode(text) != fileData) {
+  if (hasEmbeddedNulls || encoder.encode(text) != fileData) {
     log::debug("conversion failed assuming local encoding");
     auto codecSearch = QStringConverter::encodingForData(fileData);
     if (codecSearch.has_value()) {
       codec   = codecSearch.value();
       decoder = QStringDecoder(codec);
     } else {
-      decoder = QStringDecoder(QStringConverter::Encoding::System);
+      // encodingForData doesn't handle UTF-16 without BOM
+      decoder = QStringDecoder(hasEmbeddedNulls ? QStringConverter::Encoding::Utf16 : QStringConverter::Encoding::System);
     }
     text = decoder.decode(fileData);
   }
