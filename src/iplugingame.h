@@ -163,6 +163,8 @@ public:
    */
   virtual QDir dataDirectory() const = 0;
 
+  virtual QString modDataDirectory() const { return ""; }
+
   /**
    * this function may be called before init()
    *
@@ -349,6 +351,23 @@ public:
    * @brief Get a URL for the support page for the game
    */
   virtual QString getSupportURL() const { return ""; }
+
+  /**
+   * @brief Gets a virtualization mapping for mod directories
+   * 
+   * @note Maps internal mod directories to a list of paths
+   * @default Root directory maps to game data path(s)
+   */
+  virtual QMap<QString, QStringList> getModMappings() const
+  {
+    QMap<QString, QStringList> map;
+    QStringList dataDirs = {dataDirectory().absolutePath()};
+    for (auto path : secondaryDataDirectories()) {
+      dataDirs.append(path.absolutePath());
+    }
+    map[""] = dataDirs;
+    return map;
+  }
 };
 
 Q_DECLARE_OPERATORS_FOR_FLAGS(IPluginGame::ProfileSettings)
