@@ -354,7 +354,7 @@ public:
 
   /**
    * @brief Gets a virtualization mapping for mod directories
-   * 
+   *
    * @note Maps internal mod directories to a list of paths
    * @default Root directory maps to game data path(s)
    */
