@@ -9,12 +9,8 @@ namespace MOBase::details
 {
 template <typename Container>
 concept random_access_container = requires(Container const& c) {
-  {
-    c.begin()
-  } -> std::random_access_iterator;
-  {
-    c.end()
-  } -> std::random_access_iterator;
+  { c.begin() } -> std::random_access_iterator;
+  { c.end() } -> std::random_access_iterator;
 };
 }  // namespace MOBase::details
 
