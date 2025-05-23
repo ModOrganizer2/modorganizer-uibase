@@ -37,8 +37,8 @@ install(FILES
   DESTINATION lib/cmake/mo2-uibase
 )
 
-set(UIBASE_TESTING ${UIBASE_TESTING} CACHE BOOL "build tests for uibase")
-if (UIBASE_TESTING)
+set(BUILD_TESTING ${BUILD_TESTING} CACHE BOOL "build tests for uibase")
+if (BUILD_TESTING)
 	enable_testing()
 	add_subdirectory(tests)
 endif()
