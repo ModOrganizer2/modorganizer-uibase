@@ -31,14 +31,14 @@ void ireplace_all(std::string& input, std::string_view search,
 {
   const auto search_length  = static_cast<std::string::difference_type>(search.size());
   const auto replace_length = replace.size();
-  auto it                   = input.begin();
-  while (input.end() - it >= search_length) {
-    const auto search_end = it + search_length;
-    if (iequals(std::string_view(it, search_end), search)) {
-      input.replace(it, search_end, replace);
-      it += static_cast<std::string::difference_type>(replace_length);
+
+  std::size_t i = 0;
+  while (input.size() - i >= search_length) {
+    if (iequals(std::string_view(input).substr(i, search_length), search)) {
+      input.replace(i, search_length, replace);
+      i += replace_length;
     } else {
-      ++it;
+      ++i;
     }
   }
 }

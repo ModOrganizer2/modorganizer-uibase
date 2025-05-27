@@ -32,6 +32,11 @@ TEST(StringsTest, IReplaceAll)
   ASSERT_EQ("replace a stuff with a stuff som",
             ireplace_all("replace some stuff with some stuff som", "some", "a"));
   ASSERT_EQ("1YYY3YYY2", ireplace_all("1aBc3AbC2", "abC", "YYY"));
+
+  ASSERT_EQ(
+      "data path: C:/Users/USERNAME/AppData/Local/ModOrganizer/Starfield",
+      ireplace_all("data path: C:/Users/lords/AppData/Local/ModOrganizer/Starfield",
+                   "/lords", "/USERNAME"));
 }
 
 // this is more a tests of the tests
