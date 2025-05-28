@@ -17,7 +17,7 @@ jobs:
     steps:
       - name: Configure UIBase
         id: configure-uibase
-        uses: ModOrganizer2/build-with-mob-action@dev/vcpkg
+        uses: ModOrganizer2/build-with-mob-action@master
         with:
           # skip build because we are going to build both Debug and RelWithDebInfo here
           mo2-skip-build: true
