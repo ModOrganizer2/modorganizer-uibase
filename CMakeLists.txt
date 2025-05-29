@@ -19,7 +19,7 @@ configure_package_config_file(${CMAKE_CURRENT_SOURCE_DIR}/cmake/config.cmake.in
 )
 
 file(READ "${CMAKE_CURRENT_SOURCE_DIR}/src/version.rc" uibase_version)
-string(REGEX MATCH "#define VER_FILEVERSION\\s*([0-9]+),([0-9]+),([0-9]+)" _ ${uibase_version})
+string(REGEX MATCH "#define VER_FILEVERSION[ \t]*([0-9]+)[.]([0-9]+)[.]([0-9]+)" _ ${uibase_version})
 set(uibase_version_major ${CMAKE_MATCH_1})
 set(uibase_version_minor ${CMAKE_MATCH_2})
 set(uibase_version_patch ${CMAKE_MATCH_3})
