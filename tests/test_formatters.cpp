@@ -6,7 +6,7 @@
 #include <QString>
 #include <vector>
 
-#include "formatters.h"
+#include <uibase/formatters.h>
 
 #include <format>
 
