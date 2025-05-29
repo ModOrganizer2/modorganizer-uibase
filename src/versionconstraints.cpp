@@ -23,11 +23,9 @@ static const std::unordered_map<QString, MOBase::Version::ReleaseType>
                       {"rc", MOBase::Version::ReleaseCandidate}};
 
 #define _COMPARE_PAIR(OP)                                                              \
-  {                                                                                    \
-    #OP, +[](MOBase::Version const& lhs, MOBase::Version const& rhs) {                 \
-      return lhs OP rhs;                                                               \
-    }                                                                                  \
-  }
+  {#OP, +[](MOBase::Version const& lhs, MOBase::Version const& rhs) {                  \
+     return lhs OP rhs;                                                                \
+   }}
 
 static const std::unordered_map<QString, VersionCompareFunction> s_CompareToFunction{
     _COMPARE_PAIR(>),  _COMPARE_PAIR(>=), _COMPARE_PAIR(<),

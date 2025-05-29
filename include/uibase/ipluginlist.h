@@ -214,12 +214,53 @@ public:
   virtual bool isLightFlagged(const QString& name) const = 0;
 
   /**
+   * @brief determine if a plugin is flagged as blueprint
+   * @param name filename of the plugin (without path but with file extension)
+   * @return true if the file is flagged as blueprint, false if it isn't OR if the file
+   * doesn't exist.
+   * @note this plugin flag was added in Starfield and signifies plugins that are
+   * hidden in the Creation Kit and removed from Plugins.txt when the game loads a save
+   */
+  virtual bool isBlueprintFlagged(const QString& name) const = 0;
+
+  /**
    * @brief determine if a plugin has no records
    * @param name filename of the plugin (without path but with file extension)
    * @return true if the file has no records, false if it does OR if the file doesn't
    * exist.
    */
   virtual bool hasNoRecords(const QString& name) const = 0;
+
+  /**
+   * @brief retrieve the form version of a plugin
+   * @param name filename of the plugin (without path but with file extension)
+   * @return the form version of the plugin, 0 if it doesn't have a form version or -1
+   * if the plugin doesn't exist
+   * @note Oblivion-style plugin headers don't have a form version
+   */
+  virtual int formVersion(const QString& name) const = 0;
+
+  /**
+   * @brief retrieve the header version of a plugin
+   * @param name filename of the plugin (without path but with file extension)
+   * @return the header version of the plugin or -1 if the plugin doesn't exist
+   */
+  virtual float headerVersion(const QString& name) const = 0;
+
+  /**
+   * @brief retrieve the author of a plugin
+   * @param name filename of the plugin (without path but with file extension)
+   * @return the author of the plugin or an empty string if the plugin doesn't exist
+   */
+  virtual QString author(const QString& name) const = 0;
+
+  /**
+   * @brief retrieve the description of a plugin
+   * @param name filename of the plugin (without path but with file extension)
+   * @return the description of the plugin or an empty string if the plugin doesn't
+   * exist
+   */
+  virtual QString description(const QString& name) const = 0;
 };
 
 }  // namespace MOBase
