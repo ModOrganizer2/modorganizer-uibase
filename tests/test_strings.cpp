@@ -9,6 +9,8 @@
 
 #include <format>
 
+#include "test_utils.h"
+
 using namespace MOBase;
 
 TEST(StringsTest, IEquals)
@@ -42,6 +44,11 @@ TEST(StringsTest, IReplaceAll)
 // this is more a tests of the tests
 TEST(StringsTest, Translation)
 {
+  mo2::tests::TranslationHelper tr;
+  ASSERT_EQ("Translate to French",
+            QCoreApplication::translate("uibase-tests", "Translate to French"));
+
+  tr.switchLanguage("fr");
   ASSERT_EQ("Traduction en Français",
             QCoreApplication::translate("uibase-tests", "Translate to French"));
 }

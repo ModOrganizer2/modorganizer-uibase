@@ -20,6 +20,8 @@ namespace MOBase
 class QDLLEXPORT Exception : public std::exception
 {
 public:
+  Exception(const char* text) : m_Message(text) {}
+  Exception(const std::string& text) : m_Message(QByteArray::fromStdString(text)) {}
   Exception(const QString& text) : m_Message(text.toUtf8()) {}
 
   virtual const char* what() const noexcept override { return m_Message.constData(); }

@@ -383,11 +383,13 @@ QDLLEXPORT std::string ToString(const QString& source, bool utf8 = true);
  * @brief convert std::string to QString (assuming the string to be utf-8 encoded)
  **/
 QDLLEXPORT QString ToQString(const std::string& source);
+QDLLEXPORT QString ToQString(std::string_view source);
 
 /**
  * @brief convert std::wstring to QString (assuming the wstring to be utf-16 encoded)
  **/
 QDLLEXPORT QString ToQString(const std::wstring& source);
+QDLLEXPORT QString ToQString(std::wstring_view source);
 
 /**
  * @brief convert a systemtime object to a string containing date and time in local

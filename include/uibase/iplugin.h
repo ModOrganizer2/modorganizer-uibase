@@ -21,14 +21,18 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 #ifndef IPLUGIN_H
 #define IPLUGIN_H
 
-#include "imoinfo.h"
-#include "pluginrequirements.h"
-#include "pluginsetting.h"
-#include "versioninfo.h"
+#include <vector>
+
 #include <QList>
 #include <QObject>
 #include <QString>
-#include <vector>
+
+#include "extensions/extensionsetting.h"
+#include "imoinfo.h"
+#include "pluginrequirements.h"
+
+// deprecated header
+#include "pluginsetting.h"
 
 namespace MOBase
 {
@@ -82,21 +86,6 @@ public:
   virtual QString localizedName() const { return name(); }
 
   /**
-   * @brief Retrieve the name of the master plugin of this plugin.
-   *
-   * It is often easier to implement a functionality as multiple plugins in MO2, but
-   * ship the plugins together, e.g. as a Python module or using `createFunctions()`. In
-   * this case, having a master plugin (one of the plugin, or a separate one) tells MO2
-   * that these plugins are linked and should also be displayed together in the UI. If
-   * MO2 ever implements automatic updates for plugins, the `master()` plugin will also
-   * be used for this purpose.
-   *
-   * @return the name of the master plugin of this plugin, or an empty string if this
-   * plugin does not have a master.
-   */
-  virtual QString master() const { return ""; }
-
-  /**
    * @brief Retrieve the requirements for the plugins.
    *
    * This method is called right after init().
@@ -109,29 +98,18 @@ public:
   }
 
   /**
-   * @return the author of this plugin.
-   */
-  virtual QString author() const = 0;
-
-  /**
-   * @return a short description of the plugin to be displayed to the user.
-   */
-  virtual QString description() const = 0;
-
-  /**
-   * @return the version of the plugin. This can be used to detect outdated versions of
-   * plugins.
-   */
-  virtual VersionInfo version() const = 0;
-
-  /**
    * @return the list of configurable settings for this plugin (in the user interface).
    * The list may be empty.
    *
    * @note Plugin can store "hidden" (from the user) settings using
    * IOrganizer::persistent / IOrganizer::setPersistent.
    */
-  virtual QList<PluginSetting> settings() const = 0;
+  virtual QList<Setting> settings() const = 0;
+
+  /**
+   * @return the list of groups for settings.
+   */
+  virtual QList<SettingGroup> settingGroups() const { return {}; }
 
   /**
    * @return whether the plugin should be enabled by default
