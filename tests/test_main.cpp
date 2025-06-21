@@ -3,13 +3,16 @@
 #include <QCoreApplication>
 #include <QTranslator>
 
+#include <uibase/log.h>
+
 int main(int argc, char** argv)
 {
   QCoreApplication app(argc, argv);
-  QTranslator translator;
-  if (translator.load("tests_fr", "tests/translations")) {
-    app.installTranslator(&translator);
-  }
+
+  MOBase::log::createDefault({.name     = "./mo2-tests.logs",
+                              .maxLevel = MOBase::log::Levels::Info,
+                              .pattern  = ""});
+
   testing::InitGoogleTest(&argc, argv);
   return RUN_ALL_TESTS();
 }

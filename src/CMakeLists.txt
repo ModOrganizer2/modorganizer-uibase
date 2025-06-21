@@ -33,6 +33,16 @@ set(root_headers
 	../include/uibase/versioning.h
 	../include/uibase/versioninfo.h
 )
+set(extension_headers
+	../include/uibase/extensions/extension.h
+	../include/uibase/extensions/extensionsetting.h
+	../include/uibase/extensions/iextensionlist.h
+	../include/uibase/extensions/ipluginloader.h
+	../include/uibase/extensions/requirements.h
+	../include/uibase/extensions/theme.h
+	../include/uibase/extensions/translation.h
+	../include/uibase/extensions/versionconstraints.h
+)
 set(interface_headers
 	../include/uibase/ifiletree.h
 	../include/uibase/iinstallationmanager.h
@@ -51,7 +61,6 @@ set(interface_headers
 	../include/uibase/ipluginlist.h
 	../include/uibase/ipluginmodpage.h
 	../include/uibase/ipluginpreview.h
-	../include/uibase/ipluginproxy.h
 	../include/uibase/iplugintool.h
 	../include/uibase/iprofile.h
 	../include/uibase/isavegame.h
@@ -90,6 +99,7 @@ set(game_features_header
 set(formatters_header
 	../include/uibase/formatters/enums.h
 	../include/uibase/formatters/qt.h
+	../include/uibase/formatters/path.h
 	../include/uibase/formatters/random_access_containers.h
 	../include/uibase/formatters/strings.h
 	../include/uibase/formatters.h
@@ -125,6 +135,16 @@ mo2_target_sources(uibase
 	utility.cpp
 	versioning.cpp
 	versioninfo.cpp
+)
+
+mo2_target_sources(uibase
+	FOLDER src/extensions
+	PRIVATE
+	${extension_headers}
+	extension.cpp
+	theme.cpp
+	requirements.cpp
+	versionconstraints.cpp
 )
 
 mo2_target_sources(uibase
@@ -181,6 +201,7 @@ target_sources(uibase
 		BASE_DIRS ${CMAKE_CURRENT_LIST_DIR}/../include
 		FILES
 			${root_headers}
+			${extension_headers}
 			${interface_headers}
 			${tutorial_headers}
 			${widget_headers}

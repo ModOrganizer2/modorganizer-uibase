@@ -269,17 +269,17 @@ public:  // Mutable operations:
   virtual void setUrl(const QString& url) = 0;
 
 public:  // Plugin operations:
-         /**
-          * @brief Retrieve the specified setting in this mod for a plugin.
-          *
-          * @param pluginName Name of the plugin for which to retrieve a setting. This should
-          * always be IPlugin::name()        unless you have a really good reason to access
-          * settings        of another plugin.
-          * @param key Identifier of the setting.
-          * @param defaultValue The default value to return if the setting does not exist.
-          *
-          * @return the setting, if found, or the default value.
-          */
+  /**
+   * @brief Retrieve the specified setting in this mod for a plugin.
+   *
+   * @param pluginName Name of the plugin for which to retrieve a setting. This should
+   * always be IPlugin::name() unless you have a really good reason to access
+   * settings of another plugin.
+   * @param key Identifier of the setting.
+   * @param defaultValue The default value to return if the setting does not exist.
+   *
+   * @return the setting, if found, or the default value.
+   */
   virtual QVariant pluginSetting(const QString& pluginName, const QString& key,
                                  const QVariant& defaultValue = QVariant()) const = 0;
 
