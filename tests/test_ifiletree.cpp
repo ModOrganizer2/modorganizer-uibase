@@ -959,4 +959,8 @@ TEST(IFileTreeTest, TreeGlobOperations)
   entries  = fileTree->glob("**/*.t") | std::ranges::to<std::unordered_set>();
   expected = {map["a/g.t"], map["e/q/c.t"]};
   EXPECT_EQ(entries, expected);
+
+  entries  = fileTree->glob("a/*") | std::ranges::to<std::unordered_set>();
+  expected = {map["a/g.t"]};
+  EXPECT_EQ(entries, expected);
 }
