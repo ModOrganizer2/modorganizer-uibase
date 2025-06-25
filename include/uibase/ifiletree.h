@@ -22,6 +22,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 #define IFILETREE_H
 
 #include <atomic>
+#include <generator>
 #include <iterator>
 #include <map>
 #include <memory>
@@ -638,6 +639,25 @@ public:  // Walk operations
   walk(std::function<WalkReturn(QString const&, std::shared_ptr<const FileTreeEntry>)>
            callback,
        QString sep = "\\") const;
+
+  /**
+   * @brief Walk this tree, returning entries.
+   *
+   * During the walk, parent tree are guaranteed to be visited before their childrens.
+   * The current tree is not included in the return generator.
+   *
+   * @return a generator over the entries.
+   */
+  std::generator<std::shared_ptr<const FileTreeEntry>> walk() const;
+
+  /**
+   * @brief Glob entries matching the given pattern in this tree.
+   *
+   * @param pattern Glob pattern to match, using the same syntax as QRegularExpression.
+   *
+   * @return a generator over the entries matching the given pattern.
+   */
+  std::generator<std::shared_ptr<const FileTreeEntry>> glob(QString pattern) const;
 
 public:  // Utility functions:
   /**

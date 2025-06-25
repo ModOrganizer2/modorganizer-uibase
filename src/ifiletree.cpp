@@ -1,7 +1,10 @@
 #include "ifiletree.h"
 
 #include <algorithm>
+#include <span>
 #include <stack>
+
+#include <QRegularExpression>
 
 // FileTreeEntry:
 namespace MOBase
@@ -174,6 +177,124 @@ void IFileTree::walk(
       }
     }
   }
+}
+
+std::generator<std::shared_ptr<const FileTreeEntry>> IFileTree::walk() const
+{
+
+  std::stack<std::shared_ptr<const FileTreeEntry>> stack;
+
+  // We start by pushing all the entries in this tree, this avoid having to do extra
+  // check later for avoid leading separator:
+  for (auto rit = rbegin(); rit != rend(); ++rit) {
+    stack.push(*rit);
+  }
+
+  while (!stack.empty()) {
+    auto entry = stack.top();
+    stack.pop();
+
+    co_yield entry;
+
+    if (entry->isDir()) {
+      auto tree = entry->astree();
+      for (auto rit = tree->rbegin(); rit != tree->rend(); ++rit) {
+        stack.push(*rit);
+      }
+    }
+  }
+}
+
+namespace
+{
+
+  std::generator<std::shared_ptr<const FileTreeEntry>>
+  ifiletree_glob_impl(std::shared_ptr<const FileTreeEntry> entry,
+                      std::span<std::pair<QString, QRegularExpression>> const& patterns)
+  {
+    if (patterns[0].first == "**") {
+      //
+      if (patterns.size() == 1) {
+        if (entry->isDir()) {
+
+          co_yield entry;
+
+          // if we have more patterns, we need to go deeper
+          for (const auto& child : *entry->astree()) {
+            co_yield std::ranges::elements_of(ifiletree_glob_impl(child, patterns));
+          }
+        }
+      } else {
+        co_yield std::ranges::elements_of(
+            ifiletree_glob_impl(entry, patterns.subspan(1)));
+
+        if (entry->isDir()) {
+          for (const auto& child : *entry->astree()) {
+            const auto subPatterns = child->isDir() ? patterns : patterns.subspan(1);
+            co_yield std::ranges::elements_of(ifiletree_glob_impl(child, subPatterns));
+          }
+        }
+      }
+
+    } else if (patterns[0].second.match(entry->name()).hasMatch()) {
+      // only one thing remain so we yield it
+      if (patterns.size() == 1) {
+        co_yield entry;
+
+      } else if (entry->isDir()) {
+        // if we have more patterns, we need to go deeper
+        for (const auto& child : *entry->astree()) {
+          co_yield std::ranges::elements_of(
+              ifiletree_glob_impl(child, patterns.subspan(1)));
+        }
+      }
+    }
+  }
+
+  std::generator<std::shared_ptr<const FileTreeEntry>>
+  ifiletree_glob_impl(std::shared_ptr<const IFileTree> tree, QString pattern)
+  {
+    // replace \\ by /
+    pattern = pattern.trimmed().replace("\\", "/");
+
+    // handle special case
+    if (pattern == "**") {
+      co_yield tree;
+    }
+
+    // reduce **/** to ** when possible
+    pattern = pattern.replace(QRegularExpression("(\\*\\*/)*\\*\\*"), "**");
+
+    // split pattern into blocks
+    std::vector<std::pair<QString, QRegularExpression>> patterns;
+    for (const auto& part : pattern.split("/")) {
+      if (part == "**") {
+        patterns.emplace_back(part, QRegularExpression());
+      } else {
+        QString regexStr = QRegularExpression::wildcardToRegularExpression(
+            part, QRegularExpression::NonPathWildcardConversion);
+        patterns.emplace_back(
+            part,
+            QRegularExpression(regexStr, FileNameComparator::CaseSensitivity ==
+                                                 Qt::CaseInsensitive
+                                             ? QRegularExpression::CaseInsensitiveOption
+                                             : QRegularExpression::NoPatternOption));
+      }
+    }
+
+    for (const auto& child : *tree) {
+      co_yield std::ranges::elements_of(ifiletree_glob_impl(child, patterns));
+    }
+  }
+}  // namespace
+
+/**
+ *
+ */
+std::generator<std::shared_ptr<const FileTreeEntry>>
+IFileTree::glob(QString pattern) const
+{
+  return ifiletree_glob_impl(astree(), pattern);
 }
 
 /**
