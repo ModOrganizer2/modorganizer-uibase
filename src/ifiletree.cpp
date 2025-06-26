@@ -212,27 +212,25 @@ namespace
   ifiletree_glob_impl(std::shared_ptr<const FileTreeEntry> entry,
                       std::span<std::pair<QString, QRegularExpression>> const& patterns)
   {
+    if (patterns.size() == 0) {
+      co_return;
+    }
+
     if (patterns[0].first == "**") {
       //
-      if (patterns.size() == 1) {
-        if (entry->isDir()) {
-
-          co_yield entry;
-
-          // if we have more patterns, we need to go deeper
-          for (const auto& child : *entry->astree()) {
-            co_yield std::ranges::elements_of(ifiletree_glob_impl(child, patterns));
-          }
-        }
-      } else {
+      if (patterns.size() != 1) {
         co_yield std::ranges::elements_of(
             ifiletree_glob_impl(entry, patterns.subspan(1)));
+      }
 
-        if (entry->isDir()) {
-          for (const auto& child : *entry->astree()) {
-            const auto subPatterns = child->isDir() ? patterns : patterns.subspan(1);
-            co_yield std::ranges::elements_of(ifiletree_glob_impl(child, subPatterns));
-          }
+      if (entry->isDir()) {
+        if (patterns.size() == 1) {
+          co_yield entry;
+        }
+
+        for (const auto& child : *entry->astree()) {
+          const auto subPatterns = child->isDir() ? patterns : patterns.subspan(1);
+          co_yield std::ranges::elements_of(ifiletree_glob_impl(child, subPatterns));
         }
       }
 
@@ -242,6 +240,11 @@ namespace
         co_yield entry;
 
       } else if (entry->isDir()) {
+
+        if (patterns.size() == 2 && patterns[1].first == "**") {
+          co_yield entry;
+        }
+
         // if we have more patterns, we need to go deeper
         for (const auto& child : *entry->astree()) {
           co_yield std::ranges::elements_of(
@@ -257,13 +260,13 @@ namespace
     // replace \\ by /
     pattern = pattern.trimmed().replace("\\", "/");
 
+    // reduce **/** to ** when possible
+    pattern = pattern.replace(QRegularExpression("(\\*\\*/)*\\*\\*"), "**");
+
     // handle special case
     if (pattern == "**") {
       co_yield tree;
     }
-
-    // reduce **/** to ** when possible
-    pattern = pattern.replace(QRegularExpression("(\\*\\*/)*\\*\\*"), "**");
 
     // split pattern into blocks
     std::vector<std::pair<QString, QRegularExpression>> patterns;
