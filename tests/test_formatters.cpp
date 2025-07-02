@@ -26,38 +26,23 @@ TEST(FormatterTest, String)
 {
   using namespace std::string_literals;
   ASSERT_EQ("Hello World!", std::format("{}", L"Hello World!"s));
-  ASSERT_EQ(L"Hello World!", std::format(L"{}", "Hello World!"s));
   ASSERT_EQ("Hello World!", std::format("{}", QString("Hello World!")));
   ASSERT_EQ(L"Hello World!", std::format(L"{}", QString("Hello World!")));
 }
 
 TEST(FormatterTest, RandomAccessContainer)
 {
+  // note: this is standard since C++23, so this does not test much, and unfortunately
+  // there is no way to customize the output format of the random access container
   ASSERT_EQ("[]", std::format("{}", std::vector<int>{}));
-  ASSERT_EQ("()", std::format("{:b()}", std::vector<int>{}));
-  ASSERT_EQ("{}", std::format("{:b{}}", std::vector<int>{}));
+  ASSERT_EQ("[1, 2, 3]", std::format("{}", std::vector{1, 2, 3}));
+  ASSERT_EQ("[1, 2, 3, 4, 5, 6, 7]",
+            std::format("{}", std::vector{1, 2, 3, 4, 5, 6, 7}));
 
-  ASSERT_EQ("[ 1, 2, 3 ]", std::format("{}", std::vector{1, 2, 3}));
-  ASSERT_EQ("(1, 2, 3)", std::format("{:b()}", std::vector{1, 2, 3}));
-  ASSERT_EQ("( 1, 2, 3 )", std::format("{:b( )}", std::vector{1, 2, 3}));
-  ASSERT_EQ("{ 1, 2, 3 }", std::format("{:b{ }}", std::vector{1, 2, 3}));
-  ASSERT_EQ("{ 1, 2, 3 }", std::format("{:b{ }$}", std::vector{1, 2, 3}));
-
-  ASSERT_EQ("[ 1 ; 2 ; 3 ]", std::format("{:d ; $}", std::vector{1, 2, 3}));
-  ASSERT_EQ("{ 1 ; 2 ; 3 }", std::format("{:b{ }d ; $}", std::vector{1, 2, 3}));
-
-  ASSERT_EQ("[ 1, 2, ..., 7 ]", std::format("{}", std::vector{1, 2, 3, 4, 5, 6, 7}));
-  ASSERT_EQ("[ 1, 2, ..., 6, 7 ]",
-            std::format("{:n4}", std::vector{1, 2, 3, 4, 5, 6, 7}));
-  ASSERT_EQ("[ 1, 2, 3, 4, 5, 6, 7 ]",
-            std::format("{:n50}", std::vector{1, 2, 3, 4, 5, 6, 7}));
-  ASSERT_EQ("( 1 / 2 / 3 / ... / 6 / 7 )",
-            std::format("{:n5$d / $b( )}", std::vector{1, 2, 3, 4, 5, 6, 7}));
-
-  ASSERT_EQ("[ AL, Holt59, Silarn ]",
+  ASSERT_EQ("[\"AL\", \"Holt59\", \"Silarn\"]",
             std::format("{}", QStringList{"AL", "Holt59", "Silarn"}));
 
-  ASSERT_EQ("[ QVariant(type=QString, value=MO2), QVariant(type=bool, value=true), "
-            "QVariant(type=int, value=45) ]",
+  ASSERT_EQ("[QVariant(type=QString, value=MO2), QVariant(type=bool, value=true), "
+            "QVariant(type=int, value=45)]",
             std::format("{}", QVariantList{"MO2", true, 45}));
 }

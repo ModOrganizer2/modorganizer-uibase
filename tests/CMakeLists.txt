@@ -9,5 +9,5 @@ target_sources(uibase-tests
 		test_strings.cpp
 		test_versioning.cpp
 )
-mo2_configure_tests(uibase-tests NO_SOURCES NO_MAIN NO_MOCK WARNINGS 4)
+mo2_configure_tests(uibase-tests NO_SOURCES NO_MAIN NO_MOCK WARNINGS 4 AUTOMOC OFF)
 target_link_libraries(uibase-tests PRIVATE uibase)

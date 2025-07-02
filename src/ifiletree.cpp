@@ -1,7 +1,11 @@
 #include "ifiletree.h"
 
 #include <algorithm>
+#include <ranges>
+#include <span>
 #include <stack>
+
+#include <QRegularExpression>
 
 // FileTreeEntry:
 namespace MOBase
@@ -174,6 +178,184 @@ void IFileTree::walk(
       }
     }
   }
+}
+
+std::generator<std::shared_ptr<const FileTreeEntry>> IFileTree::walk() const
+{
+  std::stack<std::shared_ptr<const FileTreeEntry>> stack;
+
+  // we start by pushing all the entries in this tree, this avoid having to do extra
+  // check later to avoid leading separator
+  for (const auto& entry : entries() | std::views::reverse) {
+    stack.push(entry);
+  }
+
+  while (!stack.empty()) {
+    auto entry = stack.top();
+    stack.pop();
+
+    co_yield entry;
+
+    if (entry->isDir()) {
+      auto tree = entry->astree();
+      for (const auto& child : tree->entries() | std::views::reverse) {
+        stack.push(child);
+      }
+    }
+  }
+}
+
+namespace
+{
+  using glob_stack_t = std::stack<
+      std::pair<std::shared_ptr<const FileTreeEntry>, std::span<QRegularExpression>>>;
+
+  // check the given entry against the list of patterns and add new (entry, patterns) to
+  // the given stack
+  //
+  std::generator<std::shared_ptr<const FileTreeEntry>>
+  ifiletree_glob_impl_step(glob_stack_t& glob_stack,
+                           std::shared_ptr<const FileTreeEntry> entry,
+                           std::span<QRegularExpression> const& patterns)
+  {
+    // no more patterns, nothing to do
+    if (patterns.size() == 0) {
+      co_return;
+    }
+
+    // special handling if the pattern is empty (correspond to a '**' glob)
+    if (patterns[0].pattern() == "") {
+
+      // if there are more patterns after '**', we need to check the entry again, e.g.,
+      // if the entry name is 'x' and the pattern is '**/x' to match it
+      if (patterns.size() != 1) {
+        glob_stack.emplace(entry, patterns.subspan(1));
+      }
+
+      // if the entry is a file, there is nothing to do with '**'
+      if (entry->isFile()) {
+        co_return;
+      }
+
+      // if this is the end of the patterns list, we need to yield the current entry
+      // since it is a directory
+      if (patterns.size() == 1) {
+        co_yield entry;
+      }
+
+      // recurse over childs, but for directories, we need to keep the leading '**' in
+      // the list of patterns since '**' can match multiple level of directories
+      auto tree = entry->astree();
+      for (auto rit = tree->rbegin(); rit != tree->rend(); ++rit) {
+        glob_stack.emplace(*rit, (*rit)->isDir() ? patterns : patterns.subspan(1));
+      }
+    }
+    // otherwise (if the first patterns is not '**'), we simply check if we have a match
+    else if (patterns[0].match(entry->name()).hasMatch()) {
+      // this was the last pattern and we have a match, so we yield the current entry,
+      // not that this will yield intermediate matching directory, but this is expected
+      if (patterns.size() == 1) {
+        co_yield entry;
+      }
+
+      // if the entry is not a directory, we have nothing more to do
+      if (entry->isFile()) {
+        co_return;
+      }
+
+      // if all that remain after this pattern is a '**', we need to yield the current
+      // entry since '**' can also match an empty succession of directories, e.g. 'a/b'
+      // is matched by 'a/b/**'
+      if (patterns.size() == 2 && patterns[1].pattern() == "") {
+        co_yield entry;
+      }
+
+      // we then need to recurse over
+      auto tree = entry->astree();
+      for (auto rit = tree->rbegin(); rit != tree->rend(); ++rit) {
+        glob_stack.emplace(*rit, patterns.subspan(1));
+      }
+    }
+  }
+
+  // main function for IFileTree::glob - this function simply manages the stack of of
+  // entry / patterns to handle, and then falls back to ifiletree_glob_impl_step
+  //
+  std::generator<std::shared_ptr<const FileTreeEntry>>
+  ifiletree_glob_impl(std::shared_ptr<const FileTreeEntry> entry,
+                      std::span<QRegularExpression> const& patterns)
+  {
+    glob_stack_t stack;
+    stack.emplace(entry, patterns);
+
+    while (!stack.empty()) {
+      const auto [entry, patterns] = stack.top();
+      stack.pop();
+      co_yield std::ranges::elements_of(
+          ifiletree_glob_impl_step(stack, entry, patterns));
+    }
+  }
+
+  // actual implementation for IFileTree::glob
+  //
+  std::generator<std::shared_ptr<const FileTreeEntry>>
+  ifiletree_glob_impl(std::shared_ptr<const IFileTree> tree, QString pattern,
+                      IFileTree::GlobPatternType patternType)
+  {
+    // replace \\ by / to simply handling
+    pattern = pattern.trimmed().replace("\\", "/");
+
+    // reduce successions of **/** to **, this makes it easier to handle it in the
+    // actual implementation
+    pattern = pattern.replace(QRegularExpression("(\\*\\*/)*\\*\\*"), "**");
+
+    // we are going to match directly starting from the child of the tree, so we need
+    // to handle the root here
+    //
+    // note: this is the only pattern that can match the tree itself
+    if (pattern == "**") {
+      co_yield tree;
+    }
+
+    // split pattern into blocks, we keep
+    const auto regexOptions = FileNameComparator::CaseSensitivity == Qt::CaseInsensitive
+                                  ? QRegularExpression::CaseInsensitiveOption
+                                  : QRegularExpression::NoPatternOption;
+    std::vector<QRegularExpression> patterns;
+    for (const auto& part : pattern.split("/")) {
+      if (part == "**") {
+        // for '**' pattern, push an empty regex
+        patterns.emplace_back();
+      } else {
+        const auto pattern =
+            patternType == IFileTree::GlobPatternType::GLOB
+                ? QRegularExpression::wildcardToRegularExpression(
+                      part, QRegularExpression::NonPathWildcardConversion)
+                : part;
+        const QRegularExpression regex(pattern, regexOptions);
+
+        if (!regex.isValid()) {
+          throw InvalidGlobPatternException(regex.errorString());
+        }
+
+        patterns.push_back(regex);
+      }
+    }
+
+    // fall back to the main glob function for the child of this tree
+    for (const auto& child : *tree) {
+      co_yield std::ranges::elements_of(ifiletree_glob_impl(child, patterns));
+    }
+  }
+}  // namespace
+
+/**
+ *
+ */
+std::generator<std::shared_ptr<const FileTreeEntry>>
+IFileTree::glob(QString pattern, GlobPatternType patternType) const
+{
+  return ifiletree_glob_impl(astree(), pattern, patternType);
 }
 
 /**
