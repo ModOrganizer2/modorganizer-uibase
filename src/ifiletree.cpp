@@ -299,7 +299,8 @@ namespace
   // actual implementation for IFileTree::glob
   //
   std::generator<std::shared_ptr<const FileTreeEntry>>
-  ifiletree_glob_impl(std::shared_ptr<const IFileTree> tree, QString pattern)
+  ifiletree_glob_impl(std::shared_ptr<const IFileTree> tree, QString pattern,
+                      IFileTree::GlobPatternType patternType)
   {
     // replace \\ by / to simply handling
     pattern = pattern.trimmed().replace("\\", "/");
@@ -326,9 +327,18 @@ namespace
         // for '**' pattern, push an empty regex
         patterns.emplace_back();
       } else {
-        const auto regexStr = QRegularExpression::wildcardToRegularExpression(
-            part, QRegularExpression::NonPathWildcardConversion);
-        patterns.emplace_back(regexStr, regexOptions);
+        const auto pattern =
+            patternType == IFileTree::GlobPatternType::GLOB
+                ? QRegularExpression::wildcardToRegularExpression(
+                      part, QRegularExpression::NonPathWildcardConversion)
+                : part;
+        const QRegularExpression regex(pattern, regexOptions);
+
+        if (!regex.isValid()) {
+          throw InvalidGlobPatternException(regex.errorString());
+        }
+
+        patterns.push_back(regex);
       }
     }
 
@@ -343,9 +353,9 @@ namespace
  *
  */
 std::generator<std::shared_ptr<const FileTreeEntry>>
-IFileTree::glob(QString pattern) const
+IFileTree::glob(QString pattern, GlobPatternType patternType) const
 {
-  return ifiletree_glob_impl(astree(), pattern);
+  return ifiletree_glob_impl(astree(), pattern, patternType);
 }
 
 /**

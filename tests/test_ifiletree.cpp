@@ -921,6 +921,8 @@ TEST(IFileTreeTest, TreeGlobOperations)
 {
   using entrySet = std::unordered_set<std::shared_ptr<const FileTreeEntry>>;
 
+  const auto REGEX = IFileTree::GlobPatternType::REGEX;
+
   {
     auto fileTree = FileListTree::makeTree({{"a/", true},
                                             {"a/g.t", false},
@@ -941,7 +943,15 @@ TEST(IFileTreeTest, TreeGlobOperations)
     expected = {map["a"], map["b"], map["c.x"], map["d.y"], map["e"]};
     EXPECT_EQ(entries, expected);
 
+    entries  = fileTree->glob(".*", REGEX) | std::ranges::to<std::unordered_set>();
+    expected = {map["a"], map["b"], map["c.x"], map["d.y"], map["e"]};
+    EXPECT_EQ(entries, expected);
+
     entries  = fileTree->glob("**") | std::ranges::to<std::unordered_set>();
+    expected = {fileTree, map["a"], map["b"], map["e"], map["e/q"], map["e/q/p"]};
+    EXPECT_EQ(entries, expected);
+
+    entries  = fileTree->glob("**", REGEX) | std::ranges::to<std::unordered_set>();
     expected = {fileTree, map["a"], map["b"], map["e"], map["e/q"], map["e/q/p"]};
     EXPECT_EQ(entries, expected);
 
@@ -949,7 +959,16 @@ TEST(IFileTreeTest, TreeGlobOperations)
     expected = {map["c.x"]};
     EXPECT_EQ(entries, expected);
 
+    entries  = fileTree->glob(".*[.]x", REGEX) | std::ranges::to<std::unordered_set>();
+    expected = {map["c.x"]};
+    EXPECT_EQ(entries, expected);
+
     entries  = fileTree->glob("**/*.x") | std::ranges::to<std::unordered_set>();
+    expected = {map["c.x"], map["e/q/m.x"]};
+    EXPECT_EQ(entries, expected);
+
+    entries =
+        fileTree->glob("**/.*[.]x", REGEX) | std::ranges::to<std::unordered_set>();
     expected = {map["c.x"], map["e/q/m.x"]};
     EXPECT_EQ(entries, expected);
 
@@ -963,6 +982,19 @@ TEST(IFileTreeTest, TreeGlobOperations)
 
     entries  = fileTree->glob("a/*") | std::ranges::to<std::unordered_set>();
     expected = {map["a/g.t"]};
+    EXPECT_EQ(entries, expected);
+
+    entries  = fileTree->glob("a/.*", REGEX) | std::ranges::to<std::unordered_set>();
+    expected = {map["a/g.t"]};
+    EXPECT_EQ(entries, expected);
+
+    entries  = fileTree->glob("**/*.[xt]") | std::ranges::to<std::unordered_set>();
+    expected = {map["c.x"], map["e/q/m.x"], map["a/g.t"], map["e/q/c.t"]};
+    EXPECT_EQ(entries, expected);
+
+    entries =
+        fileTree->glob("**/.*[.][xt]", REGEX) | std::ranges::to<std::unordered_set>();
+    expected = {map["c.x"], map["e/q/m.x"], map["a/g.t"], map["e/q/c.t"]};
     EXPECT_EQ(entries, expected);
   }
 

@@ -113,6 +113,14 @@ struct QDLLEXPORT UnsupportedOperationException : public Exception
 };
 
 /**
+ * @brief Exception thrown when an invalid glob pattern is specified.
+ */
+struct QDLLEXPORT InvalidGlobPatternException : public Exception
+{
+  using Exception::Exception;
+};
+
+/**
  * @brief Represent an entry in a file tree, either a file or a directory. This class
  *     inherited by IFileTree so that operations on entry are the same for a file or
  *     a directory.
@@ -602,7 +610,7 @@ public:  // Access methods:
     return entry->pathFrom(astree(), sep);
   }
 
-public:  // Walk operations
+public:  // Walk & Glob operations
   enum class WalkReturn
   {
 
@@ -621,6 +629,20 @@ public:  // Walk operations
      */
     SKIP
 
+  };
+
+  enum class GlobPatternType
+  {
+    /**
+     * @brief Glob mode, similar to python pathlib.Path.glob function
+     */
+    GLOB,
+
+    /**
+     * @brief Regex mode, each part of the pattern (between / or \) is considered a
+     * regex, except for ** which is still considered as glob.
+     */
+    REGEX
   };
 
   /**
@@ -654,10 +676,12 @@ public:  // Walk operations
    * @brief Glob entries matching the given pattern in this tree.
    *
    * @param pattern Glob pattern to match, using the same syntax as QRegularExpression.
+   * @param patternType Type of the pattern.
    *
    * @return a generator over the entries matching the given pattern.
    */
-  std::generator<std::shared_ptr<const FileTreeEntry>> glob(QString pattern) const;
+  std::generator<std::shared_ptr<const FileTreeEntry>>
+  glob(QString pattern, GlobPatternType patternType = GlobPatternType::GLOB) const;
 
 public:  // Utility functions:
   /**
