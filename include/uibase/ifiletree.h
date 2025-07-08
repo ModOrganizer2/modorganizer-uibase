@@ -29,6 +29,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 #include <mutex>
 #include <stdexcept>
 #include <vector>
+#include <version>
 
 #include <QDateTime>
 #include <QFlags>
@@ -108,14 +109,6 @@ struct FileNameComparator
  *     implementation or makes no sense (e.g., creation of a file in an archive).
  */
 struct QDLLEXPORT UnsupportedOperationException : public Exception
-{
-  using Exception::Exception;
-};
-
-/**
- * @brief Exception thrown when an invalid glob pattern is specified.
- */
-struct QDLLEXPORT InvalidGlobPatternException : public Exception
 {
   using Exception::Exception;
 };
@@ -631,20 +624,6 @@ public:  // Walk & Glob operations
 
   };
 
-  enum class GlobPatternType
-  {
-    /**
-     * @brief Glob mode, similar to python pathlib.Path.glob function
-     */
-    GLOB,
-
-    /**
-     * @brief Regex mode, each part of the pattern (between / or \) is considered a
-     * regex, except for ** which is still considered as glob.
-     */
-    REGEX
-  };
-
   /**
    * @brief Walk this tree, calling the given function for each entry in it.
    *
@@ -661,27 +640,6 @@ public:  // Walk & Glob operations
   walk(std::function<WalkReturn(QString const&, std::shared_ptr<const FileTreeEntry>)>
            callback,
        QString sep = "\\") const;
-
-  /**
-   * @brief Walk this tree, returning entries.
-   *
-   * During the walk, parent tree are guaranteed to be visited before their childrens.
-   * The current tree is not included in the return generator.
-   *
-   * @return a generator over the entries.
-   */
-  std::generator<std::shared_ptr<const FileTreeEntry>> walk() const;
-
-  /**
-   * @brief Glob entries matching the given pattern in this tree.
-   *
-   * @param pattern Glob pattern to match, using the same syntax as QRegularExpression.
-   * @param patternType Type of the pattern.
-   *
-   * @return a generator over the entries matching the given pattern.
-   */
-  std::generator<std::shared_ptr<const FileTreeEntry>>
-  glob(QString pattern, GlobPatternType patternType = GlobPatternType::GLOB) const;
 
 public:  // Utility functions:
   /**
@@ -1160,5 +1118,13 @@ private:  // Private stuff, look away!
 };
 
 }  // namespace MOBase
+
+// __has_cpp_attribute(__cpp_lib_generator) does not seem to work, maybe some conflict
+// with Qt?
+#ifdef __cpp_lib_generator
+
+#include "ifiletree_utils.h"
+
+#endif
 
 #endif

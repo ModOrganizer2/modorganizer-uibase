@@ -35,6 +35,7 @@ set(root_headers
 )
 set(interface_headers
 	../include/uibase/ifiletree.h
+	../include/uibase/ifiletree_utils.h
 	../include/uibase/iinstallationmanager.h
 	../include/uibase/imodinterface.h
 	../include/uibase/imodlist.h
