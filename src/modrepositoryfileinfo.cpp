@@ -8,14 +8,17 @@ MOBase::ModRepositoryFileInfo::ModRepositoryFileInfo(
       categoryID(reference.categoryID), modName(reference.modName),
       gameName(reference.gameName), modID(reference.modID), fileID(reference.fileID),
       fileSize(reference.fileSize), fileCategory(reference.fileCategory),
-      repository(reference.repository), userData(reference.userData)
+      repository(reference.repository), userData(reference.userData),
+      author(reference.author), uploader(reference.uploader),
+      uploaderUrl(reference.uploaderUrl)
 {}
 
 MOBase::ModRepositoryFileInfo::ModRepositoryFileInfo(QString gameName, int modID,
                                                      int fileID)
     : name(), uri(), description(), version(), categoryID(0), modName(),
       gameName(gameName), modID(modID), fileID(fileID), fileSize(0),
-      fileCategory(TYPE_UNKNOWN), repository(), userData()
+      fileCategory(TYPE_UNKNOWN), repository(), userData(), author(), uploader(),
+      uploaderUrl()
 
 {}
 
@@ -24,7 +27,7 @@ MOBase::ModRepositoryFileInfo::createFromJson(const QString& data)
 {
   QVariantList result = QtJson::parse(data).toList();
 
-  while (result.length() < 15) {
+  while (result.length() < 18) {
     result.append(QVariant());
   }
 
@@ -45,6 +48,9 @@ MOBase::ModRepositoryFileInfo::createFromJson(const QString& data)
   newInfo.fileCategory = result.at(12).toInt();
   newInfo.repository   = result.at(13).toString();
   newInfo.userData     = result.at(14).toMap();
+  newInfo.author       = result.at(15).toString();
+  newInfo.uploader     = result.at(16).toString();
+  newInfo.uploaderUrl  = result.at(17).toString();
 
   return newInfo;
 }
@@ -68,5 +74,8 @@ QString MOBase::ModRepositoryFileInfo::toString() const
       .arg(fileName)
       .arg(fileCategory)
       .arg(repository)
-      .arg(QString(QtJson::serialize(userData)));
+      .arg(QString(QtJson::serialize(userData)))
+      .arg(author)
+      .arg(uploader)
+      .arg(uploaderUrl);
 }
