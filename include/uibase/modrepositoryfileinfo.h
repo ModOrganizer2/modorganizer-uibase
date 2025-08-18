@@ -46,6 +46,10 @@ public:
   QString repository;
 
   QVariantMap userData;
+
+  QString author;
+  QString uploader;
+  QString uploaderUrl;
 };
 }  // namespace MOBase
 

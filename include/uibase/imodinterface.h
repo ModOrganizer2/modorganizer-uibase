@@ -160,6 +160,21 @@ public:  // Meta-related information:
   virtual QStringList categories() const = 0;
 
   /**
+   * @return the mod author.
+   */
+  virtual QString author() const = 0;
+
+  /**
+   * @return the mod uploader.
+   */
+  virtual QString uploader() const = 0;
+
+  /**
+   * @return the URL of the uploader.
+   */
+  virtual QString uploaderUrl() const = 0;
+
+  /**
    * @return the tracked state of this mod.
    */
   virtual TrackedState trackedState() const = 0;
