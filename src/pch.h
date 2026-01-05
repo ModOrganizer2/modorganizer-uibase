@@ -23,8 +23,8 @@
 #pragma warning(disable : 4946)  // reinterpret_cast used between related classes
 #pragma warning(disable : 4800)  // implicit conversion
 #pragma warning(disable : 5219)  // implicit int -> float conversion
-#pragma warning(                                                                       \
-    disable : 5249)  // named enumerators with values outside of bit field width
+#pragma warning(disable                                                                \
+                : 5249)  // named enumerators with values outside of bit field width
 
 #define _SILENCE_CXX17_CODECVT_HEADER_DEPRECATION_WARNING 1
 
