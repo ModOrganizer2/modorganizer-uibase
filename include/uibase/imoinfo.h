@@ -29,6 +29,8 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 #include <Windows.h>
 #include <any>
 #include <functional>
+#include <memory>
+#include <vector>
 
 #include "game_features/game_feature.h"
 #include "guessedvalue.h"
@@ -87,6 +89,12 @@ public:
    * @return create a new nexus interface class
    */
   virtual IModRepositoryBridge* createNexusBridge() const = 0;
+
+  /**
+   * @return the name of the current instance (the directory name or "Portable" for
+   * portable instances)
+   */
+  virtual QString instanceName() const = 0;
 
   /**
    * @return name of the active profile or an empty string if no profile is loaded (yet)
@@ -327,6 +335,11 @@ public:
    * @return interface to the active profile
    */
   virtual IProfile* profile() const = 0;
+
+  /**
+   * @return list of all profiles
+   */
+  virtual std::vector<std::shared_ptr<const IProfile>> profiles() const = 0;
 
   /**
    * @return interface to game features.
