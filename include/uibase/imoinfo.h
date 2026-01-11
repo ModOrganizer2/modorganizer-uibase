@@ -30,7 +30,6 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 #include <any>
 #include <functional>
 #include <memory>
-#include <vector>
 
 #include "game_features/game_feature.h"
 #include "guessedvalue.h"
@@ -337,9 +336,18 @@ public:
   virtual IProfile* profile() const = 0;
 
   /**
-   * @return list of all profiles
+   * @return list of names of all profiles
    */
-  virtual std::vector<std::shared_ptr<const IProfile>> profiles() const = 0;
+  virtual QStringList profileNames() const = 0;
+
+  /**
+   * @brief retrieve a profile by name
+   *
+   * @param name name of the profile
+   *
+   * @return the profile with the specified name or nullptr if not found
+   */
+  virtual std::shared_ptr<const IProfile> getProfile(const QString& name) const = 0;
 
   /**
    * @return interface to game features.
