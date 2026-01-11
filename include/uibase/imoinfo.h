@@ -333,7 +333,7 @@ public:
   /**
    * @return interface to the active profile
    */
-  virtual IProfile* profile() const = 0;
+  virtual std::shared_ptr<IProfile> profile() const = 0;
 
   /**
    * @return list of names of all profiles
