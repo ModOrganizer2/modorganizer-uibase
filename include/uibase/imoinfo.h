@@ -33,6 +33,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 
 #include "game_features/game_feature.h"
 #include "guessedvalue.h"
+#include "iexecutableslist.h"
 #include "imodlist.h"
 #include "iprofile.h"
 #include "versioninfo.h"
@@ -329,6 +330,11 @@ public:
    * @return interface to the list of mods
    */
   virtual IModList* modList() const = 0;
+
+  /**
+   * @return interface to the list of executables
+   */
+  virtual IExecutablesList* executablesList() const = 0;
 
   /**
    * @return interface to the active profile
