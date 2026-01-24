@@ -41,6 +41,8 @@ public:  // Information found in ExecutableInfo
 
   /**
    * @return the arguments to be passed to the executable.
+   *
+   * @note This API might be changed in the future to return a QStringList instead.
    */
   virtual const QString& arguments() const = 0;
 

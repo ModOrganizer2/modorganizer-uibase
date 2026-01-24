@@ -33,7 +33,6 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 
 #include "game_features/game_feature.h"
 #include "guessedvalue.h"
-#include "iexecutableslist.h"
 #include "imodlist.h"
 #include "iprofile.h"
 #include "versioninfo.h"
@@ -42,6 +41,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 namespace MOBase
 {
 
+class IExecutablesList;
 class IFileTree;
 class IModInterface;
 class IModRepositoryBridge;

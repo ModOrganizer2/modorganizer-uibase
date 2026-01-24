@@ -23,8 +23,8 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 
 #include <QFileInfo>
 #include <QString>
-#include <memory>
-#include <vector>
+
+#include <generator>
 
 #include "iexecutable.h"
 
@@ -37,9 +37,11 @@ class IExecutablesList
 {
 public:
   /**
-   * @return a list of all executables configured in Mod Organizer.
+   * @brief Retrieve all configured executables.
+   *
+   * @return a generator yielding all configured executables.
    */
-  virtual std::vector<std::shared_ptr<const IExecutable>> executables() const = 0;
+  virtual std::generator<const IExecutable&> executables() const = 0;
 
   /**
    * @brief Retrieve an executable by its title.
@@ -48,7 +50,7 @@ public:
    *
    * @return the executable with the specified title, or nullptr if not found.
    */
-  virtual std::shared_ptr<const IExecutable> getByTitle(const QString& title) const = 0;
+  virtual const IExecutable* getByTitle(const QString& title) const = 0;
 
   /**
    * @brief Retrieve an executable by its binary file info.
@@ -57,8 +59,7 @@ public:
    *
    * @return the executable with the specified binary, or nullptr if not found.
    */
-  virtual std::shared_ptr<const IExecutable>
-  getByBinary(const QFileInfo& info) const = 0;
+  virtual const IExecutable* getByBinary(const QFileInfo& info) const = 0;
 
   /**
    * @brief Check if an executable with the specified title exists.
@@ -67,7 +68,7 @@ public:
    *
    * @return true if an executable with the specified title exists, false otherwise.
    */
-  virtual bool titleExists(const QString& title) const = 0;
+  virtual bool contains(const QString& title) const = 0;
 };
 }  // namespace MOBase
 
