@@ -34,6 +34,8 @@ set(root_headers
 	../include/uibase/versioninfo.h
 )
 set(interface_headers
+    ../include/uibase/iexecutable.h
+    ../include/uibase/iexecutableslist.h
 	../include/uibase/ifiletree.h
 	../include/uibase/ifiletree_utils.h
 	../include/uibase/iinstallationmanager.h

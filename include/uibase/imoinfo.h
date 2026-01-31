@@ -41,6 +41,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 namespace MOBase
 {
 
+class IExecutablesList;
 class IFileTree;
 class IModInterface;
 class IModRepositoryBridge;
@@ -329,6 +330,11 @@ public:
    * @return interface to the list of mods
    */
   virtual IModList* modList() const = 0;
+
+  /**
+   * @return interface to the list of executables
+   */
+  virtual IExecutablesList* executablesList() const = 0;
 
   /**
    * @return interface to the active profile
