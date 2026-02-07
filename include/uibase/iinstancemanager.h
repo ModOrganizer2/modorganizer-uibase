@@ -21,6 +21,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 #ifndef IINSTANCEMANAGER_H
 #define IINSTANCEMANAGER_H
 
+#include <QDir>
 #include <QString>
 
 #include <memory>
@@ -46,7 +47,19 @@ public:
    *
    * @note This does not include portable instances.
    */
-  virtual std::vector<QString> globalInstancePaths() const = 0;
+  virtual std::vector<QDir> globalInstancePaths() const = 0;
+
+  /**
+   * @brief Retrieve the global instance corresponding to the given name.
+   *
+   * @param instanceName Name of the global instance to retrieve. This is the directory
+   * name of the instance.
+   *
+   * @return the global instance corresponding to the given name, or nullptr if no such
+   * instance exists.
+   */
+  virtual std::shared_ptr<const IInstance>
+  getGlobalInstance(const QString& instanceName) const = 0;
 };
 }  // namespace MOBase
 
