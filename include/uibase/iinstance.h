@@ -43,13 +43,13 @@ public:
    * @return The name of the game managed by this instance, or an empty string if the
    * INI file could not be read.
    */
-  virtual QString gameName() = 0;
+  virtual QString gameName() const = 0;
 
   /**
    * @return The directory where the game is installed, or an empty string if the INI
    * file could not be read.
    */
-  virtual QString gameDirectory() = 0;
+  virtual QString gameDirectory() const = 0;
 
   /**
    * @return true if this is a portable instance, false if it is a global one.
