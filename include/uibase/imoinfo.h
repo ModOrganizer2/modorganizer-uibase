@@ -46,6 +46,7 @@ class IFileTree;
 class IModInterface;
 class IModRepositoryBridge;
 class IDownloadManager;
+class IInstanceManager;
 class IPluginList;
 class IPlugin;
 class IPluginGame;
@@ -315,6 +316,11 @@ public:
    * @return a IFileTree representing the virtual file tree.
    */
   virtual std::shared_ptr<const MOBase::IFileTree> virtualFileTree() const = 0;
+
+  /**
+   * @return interface to the instance manager
+   */
+  virtual IInstanceManager* instanceManager() const = 0;
 
   /**
    * @return interface to the download manager
