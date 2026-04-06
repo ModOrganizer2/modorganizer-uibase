@@ -350,12 +350,12 @@ QDLLEXPORT bool operator<(const VersionInfo& LHS, const VersionInfo& RHS)
     // versions as regular if in doubt so if the scheme is "decimal" it is definitively
     // a decimal version number whereas SCHEME_REGULAR means "probably regular"
 
-    float leftVal = QString("%1.%2")
-                        .arg(LHS.m_Major)
-                        .arg(QString("%1")
-                                 .arg(LHS.m_Minor)
-                                 .rightJustified(LHS.m_DecimalPositions, '0'))
-                        .toFloat();
+    float leftVal  = QString("%1.%2")
+                         .arg(LHS.m_Major)
+                         .arg(QString("%1")
+                                  .arg(LHS.m_Minor)
+                                  .rightJustified(LHS.m_DecimalPositions, '0'))
+                         .toFloat();
     float rightVal = QString("%1.%2")
                          .arg(RHS.m_Major)
                          .arg(QString("%1")

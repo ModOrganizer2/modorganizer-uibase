@@ -66,15 +66,15 @@ public:
   static Button
   query(QWidget* parent, const QString& windowName, const QString& title,
         const QString& text,
-        QDialogButtonBox::StandardButtons buttons = QDialogButtonBox::Yes |
-                                                    QDialogButtonBox::No,
+        QDialogButtonBox::StandardButtons buttons      = QDialogButtonBox::Yes |
+                                                         QDialogButtonBox::No,
         QDialogButtonBox::StandardButton defaultButton = QDialogButtonBox::NoButton);
 
   static Button
   query(QWidget* parent, const QString& windowName, const QString& fileName,
         const QString& title, const QString& text,
-        QDialogButtonBox::StandardButtons buttons = QDialogButtonBox::Yes |
-                                                    QDialogButtonBox::No,
+        QDialogButtonBox::StandardButtons buttons      = QDialogButtonBox::Yes |
+                                                         QDialogButtonBox::No,
         QDialogButtonBox::StandardButton defaultButton = QDialogButtonBox::NoButton);
 
   static void setWindowMemory(const QString& windowName, Button b);
@@ -99,8 +99,8 @@ private:
   static Button queryImpl(
       QWidget* parent, const QString& windowName, const QString* fileName,
       const QString& title, const QString& text,
-      QDialogButtonBox::StandardButtons buttons = QDialogButtonBox::Yes |
-                                                  QDialogButtonBox::No,
+      QDialogButtonBox::StandardButtons buttons      = QDialogButtonBox::Yes |
+                                                       QDialogButtonBox::No,
       QDialogButtonBox::StandardButton defaultButton = QDialogButtonBox::NoButton);
 
   std::unique_ptr<Ui::QuestionBoxMemory> ui;
