@@ -305,6 +305,13 @@ public:
    */
   virtual QStringList CCPlugins() const { return {}; }
 
+  /**
+   * @brief Get the blueprint plugin prefix for blueprint autoloading
+   *
+   * @node Primarily used by Starfield
+   */
+  virtual QString blueprintPrefix() const { return ""; }
+
   /*
    * @brief determine the load order mechanism used by this game.
    *
