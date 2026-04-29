@@ -75,6 +75,21 @@ public:
    */
   int userId() const { return m_UserId; }
 
+  /**
+   * @return if collection link
+   */
+  bool isCollection() const { return m_Collection; }
+
+  /**
+   * @return collection ID
+   */
+  QString collectionId() const { return m_CollectionId; }
+
+  /**
+   * @return collection revision
+   */
+  int collectionRevision() const { return m_CollectionRevision; }
+
 private:
   QString m_Game;
   QString m_Key;
@@ -82,6 +97,9 @@ private:
   int m_FileId;
   int m_Expires;
   int m_UserId;
+  bool m_Collection;
+  QString m_CollectionId;
+  int m_CollectionRevision;
 };
 
 #endif  // NXMURL_H

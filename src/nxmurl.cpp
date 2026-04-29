@@ -29,16 +29,33 @@ NXMUrl::NXMUrl(const QString& url)
 {
   QUrl nxm(url);
   QUrlQuery query(nxm);
-  QRegularExpression exp("nxm://[a-z0-9]+/mods/(\\d+)/files/(\\d+)",
-                         QRegularExpression::CaseInsensitiveOption);
-  auto match = exp.match(url);
+  // nxm://starfield/collections/7ou329/revisions/24
+  QRegularExpression modsExp("nxm://[a-z0-9]+/mods/(\\d+)/files/(\\d+)",
+                             QRegularExpression::CaseInsensitiveOption);
+  QRegularExpression collectionsExp(
+      "nxm://[a-z0-9]+/collections/([a-z0-9]+)/revisions/(\\d+)",
+      QRegularExpression::CaseInsensitiveOption);
+  auto match           = modsExp.match(url);
+  bool collectionsLink = false;
   if (!match.hasMatch()) {
-    throw MOBase::InvalidNXMLinkException(url);
+    match = collectionsExp.match(url);
+    if (!match.hasMatch()) {
+      throw MOBase::InvalidNXMLinkException(url);
+    } else {
+      collectionsLink = true;
+    }
   }
-  m_Game    = nxm.host();
-  m_ModId   = match.captured(1).toInt();
-  m_FileId  = match.captured(2).toInt();
-  m_Key     = query.queryItemValue("key");
-  m_Expires = query.queryItemValue("expires").toInt();
-  m_UserId  = query.queryItemValue("user_id").toInt();
+  m_Game = nxm.host();
+  if (!collectionsLink) {
+    m_ModId      = match.captured(1).toInt();
+    m_FileId     = match.captured(2).toInt();
+    m_Key        = query.queryItemValue("key");
+    m_Expires    = query.queryItemValue("expires").toInt();
+    m_UserId     = query.queryItemValue("user_id").toInt();
+    m_Collection = false;
+  } else {
+    m_CollectionId       = match.captured(1);
+    m_CollectionRevision = match.captured(2).toInt();
+    m_Collection         = true;
+  }
 }
