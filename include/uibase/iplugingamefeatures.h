@@ -38,7 +38,7 @@ class UnmanagedMods;
  * @brief A plugin to implement game features.
  *
  */
-class IPluginGameFeautres
+class IPluginGameFeatures
 {
 public:
   /**
@@ -57,5 +57,5 @@ public:
 
 }  // namespace MOBase
 
-#endif  // IPLUGINDIAGNOSE_H
+#endif  // IPLUGINGAMEFEATURES_H
 #pragma once
