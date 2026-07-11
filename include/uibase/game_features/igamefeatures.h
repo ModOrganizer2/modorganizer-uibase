@@ -16,6 +16,7 @@ class IPluginGame;
 // top-level game features
 class BSAInvalidation;
 class DataArchives;
+class GameArchiveHandler;
 class GamePlugins;
 class LocalSavegames;
 class ModDataChecker;

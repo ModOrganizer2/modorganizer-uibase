@@ -7,3 +7,8 @@ CMakeLists.txt.user
 /src/uibasetests_en.ts
 /install
 /tests/cmake/build
+/_deploy
+/build-local
+/_tmp_uibase_build.log
+/_deploy*
+/vsbuild*
