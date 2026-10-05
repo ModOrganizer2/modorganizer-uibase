@@ -621,7 +621,6 @@ public:  // Walk & Glob operations
      * @brief Skip this folder (no effect if the entry is a file).
      */
     SKIP
-
   };
 
   /**
