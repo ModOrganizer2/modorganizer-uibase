@@ -101,7 +101,7 @@ Q_SIGNALS:
    * signal
    */
   void filesAvailable(QString gameName, int modID, QVariant userData,
-                      const QList<ModRepositoryFileInfo*>& resultData);
+                      const QList<ModRepositoryFileInfo>& resultData);
 
   /**
    * @brief sent when information about a file is reported by the repository
