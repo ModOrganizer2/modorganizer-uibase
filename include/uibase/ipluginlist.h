@@ -63,6 +63,8 @@ public:
    * @brief set the state of a plugin
    * @param name filename of the plugin (without path but with file extensions)
    * @param state new state of the plugin. should be active or inactive
+   * @note this only changes the in-memory list: it neither saves the plugin lists nor
+   *       notifies anyone, use applyChanges() for that
    */
   virtual void setState(const QString& name, PluginStates state) = 0;
 
@@ -101,6 +103,8 @@ public:
    * @param the new load order, specified by the list of plugin names, sorted.
    * @note plugins not included in the list will be placed at highest priority
    *       in the order they were before
+   * @note this only changes the in-memory list: it neither saves the plugin lists nor
+   *       notifies anyone, use applyChanges() for that
    */
   virtual void setLoadOrder(const QStringList& pluginList) = 0;
 
@@ -261,6 +265,27 @@ public:
    * exist
    */
   virtual QString description(const QString& name) const = 0;
+
+  /**
+   * @brief applies a new load order and new plugin states in one batch, the same way
+   * an edit of the plugin list in MO2 does.
+   *
+   * Unlike setLoadOrder() and setState(), this enforces the ordering rules of the
+   * plugin list (primary plugins, masters, locked load order), refreshes the view,
+   * saves the plugin lists and notifies onPluginMoved and onPluginStateChanged once
+   * for each plugin whose priority or state actually changed.
+   *
+   * @param loadOrder plugin names sorted by ascending priority. Plugins not included
+   *        keep their relative order after the listed ones, so an empty list keeps the
+   *        current order.
+   * @param states new states of plugins, keyed by plugin name. Plugins not included
+   *        keep their current state.
+   *
+   * @note MO2 may adjust the result (e.g. it keeps masters above their dependents or
+   *       force-enabled plugins active), use priority() and state() to read it back.
+   */
+  virtual void applyChanges(const QStringList& loadOrder,
+                            const std::map<QString, PluginStates>& states) = 0;
 };
 
 }  // namespace MOBase
