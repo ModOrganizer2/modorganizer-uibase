@@ -261,6 +261,30 @@ public:
    * exist
    */
   virtual QString description(const QString& name) const = 0;
+
+  /**
+   * @brief writes the changes to the plugin list that have not been written yet.
+   *
+   * MO2 writes the plugin lists shortly after each change. This writes them right
+   * away, the same way MO2 does: plugins.txt, loadorder.txt, lockedorder.txt and, for
+   * games using file times as load order, the file times of the plugins. Does nothing
+   * if no write is pending.
+   *
+   * @return true if the files are up to date, false if they cannot be written right
+   * now, e.g. while MO2 refreshes its directory structure
+   */
+  virtual bool flush() = 0;
+
+  /**
+   * @brief reads plugins.txt, loadorder.txt and lockedorder.txt again, the same way
+   * MO2 does after restoring a backup of the plugin list, and calls the callbacks
+   * installed with onRefreshed() once done.
+   *
+   * Changes to the plugin list that have not been written yet are discarded, since the
+   * files take precedence. While MO2 refreshes its directory structure, the files are
+   * read once the refresh is done.
+   */
+  virtual void reloadFromDisk() = 0;
 };
 
 }  // namespace MOBase
